@@ -182,6 +182,13 @@ export default function DataDashboard() {
     const ttmEnd = new Date(ttmData[ttmData.length - 1].date);
     const ttmPeriod = `${monthNames[ttmStart.getMonth()]} ${ttmStart.getFullYear()} - ${monthNames[ttmEnd.getMonth()]} ${ttmEnd.getFullYear()}`;
     
+    // Calculate prior TTM period (one year earlier)
+    const priorTtmStart = new Date(ttmStart);
+    priorTtmStart.setFullYear(priorTtmStart.getFullYear() - 1);
+    const priorTtmEnd = new Date(ttmEnd);
+    priorTtmEnd.setFullYear(priorTtmEnd.getFullYear() - 1);
+    const priorTtmPeriod = `${monthNames[priorTtmStart.getMonth()]} ${priorTtmStart.getFullYear()} - ${monthNames[priorTtmEnd.getMonth()]} ${priorTtmEnd.getFullYear()}`;
+    
     // Calculate continent breakdown
     const continentTotals = {};
     const continentPriorTotals = {};
@@ -226,6 +233,7 @@ export default function DataDashboard() {
       yoyChange,
       ttmTotal: ttmTotal.toLocaleString(),
       ttmPeriod,
+      priorTtmPeriod,
       lastTtmTotal: lastTtmTotal.toLocaleString(),
       ttmChange,
       topGrower: {
@@ -389,7 +397,7 @@ export default function DataDashboard() {
                 </p>
               </div>
               <p className="text-xs text-neutral-600 mb-3">
-                compared to {kpis.lastYearMonth} in {kpis.lastYearMonthName}
+                vs {kpis.lastYearMonth} in {kpis.lastYearMonthName}
               </p>
               <div className="flex items-center gap-2">
                 {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-4 h-4 text-emerald-600" /> : 
@@ -418,7 +426,7 @@ export default function DataDashboard() {
                 {kpis.ttmTotal}
               </p>
               <p className="text-xs text-neutral-600 mb-3">
-                vs {kpis.lastTtmTotal} prior period
+                vs {kpis.lastTtmTotal} {kpis.priorTtmPeriod}
               </p>
               <div className="flex items-center gap-2">
                 {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-4 h-4 text-emerald-600" /> : 
@@ -435,19 +443,19 @@ export default function DataDashboard() {
 
             <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm relative">
               <button 
-                onClick={() => shareKPI('TTM - Fastest Growing', `${getCountryName(kpis.topGrower.name)}\n${kpis.topGrower.current.toLocaleString()} vs ${kpis.topGrower.prior.toLocaleString()} prior TTM\n+${kpis.topGrower.change} (+${kpis.topGrower.percent.toFixed(1)}%)`)}
+                onClick={() => shareKPI('TTM - Largest Gain', `${getCountryName(kpis.topGrower.name)}\n${kpis.topGrower.current.toLocaleString()} vs ${kpis.topGrower.prior.toLocaleString()} prior TTM\n+${kpis.topGrower.change} (+${kpis.topGrower.percent.toFixed(1)}%)`)}
                 className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                 aria-label="Share"
               >
                 <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
               </button>
-              <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Fastest Growing</p>
+              <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Largest Gain</p>
               <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
               <p className="text-xl lg:text-2xl font-semibold text-neutral-900 mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                 {getCountryName(kpis.topGrower.name)}
               </p>
               <p className="text-xs text-neutral-600 mb-3">
-                {kpis.topGrower.current.toLocaleString()} vs {kpis.topGrower.prior.toLocaleString()} prior TTM
+                {kpis.topGrower.current.toLocaleString()} vs {kpis.topGrower.prior.toLocaleString()} {kpis.priorTtmPeriod}
               </p>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-emerald-600" />
@@ -471,7 +479,7 @@ export default function DataDashboard() {
                 {getCountryName(kpis.topDecliner.name)}
               </p>
               <p className="text-xs text-neutral-600 mb-3">
-                {kpis.topDecliner.current.toLocaleString()} vs {kpis.topDecliner.prior.toLocaleString()} prior TTM
+                {kpis.topDecliner.current.toLocaleString()} vs {kpis.topDecliner.prior.toLocaleString()} {kpis.priorTtmPeriod}
               </p>
               <div className="flex items-center gap-2">
                 <TrendingDown className="w-4 h-4 text-rose-600" />
