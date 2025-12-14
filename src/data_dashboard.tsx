@@ -15,8 +15,8 @@ export default function DataDashboard() {
   // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
     // Totals
-    'Farþegar alls': { name: 'All Passengers', continent: 'Total', color: '#007AFF' },
-    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#FF375F' },
+    'Farþegar alls': { name: 'All Passengers', continent: 'Total', color: '#1C1C1E' },
+    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#007AFF' },
     'Ísland': { name: 'Iceland', continent: 'Europe', color: '#003897' },
     
     // North America
