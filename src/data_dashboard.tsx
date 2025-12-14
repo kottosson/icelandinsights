@@ -250,6 +250,61 @@ export default function DataDashboard() {
       }))
       .sort((a, b) => b.total - a.total);
     
+    // Calculate yearly totals for Annual + YTD chart (2017 onwards)
+    const currentYearMonth = currentMonth.month; // e.g., 10 for October (1-indexed)
+    
+    // Calculate full year totals for 2017-2024
+    const annualData = [];
+    
+    // Years 2017-2024 (full years)
+    for (let year = 2017; year <= 2024; year++) {
+      const yearTotal = filteredData.filter(row => {
+        const date = new Date(row.date);
+        return date.getFullYear() === year;
+      }).reduce((sum, r) => sum + r.fjöldi, 0);
+      
+      if (yearTotal > 0) {
+        annualData.push({
+          year: year.toString(),
+          value: yearTotal,
+          label: year.toString()
+        });
+      }
+    }
+    
+    // YTD 2025 (Jan to current month inclusive)
+    const ytd2025 = filteredData.filter(row => {
+      const date = new Date(row.date);
+      return date.getFullYear() === 2025 && date.getMonth() + 1 <= currentYearMonth;
+    }).reduce((sum, r) => sum + r.fjöldi, 0);
+    
+    if (ytd2025 > 0) {
+      annualData.push({
+        year: '2025',
+        value: ytd2025,
+        label: `2025 YTD`
+      });
+    }
+    
+    // Calculate YTD comparison for 2017-2025 (Jan to current month inclusive)
+    const ytdComparisonData = [];
+    
+    // Calculate YTD for each year 2017-2025
+    for (let year = 2017; year <= 2025; year++) {
+      const ytdValue = filteredData.filter(row => {
+        const date = new Date(row.date);
+        return date.getFullYear() === year && date.getMonth() + 1 <= currentYearMonth;
+      }).reduce((sum, r) => sum + r.fjöldi, 0);
+      
+      if (ytdValue > 0) {
+        ytdComparisonData.push({
+          year: year.toString(),
+          value: ytdValue,
+          label: `${year}`
+        });
+      }
+    }
+    
     setKpis({
       currentMonth: currentMonth.fjöldi.toLocaleString(),
       currentMonthName: `${currentMonthName} ${currentMonth.year}`,
@@ -261,6 +316,8 @@ export default function DataDashboard() {
       priorTtmPeriod,
       lastTtmTotal: lastTtmTotal.toLocaleString(),
       ttmChange,
+      annualData,
+      ytdComparisonData,
       topGrower: {
         name: topGrower[0],
         change: topGrower[1].absoluteChange.toLocaleString(),
@@ -544,13 +601,14 @@ export default function DataDashboard() {
         {kpis && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="lg:col-span-3 bg-white rounded-xl border border-neutral-200 p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-neutral-900 mb-5" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+              <h3 className="text-xl font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Top 10 Markets (TTM)
               </h3>
+              <p className="text-xs text-neutral-500 mb-5">{kpis.ttmPeriod}</p>
               <div className="grid grid-cols-6 gap-2 mb-3 pb-2 border-b border-neutral-200">
                 <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium col-span-2">Nationality</p>
                 <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">Change</p>
+                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">Abs Change</p>
                 <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">% Total</p>
                 <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">YoY %</p>
               </div>
@@ -576,13 +634,85 @@ export default function DataDashboard() {
                     </span>
                   </div>
                 ))}
+                {/* Total row */}
+                <div className="grid grid-cols-6 gap-2 py-2 mt-2 pt-3 border-t-2 border-neutral-300">
+                  <div className="flex items-center gap-2 col-span-2">
+                    <span className="text-xs font-bold text-neutral-900">Total (Top 10)</span>
+                  </div>
+                  <span className="text-xs text-neutral-900 font-bold font-mono text-right">
+                    {kpis.top10.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
+                  </span>
+                  <span className={`text-xs font-bold text-right ${
+                    kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                  }`}>
+                    {kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? '+' : ''}
+                    {kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0).toLocaleString()}
+                  </span>
+                  <span className="text-xs text-neutral-900 font-bold font-mono text-right">
+                    {kpis.top10.reduce((sum, item) => sum + item.ratio, 0).toFixed(1)}%
+                  </span>
+                  <span className={`text-xs font-bold text-right ${
+                    (() => {
+                      const currentTotal = kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const absChange = kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
+                      const priorTotal = currentTotal - absChange;
+                      const yoy = priorTotal > 0 ? (absChange / priorTotal * 100) : 0;
+                      return yoy >= 0.5 ? 'text-emerald-600' : yoy <= -0.5 ? 'text-rose-600' : 'text-neutral-500';
+                    })()
+                  }`}>
+                    {(() => {
+                      const currentTotal = kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const absChange = kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
+                      const priorTotal = currentTotal - absChange;
+                      const yoy = priorTotal > 0 ? (absChange / priorTotal * 100) : 0;
+                      return (yoy > 0 ? '+' : '') + yoy.toFixed(1) + '%';
+                    })()}
+                  </span>
+                </div>
+                {/* Other row */}
+                <div className="grid grid-cols-6 gap-2 py-1.5">
+                  <div className="flex items-center gap-2 col-span-2">
+                    <span className="text-xs text-neutral-600">Other Nationalities</span>
+                  </div>
+                  <span className="text-xs text-neutral-500 font-mono text-right">
+                    {(parseInt(kpis.ttmTotal.replace(/,/g, '')) - kpis.top10.reduce((sum, item) => sum + item.total, 0)).toLocaleString()}
+                  </span>
+                  <span className={`text-xs font-medium text-right ${
+                    ((parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0)) >= 0 
+                      ? 'text-emerald-600' : 'text-rose-600'
+                  }`}>
+                    {((parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0)) >= 0 ? '+' : ''}
+                    {((parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0)).toLocaleString()}
+                  </span>
+                  <span className="text-xs text-neutral-500 font-mono text-right">
+                    {(100 - kpis.top10.reduce((sum, item) => sum + item.ratio, 0)).toFixed(1)}%
+                  </span>
+                  <span className={`text-xs font-medium text-right ${
+                    (() => {
+                      const currentOther = parseInt(kpis.ttmTotal.replace(/,/g, '')) - kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const otherAbsChange = (parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
+                      const priorOther = currentOther - otherAbsChange;
+                      const yoy = priorOther > 0 ? (otherAbsChange / priorOther * 100) : 0;
+                      return yoy >= 0.5 ? 'text-emerald-600' : yoy <= -0.5 ? 'text-rose-600' : 'text-neutral-500';
+                    })()
+                  }`}>
+                    {(() => {
+                      const currentOther = parseInt(kpis.ttmTotal.replace(/,/g, '')) - kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const otherAbsChange = (parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
+                      const priorOther = currentOther - otherAbsChange;
+                      const yoy = priorOther > 0 ? (otherAbsChange / priorOther * 100) : 0;
+                      return (yoy > 0 ? '+' : '') + yoy.toFixed(1) + '%';
+                    })()}
+                  </span>
+                </div>
               </div>
             </div>
             
             <div className="lg:col-span-1 bg-white rounded-xl border border-neutral-200 p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-neutral-900 mb-5" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+              <h3 className="text-xl font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 By Continent (TTM)
               </h3>
+              <p className="text-xs text-neutral-500 mb-5">{kpis.ttmPeriod}</p>
               <div className="grid grid-cols-3 gap-2 mb-3 pb-2 border-b border-neutral-200">
                 <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium">Region</p>
                 <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
@@ -666,6 +796,7 @@ export default function DataDashboard() {
                   }}
                   cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                   labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                  formatter={(value, name) => [value.toLocaleString(), getCountryName(name)]}
                 />
                 {selectedCategories.map((cat, idx) => (
                   <Bar 
@@ -673,7 +804,7 @@ export default function DataDashboard() {
                     dataKey={cat}
                     fill={chartColors[idx % chartColors.length]}
                     radius={[4, 4, 0, 0]}
-                    name={cat}
+                    name={getCountryName(cat)}
                   />
                 ))}
               </BarChart>
@@ -713,6 +844,7 @@ export default function DataDashboard() {
                   }}
                   cursor={{ stroke: '#e5e5e5', strokeWidth: 1 }}
                   labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                  formatter={(value, name) => [value.toLocaleString(), getCountryName(name)]}
                 />
                 {selectedCategories.map((cat, idx) => (
                   <Line 
@@ -723,13 +855,108 @@ export default function DataDashboard() {
                     strokeWidth={2.5}
                     dot={{ fill: '#fff', stroke: chartColors[idx % chartColors.length], strokeWidth: 2, r: 3 }}
                     activeDot={{ r: 5 }}
-                    name={cat}
+                    name={getCountryName(cat)}
                     connectNulls
                   />
                 ))}
               </LineChart>
             </ResponsiveContainer>
           </div>
+        </div>
+
+        {/* Annual Overview & YTD Comparison - Grid Layout */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Annual + YTD Bar Chart */}
+          {kpis && kpis.annualData && (
+            <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                Annual Overview (2017-YTD)
+              </h3>
+              <p className="text-[10px] text-neutral-500 mb-3">Foreign Passengers - Full years & YTD</p>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={kpis.annualData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                  <XAxis 
+                    dataKey="label" 
+                    stroke="#8e8e93" 
+                    fontSize={9}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="#8e8e93" 
+                    fontSize={9}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(val) => val >= 1000000 ? `${(val/1000000).toFixed(1)}M` : val >= 1000 ? `${(val/1000).toFixed(0)}k` : val}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#fff', 
+                      border: '1px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.07)'
+                    }}
+                    cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                    formatter={(value) => [value.toLocaleString(), 'Passengers']}
+                  />
+                  <Bar 
+                    dataKey="value"
+                    fill="#007AFF"
+                    radius={[4, 4, 0, 0]}
+                    name="Passengers"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* YTD Comparison Bar Chart */}
+          {kpis && kpis.ytdComparisonData && (
+            <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                YTD Comparison (2017-2025)
+              </h3>
+              <p className="text-[10px] text-neutral-500 mb-3">Foreign Passengers - Jan to {kpis.currentMonthName.split(' ')[0]}</p>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={kpis.ytdComparisonData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                  <XAxis 
+                    dataKey="year" 
+                    stroke="#8e8e93" 
+                    fontSize={9}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="#8e8e93" 
+                    fontSize={9}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(val) => val >= 1000000 ? `${(val/1000000).toFixed(1)}M` : val >= 1000 ? `${(val/1000).toFixed(0)}k` : val}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#fff', 
+                      border: '1px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.07)'
+                    }}
+                    cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                    formatter={(value) => [value.toLocaleString(), 'YTD Passengers']}
+                  />
+                  <Bar 
+                    dataKey="value"
+                    fill="#FF375F"
+                    radius={[4, 4, 0, 0]}
+                    name="YTD Passengers"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded border border-neutral-200 overflow-hidden">
