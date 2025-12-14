@@ -448,6 +448,58 @@ export default function DataDashboard() {
     ? `${new Date(chartData[0].date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} - ${new Date(chartData[chartData.length - 1].date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
     : 'Jan 2023 - Oct 2025';
 
+  // Prepare Year-over-Year comparison data for line chart
+  const prepareYoYChartData = () => {
+    if (selectedCategories.length === 0 || !data.length) return [];
+    
+    const currentYear = 2025;
+    const currentMonth = data.length > 0 ? new Date(data[data.length - 1].date).getMonth() + 1 : 10; // e.g., 10 for October
+    
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const yoyData = [];
+    
+    // For each month from January to current month
+    for (let month = 1; month <= currentMonth; month++) {
+      const monthData = { month: monthNames[month - 1] };
+      
+      // Get data for current year (2025)
+      const current = data.filter(row => {
+        const date = new Date(row.date);
+        return date.getFullYear() === currentYear && 
+               date.getMonth() + 1 === month && 
+               selectedCategories.includes(row.flokkur);
+      }).reduce((sum, r) => sum + r.fjöldi, 0);
+      monthData['2025'] = current > 0 ? current : null;
+      
+      // Get data for previous year (2024)
+      const prev1 = data.filter(row => {
+        const date = new Date(row.date);
+        return date.getFullYear() === currentYear - 1 && 
+               date.getMonth() + 1 === month && 
+               selectedCategories.includes(row.flokkur);
+      }).reduce((sum, r) => sum + r.fjöldi, 0);
+      monthData['2024'] = prev1 > 0 ? prev1 : null;
+      
+      // Get data for year before that (2023)
+      const prev2 = data.filter(row => {
+        const date = new Date(row.date);
+        return date.getFullYear() === currentYear - 2 && 
+               date.getMonth() + 1 === month && 
+               selectedCategories.includes(row.flokkur);
+      }).reduce((sum, r) => sum + r.fjöldi, 0);
+      monthData['2023'] = prev2 > 0 ? prev2 : null;
+      
+      yoyData.push(monthData);
+    }
+    
+    return yoyData;
+  };
+
+  const yoyChartData = prepareYoYChartData();
+  
+  // Get current month name for YoY chart subtitle
+  const yoyCurrentMonth = yoyChartData.length > 0 ? yoyChartData[yoyChartData.length - 1].month : 'Oct';
+
   return (
     <div className="min-h-screen bg-neutral-50 p-6">
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -827,23 +879,18 @@ export default function DataDashboard() {
 
           <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-              Monthly Trends - Line Chart
+              Year-over-Year Comparison
             </h3>
-            <p className="text-[10px] text-neutral-500 mb-3">{monthlyChartPeriod}</p>
+            <p className="text-[10px] text-neutral-500 mb-3">Jan - {yoyCurrentMonth} (2023 vs 2024 vs 2025)</p>
             <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <LineChart data={yoyChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis 
-                  dataKey="date"
+                  dataKey="month"
                   stroke="#8e8e93"
                   fontSize={9}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(date) => {
-                    const d = new Date(date);
-                    const monthNames = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
-                    return `${monthNames[d.getMonth()]}${d.getMonth() === 0 ? `'${d.getFullYear().toString().slice(2)}` : ''}`;
-                  }}
                 />
                 <YAxis 
                   stroke="#8e8e93"
@@ -861,22 +908,40 @@ export default function DataDashboard() {
                     boxShadow: '0 4px 6px rgba(0,0,0,0.07)'
                   }}
                   cursor={{ stroke: '#e5e5e5', strokeWidth: 1 }}
-                  labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
-                  formatter={(value, name) => [value.toLocaleString(), getCountryName(name)]}
+                  formatter={(value, name) => [value?.toLocaleString() || 'N/A', name]}
                 />
-                {selectedCategories.map((cat, idx) => (
-                  <Line 
-                    key={cat}
-                    type="monotone" 
-                    dataKey={cat}
-                    stroke={chartColors[idx % chartColors.length]}
-                    strokeWidth={2.5}
-                    dot={{ fill: '#fff', stroke: chartColors[idx % chartColors.length], strokeWidth: 2, r: 3 }}
-                    activeDot={{ r: 5 }}
-                    name={getCountryName(cat)}
-                    connectNulls
-                  />
-                ))}
+                <Line 
+                  type="monotone" 
+                  dataKey="2025"
+                  stroke="#007AFF"
+                  strokeWidth={2.5}
+                  dot={{ fill: '#fff', stroke: '#007AFF', strokeWidth: 2, r: 3 }}
+                  activeDot={{ r: 5 }}
+                  name="2025"
+                  connectNulls
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="2024"
+                  stroke="#FF375F"
+                  strokeWidth={2.5}
+                  strokeOpacity={0.5}
+                  dot={{ fill: '#fff', stroke: '#FF375F', strokeWidth: 2, r: 3, opacity: 0.5 }}
+                  activeDot={{ r: 5 }}
+                  name="2024"
+                  connectNulls
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="2023"
+                  stroke="#8E8E93"
+                  strokeWidth={2.5}
+                  strokeOpacity={0.3}
+                  dot={{ fill: '#fff', stroke: '#8E8E93', strokeWidth: 2, r: 3, opacity: 0.3 }}
+                  activeDot={{ r: 5 }}
+                  name="2023"
+                  connectNulls
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
