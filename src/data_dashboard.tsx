@@ -12,23 +12,51 @@ export default function DataDashboard() {
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Country name translations and continent mapping
+  // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
-    'Bandaríkin': { name: 'United States', continent: 'North America', color: '#B22234' },
-    'Bretland': { name: 'United Kingdom', continent: 'Europe', color: '#012169' },
-    'Þýskaland': { name: 'Germany', continent: 'Europe', color: '#000000' },
-    'Pólland': { name: 'Poland', continent: 'Europe', color: '#DC143C' },
-    'Frakkland': { name: 'France', continent: 'Europe', color: '#0055A4' },
-    'Kanada': { name: 'Canada', continent: 'North America', color: '#FF0000' },
-    'Holland': { name: 'Netherlands', continent: 'Europe', color: '#FF4F00' },
-    'Danmörk': { name: 'Denmark', continent: 'Europe', color: '#C60C30' },
-    'Spánn': { name: 'Spain', continent: 'Europe', color: '#C60B1E' },
-    'Noregur': { name: 'Norway', continent: 'Europe', color: '#BA0C2F' },
-    'Svíþjóð': { name: 'Sweden', continent: 'Europe', color: '#006AA7' },
-    'Ítalía': { name: 'Italy', continent: 'Europe', color: '#009246' },
-    'Ísland': { name: 'Iceland', continent: 'Europe', color: '#003897' },
+    // Totals
     'Farþegar alls': { name: 'All Passengers', continent: 'Total', color: '#007AFF' },
-    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#FF375F' }
+    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#FF375F' },
+    'Ísland': { name: 'Iceland', continent: 'Europe', color: '#003897' },
+    
+    // North America
+    'Bandaríkin': { name: 'United States', continent: 'North America', color: '#B22234' },
+    'Kanada': { name: 'Canada', continent: 'North America', color: '#FF0000' },
+    
+    // Europe
+    'Austurríki': { name: 'Austria', continent: 'Europe', color: '#ED2939' },
+    'Belgía': { name: 'Belgium', continent: 'Europe', color: '#FDDA24' },
+    'Bretland': { name: 'United Kingdom', continent: 'Europe', color: '#012169' },
+    'Danmörk': { name: 'Denmark', continent: 'Europe', color: '#C60C30' },
+    'Eistland / Lettland / Litháen': { name: 'Baltics', continent: 'Europe', color: '#0072CE' },
+    'Finnland': { name: 'Finland', continent: 'Europe', color: '#003580' },
+    'Frakkland': { name: 'France', continent: 'Europe', color: '#0055A4' },
+    'Holland': { name: 'Netherlands', continent: 'Europe', color: '#FF4F00' },
+    'Írland': { name: 'Ireland', continent: 'Europe', color: '#169B62' },
+    'Ítalía': { name: 'Italy', continent: 'Europe', color: '#009246' },
+    'Noregur': { name: 'Norway', continent: 'Europe', color: '#BA0C2F' },
+    'Pólland': { name: 'Poland', continent: 'Europe', color: '#DC143C' },
+    'Rússland': { name: 'Russia', continent: 'Europe', color: '#0039A6' },
+    'Spánn': { name: 'Spain', continent: 'Europe', color: '#C60B1E' },
+    'Sviss': { name: 'Switzerland', continent: 'Europe', color: '#FF0000' },
+    'Svíþjóð': { name: 'Sweden', continent: 'Europe', color: '#006AA7' },
+    'Þýskaland': { name: 'Germany', continent: 'Europe', color: '#000000' },
+    
+    // Asia
+    'Hong Kong': { name: 'Hong Kong', continent: 'Asia', color: '#DE2910' },
+    'Indland': { name: 'India', continent: 'Asia', color: '#FF9933' },
+    'Japan': { name: 'Japan', continent: 'Asia', color: '#BC002D' },
+    'Kína': { name: 'China', continent: 'Asia', color: '#DE2910' },
+    'Singapúr': { name: 'Singapore', continent: 'Asia', color: '#ED2939' },
+    'Suður-Kórea': { name: 'South Korea', continent: 'Asia', color: '#003478' },
+    'Taívan': { name: 'Taiwan', continent: 'Asia', color: '#FE0000' },
+    'Ísrael': { name: 'Israel', continent: 'Asia', color: '#0038B8' },
+    
+    // Oceania
+    'Ástralía / Nýja-Sjáland': { name: 'Australia / NZ', continent: 'Oceania', color: '#012169' },
+    
+    // Other
+    'Önnur þjóðerni': { name: 'Other Nationalities', continent: 'Other', color: '#8E8E93' }
   };
 
   const getCountryName = (icelandic) => countryInfo[icelandic]?.name || icelandic;
@@ -42,24 +70,21 @@ export default function DataDashboard() {
         const response = await fetch('/data.json');
         const jsonData = await response.json();
         
-        const categories = [
-          'Farþegar alls', 'Útlendingar alls', 'Ísland', 'Bandaríkin', 'Bretland', 'Þýskaland',
-          'Pólland', 'Frakkland', 'Kanada', 'Holland', 'Danmörk', 'Spánn', 
-          'Noregur', 'Svíþjóð', 'Ítalía'
-        ];
-        
         const fullData = [];
         
+        // Load ALL countries from the data dynamically
         Object.entries(jsonData.monthlyData).forEach(([dateStr, values]) => {
           const [year, month] = dateStr.split('-').map(Number);
-          categories.forEach(cat => {
-            if (values[cat] !== undefined && values[cat] > 0) {
+          
+          // Load all countries that have data
+          Object.entries(values).forEach(([country, value]) => {
+            if (value > 0) {
               fullData.push({
                 date: `${year}-${String(month).padStart(2, '0')}-01`,
                 year,
                 month,
-                flokkur: cat,
-                fjöldi: values[cat]
+                flokkur: country,
+                fjöldi: value
               });
             }
           });
