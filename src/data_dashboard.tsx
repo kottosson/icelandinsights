@@ -381,12 +381,12 @@ export default function DataDashboard() {
               >
                 <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
               </button>
-              <p className="text-[10px] uppercase tracking-widest text-neutral-500 mb-3 font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{kpis.currentMonthName}</p>
+              <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">Monthly Passengers</p>
+              <p className="text-[9px] text-neutral-400 mb-2">{kpis.currentMonthName}</p>
               <div className="flex items-baseline gap-2 mb-2 flex-wrap">
                 <p className="text-2xl lg:text-3xl font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                   {kpis.currentMonth}
                 </p>
-                <p className="text-sm lg:text-base text-neutral-600 font-medium">passengers</p>
               </div>
               <p className="text-xs text-neutral-600 mb-3">
                 compared to {kpis.lastYearMonth} in {kpis.lastYearMonthName}
