@@ -1,20 +1,24 @@
 {
   "insights": [
     {
-      "title": "Main Trends Over Time",
-      "text": "Strong post-COVID recovery with total passengers approaching 2019 levels. US and European markets driving growth while Asian markets remain below pre-pandemic levels. Major turning point in 2021 as travel restrictions eased."
+      "title": "American Summer Surge",
+      "text": "US travelers flooding Iceland: 660K TTM passengers, up 8% (+48,752). June-August peaked at 96K/month average. Americans now 5x larger than Canadian market, cementing transatlantic dominance."
     },
     {
-      "title": "Seasonal & Recurring Patterns",
-      "text": "US market shows strongest summer seasonality with July-August peaks. European markets more balanced year-round. Seasonality patterns have intensified post-COVID with sharper summer peaks."
+      "title": "British Retreat Accelerates",
+      "text": "UK traffic down 10.1% (-28,222 passengers) as largest declining market. Brief spring recovery (Feb-Mar: +41K) erased by weak summer. Market share slipped to 11.8% from previous 13%+."
     },
     {
-      "title": "Market Share Evolution",
-      "text": "US dominance increasing to ~27% of foreign traffic. European markets collectively stable but individual countries shifting. Market concentrating toward established routes rather than diversifying."
+      "title": "German Stability Cracks",
+      "text": "Germany's reliable 290K steady-state showing first signs of pressure. October dropped 23% vs prior year (13.3K vs 17.2K). Previously Iceland's most predictable European market now uncertain into Q4."
     },
     {
-      "title": "Current Change Drivers",
-      "text": "Strong YoY growth driven by capacity restoration and pent-up demand. US, Germany, and Poland showing momentum. European market weakness remains primary factor in slower growth periods."
+      "title": "Winter Chill Arriving",
+      "text": "October 2025: 199K passengers (-6.2% YoY), second straight monthly decline post-summer. Peak season momentum fading faster than 2024. Foreign traffic still up 2.5% TTM but growth rate slowing."
+    },
+    {
+      "title": "International Island",
+      "text": "Foreign passengers hit 2.3M TTM, representing 92% of KEF traffic. With Iceland's 400K population, that's 5.7x islanders in foreign visitors annually. Tourism dependency reaches new high."
     }
   ]
 }
