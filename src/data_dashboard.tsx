@@ -406,15 +406,14 @@ export default function DataDashboard() {
             
             <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm relative">
               <button 
-                onClick={() => shareKPI('TTM Total', `${kpis.ttmTotal} passengers (${kpis.ttmPeriod})\n${kpis.ttmChange > 0 ? '+' : ''}${kpis.ttmChange.toFixed(1)}% vs prior TTM`)}
+                onClick={() => shareKPI('TTM - Foreign Passengers', `${kpis.ttmTotal} passengers (${kpis.ttmPeriod})\n${kpis.ttmChange > 0 ? '+' : ''}${kpis.ttmChange.toFixed(1)}% vs prior TTM`)}
                 className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                 aria-label="Share"
               >
                 <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
               </button>
-              <p className="text-[10px] uppercase tracking-widest text-neutral-500 mb-3 font-semibold overflow-hidden text-ellipsis" style={{ lineHeight: '1.4' }}>
-                TTM Total · {kpis.ttmPeriod}
-              </p>
+              <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Foreign Passengers</p>
+              <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
               <p className="text-2xl lg:text-3xl font-semibold text-neutral-900 mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                 {kpis.ttmTotal}
               </p>
