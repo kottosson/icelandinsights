@@ -1,20 +1,24 @@
 {
   "insights": [
     {
-      "title": "Main Trends Over Time",
-      "text": "Strong post-COVID recovery with total passengers approaching 2019 levels. US and European markets driving growth while Asian markets remain below pre-pandemic levels. Major turning point in 2021 as travel restrictions eased."
+      "title": "USA: +48.7K (+8.0%)",
+      "text": "United States leads growth with 660,504 TTM passengers, up 48,752 from prior period. Summer peak (Jun-Aug) averaged 96K/month. Strongest North American market by 5x vs Canada."
     },
     {
-      "title": "Seasonal & Recurring Patterns",
-      "text": "US market shows strongest summer seasonality with July-August peaks. European markets more balanced year-round. Seasonality patterns have intensified post-COVID with sharper summer peaks."
+      "title": "UK: -28.2K (-10.1%)",
+      "text": "United Kingdom declined to 249,982 passengers, largest absolute drop among top markets. Feb-Mar showed recovery (+41K, +18K) but summer months underperformed. Market share fell to 11.8%."
     },
     {
-      "title": "Market Share Evolution",
-      "text": "US dominance increasing to ~27% of foreign traffic. European markets collectively stable but individual countries shifting. Market concentrating toward established routes rather than diversifying."
+      "title": "Germany: Steady 13.7%",
+      "text": "Germany maintained 289,836 TTM passengers with minimal YoY change. Most stable European market. Oct 2025 saw 13,307 passengers vs 17,246 prior year, signaling potential Q4 softness."
     },
     {
-      "title": "Current Change Drivers",
-      "text": "Strong YoY growth driven by capacity restoration and pent-up demand. US, Germany, and Poland showing momentum. European market weakness remains primary factor in slower growth periods."
+      "title": "Foreign: 2.3M (+2.5%)",
+      "text": "Total foreign passengers reached 2,296,836 TTM (+55,857). Growth concentrated in USA and Central Europe. Iceland domestic stable at 56,430 Oct passengers. 92% of traffic is international."
+    },
+    {
+      "title": "Oct 2025: 199.7K (-6.2%)",
+      "text": "Latest month shows 199,689 total passengers vs 212,867 Oct 2024. Second consecutive monthly decline after summer peak. YoY comparisons turning negative entering winter season."
     }
   ]
 }
