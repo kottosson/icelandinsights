@@ -110,14 +110,19 @@ export default function DataDashboard() {
         .sort((a, b) => new Date(a.date) - new Date(b.date));
       setFilteredData(filtered);
       
+      // Always generate KPIs for selected categories
+      // Use foreign passengers for KPI calculations when "All Passengers" is selected
       if (selectedCategories.includes('Farþegar alls')) {
         const foreignPassengers = data.filter(row => row.flokkur === 'Útlendingar alls');
-        generateInsightsAndKPIs(data, foreignPassengers);
+        generateInsightsAndKPIs(data, foreignPassengers, selectedCategories);
+      } else {
+        // For specific nationality selections, use the filtered data
+        generateInsightsAndKPIs(data, filtered, selectedCategories);
       }
     }
   }, [selectedCategories, data]);
 
-  const generateInsightsAndKPIs = async (allData, filteredData) => {
+  const generateInsightsAndKPIs = async (allData, filteredData, selectedCats = selectedCategories) => {
     setLoading(true);
     
     const currentMonth = filteredData[filteredData.length - 1];
@@ -250,17 +255,17 @@ export default function DataDashboard() {
       }))
       .sort((a, b) => b.total - a.total);
     
-    // Calculate yearly totals for Annual + YTD chart (2017 onwards)
+    // Calculate yearly totals for Annual + YTD chart (2017 onwards) - based on selected categories
     const currentYearMonth = currentMonth.month; // e.g., 10 for October (1-indexed)
     
-    // Calculate full year totals for 2017-2024
+    // Calculate full year totals for 2017-2024 using selected categories
     const annualData = [];
     
     // Years 2017-2024 (full years)
     for (let year = 2017; year <= 2024; year++) {
-      const yearTotal = filteredData.filter(row => {
+      const yearTotal = data.filter(row => {
         const date = new Date(row.date);
-        return date.getFullYear() === year;
+        return date.getFullYear() === year && selectedCategories.includes(row.flokkur);
       }).reduce((sum, r) => sum + r.fjöldi, 0);
       
       if (yearTotal > 0) {
@@ -272,10 +277,10 @@ export default function DataDashboard() {
       }
     }
     
-    // YTD 2025 (Jan to current month inclusive)
-    const ytd2025 = filteredData.filter(row => {
+    // YTD 2025 (Jan to current month inclusive) using selected categories
+    const ytd2025 = data.filter(row => {
       const date = new Date(row.date);
-      return date.getFullYear() === 2025 && date.getMonth() + 1 <= currentYearMonth;
+      return date.getFullYear() === 2025 && date.getMonth() + 1 <= currentYearMonth && selectedCategories.includes(row.flokkur);
     }).reduce((sum, r) => sum + r.fjöldi, 0);
     
     if (ytd2025 > 0) {
@@ -286,14 +291,14 @@ export default function DataDashboard() {
       });
     }
     
-    // Calculate YTD comparison for 2017-2025 (Jan to current month inclusive)
+    // Calculate YTD comparison for 2017-2025 (Jan to current month inclusive) using selected categories
     const ytdComparisonData = [];
     
     // Calculate YTD for each year 2017-2025
     for (let year = 2017; year <= 2025; year++) {
-      const ytdValue = filteredData.filter(row => {
+      const ytdValue = data.filter(row => {
         const date = new Date(row.date);
-        return date.getFullYear() === year && date.getMonth() + 1 <= currentYearMonth;
+        return date.getFullYear() === year && date.getMonth() + 1 <= currentYearMonth && selectedCategories.includes(row.flokkur);
       }).reduce((sum, r) => sum + r.fjöldi, 0);
       
       if (ytdValue > 0) {
@@ -437,6 +442,11 @@ export default function DataDashboard() {
 
   const chartData = prepareChartData();
   const chartColors = selectedCategories.map(cat => getCountryColor(cat));
+
+  // Get date range for monthly charts (last 24 months)
+  const monthlyChartPeriod = chartData.length > 0 
+    ? `${new Date(chartData[0].date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} - ${new Date(chartData[chartData.length - 1].date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+    : 'Jan 2023 - Oct 2025';
 
   return (
     <div className="min-h-screen bg-neutral-50 p-6">
@@ -764,6 +774,10 @@ export default function DataDashboard() {
 
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
+            <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+              Monthly Trends - Bar Chart
+            </h3>
+            <p className="text-[10px] text-neutral-500 mb-3">{monthlyChartPeriod}</p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -812,6 +826,10 @@ export default function DataDashboard() {
           </div>
 
           <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
+            <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+              Monthly Trends - Line Chart
+            </h3>
+            <p className="text-[10px] text-neutral-500 mb-3">{monthlyChartPeriod}</p>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -870,9 +888,9 @@ export default function DataDashboard() {
           {kpis && kpis.annualData && (
             <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-                Annual Overview (2017-YTD)
+                Annual Overview
               </h3>
-              <p className="text-[10px] text-neutral-500 mb-3">Foreign Passengers - Full years & YTD</p>
+              <p className="text-[10px] text-neutral-500 mb-3">2017-2025 YTD</p>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={kpis.annualData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -903,9 +921,15 @@ export default function DataDashboard() {
                   />
                   <Bar 
                     dataKey="value"
-                    fill="#007AFF"
+                    fill={chartColors.length > 0 ? chartColors[0] : '#007AFF'}
                     radius={[4, 4, 0, 0]}
                     name="Passengers"
+                    label={{ 
+                      position: 'top', 
+                      formatter: (value) => `${(value/1000000).toFixed(1)}M`,
+                      fontSize: 9,
+                      fill: '#737373'
+                    }}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -916,9 +940,9 @@ export default function DataDashboard() {
           {kpis && kpis.ytdComparisonData && (
             <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-                YTD Comparison (2017-2025)
+                YTD Comparison
               </h3>
-              <p className="text-[10px] text-neutral-500 mb-3">Foreign Passengers - Jan to {kpis.currentMonthName.split(' ')[0]}</p>
+              <p className="text-[10px] text-neutral-500 mb-3">Jan - {kpis.currentMonthName.split(' ')[0]} (2017-2025)</p>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={kpis.ytdComparisonData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -949,9 +973,15 @@ export default function DataDashboard() {
                   />
                   <Bar 
                     dataKey="value"
-                    fill="#FF375F"
+                    fill={chartColors.length > 0 ? chartColors[0] : '#FF375F'}
                     radius={[4, 4, 0, 0]}
                     name="YTD Passengers"
+                    label={{ 
+                      position: 'top', 
+                      formatter: (value) => `${(value/1000000).toFixed(1)}M`,
+                      fontSize: 9,
+                      fill: '#737373'
+                    }}
                   />
                 </BarChart>
               </ResponsiveContainer>
