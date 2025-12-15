@@ -501,27 +501,72 @@ export default function DataDashboard() {
   const yoyCurrentMonth = yoyChartData.length > 0 ? yoyChartData[yoyChartData.length - 1].month : 'Oct';
 
   return (
-    <div className="min-h-screen bg-neutral-50 p-6">
+    <div className="min-h-screen bg-neutral-50">
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <div className="max-w-7xl mx-auto space-y-6">
-        
-        <div className="mb-20">
-          <div className="flex items-end justify-between mb-3">
-            <div>
-              <h1 className="text-5xl lg:text-6xl font-semibold text-neutral-900 mb-2" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-                Iceland Insights
-              </h1>
-              <p className="text-base lg:text-lg text-neutral-500 font-normal" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif' }}>
-                Keflavík Airport Passenger Analytics
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-[11px] text-neutral-400 font-normal" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif' }}>
-                Source: <a href="https://www.statice.is/" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-neutral-600 transition-colors">Statistics Iceland</a>
-              </p>
-            </div>
+      
+      {/* Subtle gradient border - thinner, more refined */}
+      <div style={{ 
+        height: '1px', 
+        background: 'linear-gradient(90deg, rgba(0, 122, 255, 0.3) 0%, rgba(0, 91, 187, 0.3) 100%)' 
+      }}></div>
+      
+      {/* Hero Header - Apple-style */}
+      <div className="pt-24 pb-20 px-6" style={{
+        background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(249, 249, 251, 0) 100%)'
+      }}>
+        <div className="max-w-7xl mx-auto">
+          {/* Logo - Hero size */}
+          <div className="mb-6">
+            <img 
+              src="/iceland-insights-logo.png" 
+              alt="Iceland Insights Logo" 
+              style={{
+                height: '256px',
+                width: 'auto',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
+          
+          {/* Subtitle - Ultra refined */}
+          <div className="flex items-baseline justify-between">
+            <p style={{ 
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+              fontSize: '17px',
+              fontWeight: '400',
+              color: '#86868B',
+              letterSpacing: '-0.2px',
+              margin: 0
+            }}>
+              Keflavík Airport Passenger Analytics
+            </p>
+            <p style={{ 
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+              fontSize: '13px',
+              fontWeight: '400',
+              color: '#A1A1A6',
+              letterSpacing: '-0.1px',
+              margin: 0
+            }}>
+              Data from <a 
+                href="https://www.statice.is/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{
+                  color: '#007AFF',
+                  textDecoration: 'none'
+                }}
+                onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
+                onMouseOut={(e) => e.target.style.textDecoration = 'none'}
+              >
+                Statistics Iceland
+              </a>
+            </p>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 pb-6 space-y-6">
 
         {kpis && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -827,7 +872,7 @@ export default function DataDashboard() {
         <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-              Monthly Trends - Bar Chart
+              Monthly Trends
             </h3>
             <p className="text-[10px] text-neutral-500 mb-3">{monthlyChartPeriod}</p>
             <ResponsiveContainer width="100%" height={200}>
