@@ -878,21 +878,84 @@ export default function DataDashboard() {
           </div>
         )}
 
-        <div className="flex gap-2 flex-wrap">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => handleCategoryToggle(cat)}
-              className={`px-3 py-1.5 rounded text-xs font-light transition-all ${
-                selectedCategories.includes(cat)
-                  ? 'bg-neutral-900 text-white'
-                  : 'bg-white text-neutral-600 border border-neutral-200 hover:border-neutral-400'
-              }`}
-            >
-              {getCountryName(cat)}
-            </button>
-          ))}
-          <p className="text-xs text-neutral-400 self-center ml-2">Select up to 2</p>
+        {/* Enhanced Filter Section with Visual State */}
+        <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <h3 className="text-base font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                Filter by Nationality
+              </h3>
+              <div className="flex items-center gap-2">
+                <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                  selectedCategories.length === 2 
+                    ? 'bg-emerald-100 text-emerald-700' 
+                    : 'bg-neutral-100 text-neutral-600'
+                }`}>
+                  {selectedCategories.length}/2 selected
+                </div>
+              </div>
+            </div>
+            {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && (
+              <button
+                onClick={() => setSelectedCategories(['Farþegar alls'])}
+                className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all"
+              >
+                Reset filters
+              </button>
+            )}
+          </div>
+
+          {/* Active Filters Display */}
+          {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && (
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-xs font-medium text-neutral-500">Active filters:</span>
+              {selectedCategories.map(cat => (
+                <div 
+                  key={cat}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full"
+                >
+                  <span className="text-xs font-medium text-blue-700">{getCountryName(cat)}</span>
+                  <button
+                    onClick={() => handleCategoryToggle(cat)}
+                    className="hover:bg-blue-100 rounded-full p-0.5 transition-colors"
+                  >
+                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Filter Buttons */}
+          <div className="flex gap-2 flex-wrap">
+            {categories.map(cat => {
+              const isSelected = selectedCategories.includes(cat);
+              const isDisabled = !isSelected && selectedCategories.length >= 2;
+              
+              return (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryToggle(cat)}
+                  disabled={isDisabled}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    isSelected
+                      ? 'bg-neutral-900 text-white shadow-sm'
+                      : isDisabled
+                      ? 'bg-neutral-50 text-neutral-400 border border-neutral-200 cursor-not-allowed opacity-50'
+                      : 'bg-white text-neutral-600 border border-neutral-200 hover:border-neutral-400 hover:shadow-sm'
+                  }`}
+                >
+                  {getCountryName(cat)}
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="text-xs text-neutral-400 mt-3">
+            💡 Select up to 2 nationalities to compare their passenger trends in the charts below
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
