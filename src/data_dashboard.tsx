@@ -550,31 +550,32 @@ export default function DataDashboard() {
         background: 'linear-gradient(90deg, rgba(0, 122, 255, 0.3) 0%, rgba(0, 91, 187, 0.3) 100%)' 
       }}></div>
       
-      {/* Hero Header - Apple-style */}
-      <div className="pt-24 pb-20 px-6" style={{
+      {/* Hero Header - Refined spacing and alignment */}
+      <div className="pt-16 pb-12 px-6" style={{
         background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(249, 249, 251, 0) 100%)'
       }}>
         <div className="max-w-7xl mx-auto">
-          {/* Logo - Hero size */}
-          <div className="mb-6">
+          {/* Logo - Properly sized */}
+          <div className="mb-5 flex justify-center">
             <img 
               src="/iceland-insights-logo.png" 
               alt="Iceland Insights Logo" 
               style={{
-                height: '256px',
+                height: '120px',
                 width: 'auto',
-                objectFit: 'contain'
+                objectFit: 'contain',
+                display: 'block'
               }}
             />
           </div>
           
-          {/* Subtitle - Ultra refined */}
-          <div className="flex items-baseline justify-between">
+          {/* Subtitle - Centered and properly spaced */}
+          <div className="text-center space-y-1">
             <p style={{ 
               fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
-              fontSize: '17px',
-              fontWeight: '400',
-              color: '#86868B',
+              fontSize: '16px',
+              fontWeight: '500',
+              color: '#6B7280',
               letterSpacing: '-0.2px',
               margin: 0
             }}>
@@ -1061,7 +1062,7 @@ export default function DataDashboard() {
                     name="Passengers"
                     label={{ 
                       position: 'top', 
-                      formatter: (value) => `${(value/1000000).toFixed(1)}M`,
+                      formatter: (value) => `${(value/1000000).toFixed(2)}M`,
                       fontSize: 9,
                       fill: '#737373'
                     }}
@@ -1113,7 +1114,7 @@ export default function DataDashboard() {
                     name="YTD Passengers"
                     label={{ 
                       position: 'top', 
-                      formatter: (value) => `${(value/1000000).toFixed(1)}M`,
+                      formatter: (value) => `${(value/1000000).toFixed(2)}M`,
                       fontSize: 9,
                       fill: '#737373'
                     }}
