@@ -11,6 +11,7 @@ export default function DataDashboard() {
   const [insights, setInsights] = useState([]);
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [staticTop10, setStaticTop10] = useState(null); // Static Top 10 that never changes
 
   // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
@@ -94,6 +95,9 @@ export default function DataDashboard() {
         const uniqueCategories = [...new Set(fullData.map(row => row.flokkur))];
         setCategories(uniqueCategories);
         setSelectedCategory('Farþegar alls');
+        
+        // Calculate static Top 10 once - never changes after this
+        calculateStaticTop10(fullData);
       } catch (error) {
         console.error('Error loading data:', error);
       }
@@ -102,41 +106,19 @@ export default function DataDashboard() {
     loadData();
   }, []);
 
-
-  useEffect(() => {
-    if (data.length > 0 && selectedCategories.length > 0) {
-      const filtered = data
-        .filter(row => selectedCategories.includes(row.flokkur))
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
-      setFilteredData(filtered);
-      
-      // Always generate KPIs for selected categories
-      // Use foreign passengers for KPI calculations when "All Passengers" is selected
-      if (selectedCategories.includes('Farþegar alls')) {
-        const foreignPassengers = data.filter(row => row.flokkur === 'Útlendingar alls');
-        generateInsightsAndKPIs(data, foreignPassengers, selectedCategories);
-      } else {
-        // For specific nationality selections, use the filtered data
-        generateInsightsAndKPIs(data, filtered, selectedCategories);
-      }
-    }
-  }, [selectedCategories, data]);
-
-  const generateInsightsAndKPIs = async (allData, filteredData, selectedCats = selectedCategories) => {
-    setLoading(true);
+  // Calculate Top 10 ONCE - completely independent of filters
+  const calculateStaticTop10 = (allData) => {
+    const foreignPassengerData = allData.filter(row => 
+      row.flokkur !== 'Farþegar alls' && 
+      row.flokkur !== 'Ísland' && 
+      row.flokkur !== 'Útlendingar alls'
+    );
     
-    const currentMonth = filteredData[filteredData.length - 1];
-    const lastYearSameMonth = filteredData[filteredData.length - 13];
-    const yoyChange = lastYearSameMonth ? 
-      ((currentMonth.fjöldi - lastYearSameMonth.fjöldi) / lastYearSameMonth.fjöldi * 100) : 0;
+    // Get last month's date for TTM calculation
+    const sortedData = [...foreignPassengerData].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const currentMonth = sortedData[0];
     
-    const ttmData = filteredData.slice(-12);
-    const ttmTotal = ttmData.reduce((sum, r) => sum + r.fjöldi, 0);
-    const lastTtmData = filteredData.slice(-24, -12);
-    const lastTtmTotal = lastTtmData.reduce((sum, r) => sum + r.fjöldi, 0);
-    const ttmChange = lastTtmTotal ? ((ttmTotal - lastTtmTotal) / lastTtmTotal * 100) : 0;
-    
-    const ltmData = allData.filter(row => {
+    const ltmData = foreignPassengerData.filter(row => {
       const date = new Date(row.date);
       const cutoff = new Date(currentMonth.date);
       cutoff.setFullYear(cutoff.getFullYear() - 1);
@@ -145,19 +127,17 @@ export default function DataDashboard() {
     
     const nationalityTotals = {};
     ltmData.forEach(row => {
-      if (row.flokkur !== 'Farþegar alls' && row.flokkur !== 'Ísland' && row.flokkur !== 'Útlendingar alls') {
-        nationalityTotals[row.flokkur] = (nationalityTotals[row.flokkur] || 0) + row.fjöldi;
-      }
+      nationalityTotals[row.flokkur] = (nationalityTotals[row.flokkur] || 0) + row.fjöldi;
     });
     
     const foreignTotal = Object.values(nationalityTotals).reduce((a, b) => a + b, 0);
     
-    // Calculate biggest gainers and losers FIRST (moved up)
+    // Calculate YoY changes
     const nationalityChanges = {};
     
     Object.keys(nationalityTotals).forEach(nat => {
       const currentTtmData = ltmData.filter(row => row.flokkur === nat);
-      const priorTtmData = allData.filter(row => {
+      const priorTtmData = foreignPassengerData.filter(row => {
         const date = new Date(row.date);
         const startCutoff = new Date(currentMonth.date);
         startCutoff.setFullYear(startCutoff.getFullYear() - 2);
@@ -174,7 +154,7 @@ export default function DataDashboard() {
       nationalityChanges[nat] = { absoluteChange, percentChange, current: currentTotal, prior: priorTotal };
     });
     
-    // Now create top10 using absolute change from nationalityChanges
+    // Create Top 10
     const top10 = Object.entries(nationalityTotals)
       .map(([nat, total]) => {
         const changes = nationalityChanges[nat] || { absoluteChange: 0, percentChange: 0 };
@@ -187,22 +167,93 @@ export default function DataDashboard() {
           ratio 
         };
       })
-      .sort((a, b) => b.ratio - a.ratio)  // Sort by % of Total
+      .sort((a, b) => b.ratio - a.ratio)
       .slice(0, 10);
-    
-    const top10WithYoY = top10;  // Already has all the data we need
     
     const sortedByGrowth = Object.entries(nationalityChanges)
       .sort((a, b) => b[1].absoluteChange - a[1].absoluteChange);
     
     const topGrower = sortedByGrowth[0];
     
-    // Find largest decline (most negative absolute change)
     const decliners = Object.entries(nationalityChanges)
       .filter(([_, data]) => data.absoluteChange < 0)
-      .sort((a, b) => a[1].absoluteChange - b[1].absoluteChange); // Sort ascending (most negative first)
+      .sort((a, b) => a[1].absoluteChange - b[1].absoluteChange);
     
     const topDecliner = decliners.length > 0 ? decliners[0] : sortedByGrowth[sortedByGrowth.length - 1];
+    
+    setStaticTop10({
+      top10,
+      topGrower: {
+        name: topGrower[0],
+        change: topGrower[1].absoluteChange.toLocaleString(),
+        percent: topGrower[1].percentChange,
+        current: topGrower[1].current,
+        prior: topGrower[1].prior
+      },
+      topDecliner: {
+        name: topDecliner[0],
+        change: Math.abs(topDecliner[1].absoluteChange).toLocaleString(),
+        percent: topDecliner[1].percentChange,
+        current: topDecliner[1].current,
+        prior: topDecliner[1].prior
+      },
+      ttmTotal: foreignTotal
+    });
+  };
+
+
+
+  useEffect(() => {
+    if (data.length > 0 && selectedCategories.length > 0 && staticTop10) {
+      const filtered = data
+        .filter(row => selectedCategories.includes(row.flokkur))
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+      setFilteredData(filtered);
+      
+      if (selectedCategories.includes('Farþegar alls')) {
+        const foreignPassengers = data.filter(row => row.flokkur === 'Útlendingar alls');
+        generateInsightsAndKPIs(data, foreignPassengers, selectedCategories);
+      } else if (selectedCategories.includes('Útlendingar alls')) {
+        generateInsightsAndKPIs(data, filtered, selectedCategories);
+      } else {
+        generateInsightsAndKPIs(data, filtered, selectedCategories);
+      }
+    }
+  }, [selectedCategories, data, staticTop10]);
+
+  const generateInsightsAndKPIs = async (allData, filteredData, selectedCats = selectedCategories) => {
+    setLoading(true);
+    
+    const currentMonth = filteredData[filteredData.length - 1];
+    const lastYearSameMonth = filteredData[filteredData.length - 13];
+    const yoyChange = lastYearSameMonth ? 
+      ((currentMonth.fjöldi - lastYearSameMonth.fjöldi) / lastYearSameMonth.fjöldi * 100) : 0;
+    
+    const ttmData = filteredData.slice(-12);
+    const ttmTotal = ttmData.reduce((sum, r) => sum + r.fjöldi, 0);
+    const lastTtmData = filteredData.slice(-24, -12);
+    const lastTtmTotal = lastTtmData.reduce((sum, r) => sum + r.fjöldi, 0);
+    const ttmChange = lastTtmTotal ? ((ttmTotal - lastTtmTotal) / lastTtmTotal * 100) : 0;
+    
+    // Top 10 is now completely separate - never recalculated here
+    // But we still need nationality totals for continent breakdown
+    const foreignPassengerData = allData.filter(row => 
+      row.flokkur !== 'Farþegar alls' && 
+      row.flokkur !== 'Ísland' && 
+      row.flokkur !== 'Útlendingar alls'
+    );
+    
+    const ltmData = foreignPassengerData.filter(row => {
+      const date = new Date(row.date);
+      const cutoff = new Date(currentMonth.date);
+      cutoff.setFullYear(cutoff.getFullYear() - 1);
+      return date > cutoff;
+    });
+    
+    const nationalityTotals = {};
+    ltmData.forEach(row => {
+      nationalityTotals[row.flokkur] = (nationalityTotals[row.flokkur] || 0) + row.fjöldi;
+    });
     
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const currentMonthName = monthNames[currentMonth.month - 1];
@@ -323,21 +374,10 @@ export default function DataDashboard() {
       ttmChange,
       annualData,
       ytdComparisonData,
-      topGrower: {
-        name: topGrower[0],
-        change: topGrower[1].absoluteChange.toLocaleString(),
-        percent: topGrower[1].percentChange,
-        current: topGrower[1].current,
-        prior: topGrower[1].prior
-      },
-      topDecliner: {
-        name: topDecliner[0],
-        change: Math.abs(topDecliner[1].absoluteChange).toLocaleString(),
-        percent: topDecliner[1].percentChange,
-        current: topDecliner[1].current,
-        prior: topDecliner[1].prior
-      },
-      top10: top10WithYoY,
+      // Use static Top 10 that never changes
+      topGrower: staticTop10?.topGrower || null,
+      topDecliner: staticTop10?.topDecliner || null,
+      top10: staticTop10?.top10 || [],
       continents: continentData
     });
     
@@ -632,7 +672,7 @@ export default function DataDashboard() {
 
             <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm relative">
               <button 
-                onClick={() => shareKPI('TTM - Largest Gain', `${getCountryName(kpis.topGrower.name)}\n${kpis.topGrower.current.toLocaleString()} vs ${kpis.topGrower.prior.toLocaleString()} prior TTM\n+${kpis.topGrower.change} (+${kpis.topGrower.percent.toFixed(1)}%)`)}
+                onClick={() => shareKPI('TTM - Largest Gain', `${getCountryName(kpis.topGrower?.name)}\n${kpis.topGrower?.current.toLocaleString()} vs ${kpis.topGrower?.prior.toLocaleString()} prior TTM\n+${kpis.topGrower?.change} (+${kpis.topGrower?.percent.toFixed(1)}%)`)}
                 className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                 aria-label="Share"
               >
@@ -641,22 +681,22 @@ export default function DataDashboard() {
               <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Largest Gain</p>
               <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
               <p className="text-xl lg:text-2xl font-semibold text-neutral-900 mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                {getCountryName(kpis.topGrower.name)}
+                {kpis.topGrower && getCountryName(kpis.topGrower.name)}
               </p>
               <p className="text-xs text-neutral-600 mb-3">
-                {kpis.topGrower.current.toLocaleString()} vs {kpis.topGrower.prior.toLocaleString()} {kpis.priorTtmPeriod}
+                {kpis.topGrower?.current.toLocaleString()} vs {kpis.topGrower?.prior.toLocaleString()} {kpis.priorTtmPeriod}
               </p>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-emerald-600" />
                 <span className="text-sm font-semibold text-emerald-600">
-                  +{kpis.topGrower.change} (+{kpis.topGrower.percent.toFixed(1)}%)
+                  +{kpis.topGrower?.change} (+{kpis.topGrower?.percent.toFixed(1)}%)
                 </span>
               </div>
             </div>
 
             <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm relative">
               <button 
-                onClick={() => shareKPI('TTM - Largest Decline', `${getCountryName(kpis.topDecliner.name)}\n${kpis.topDecliner.current.toLocaleString()} vs ${kpis.topDecliner.prior.toLocaleString()} prior TTM\n-${kpis.topDecliner.change} (${kpis.topDecliner.percent.toFixed(1)}%)`)}
+                onClick={() => shareKPI('TTM - Largest Decline', `${getCountryName(kpis.topDecliner?.name)}\n${kpis.topDecliner?.current.toLocaleString()} vs ${kpis.topDecliner?.prior.toLocaleString()} prior TTM\n-${kpis.topDecliner?.change} (${kpis.topDecliner?.percent.toFixed(1)}%)`)}
                 className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                 aria-label="Share"
               >
@@ -665,15 +705,15 @@ export default function DataDashboard() {
               <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Largest Decline</p>
               <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
               <p className="text-xl lg:text-2xl font-semibold text-neutral-900 mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                {getCountryName(kpis.topDecliner.name)}
+                {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
               </p>
               <p className="text-xs text-neutral-600 mb-3">
-                {kpis.topDecliner.current.toLocaleString()} vs {kpis.topDecliner.prior.toLocaleString()} {kpis.priorTtmPeriod}
+                {kpis.topDecliner?.current.toLocaleString()} vs {kpis.topDecliner?.prior.toLocaleString()} {kpis.priorTtmPeriod}
               </p>
               <div className="flex items-center gap-2">
                 <TrendingDown className="w-4 h-4 text-rose-600" />
                 <span className="text-sm font-semibold text-rose-600">
-                  -{kpis.topDecliner.change} ({kpis.topDecliner.percent.toFixed(1)}%)
+                  -{kpis.topDecliner?.change} ({kpis.topDecliner?.percent.toFixed(1)}%)
                 </span>
               </div>
             </div>
@@ -705,13 +745,14 @@ export default function DataDashboard() {
           )}
         </div>
 
-        {kpis && (
+        {/* Top 10 Markets - Completely Static, Never Affected by Filters */}
+        {staticTop10 && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div className="lg:col-span-3 bg-white rounded-xl border border-neutral-200 p-6 shadow-sm">
               <h3 className="text-xl font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Top 10 Markets (TTM)
               </h3>
-              <p className="text-xs text-neutral-500 mb-5">{kpis.ttmPeriod}</p>
+              <p className="text-xs text-neutral-500 mb-5">Nov 2024 - Oct 2025</p>
               <div className="grid grid-cols-6 gap-2 mb-3 pb-2 border-b border-neutral-200">
                 <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium col-span-2">Nationality</p>
                 <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
@@ -720,7 +761,7 @@ export default function DataDashboard() {
                 <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">YoY %</p>
               </div>
               <div className="space-y-1">
-                {kpis.top10.map((item, i) => (
+                {staticTop10.top10.map((item, i) => (
                   <div key={i} className="grid grid-cols-6 gap-2 py-1.5">
                     <div className="flex items-center gap-2 col-span-2">
                       <span className="text-[10px] text-neutral-400 w-4">{i + 1}</span>
@@ -747,29 +788,29 @@ export default function DataDashboard() {
                     <span className="text-xs font-bold text-neutral-900">Total (Top 10)</span>
                   </div>
                   <span className="text-xs text-neutral-900 font-bold font-mono text-right">
-                    {kpis.top10.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
+                    {staticTop10.top10.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
                   </span>
                   <span className={`text-xs font-bold text-right ${
-                    kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                    staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'
                   }`}>
-                    {kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? '+' : ''}
-                    {kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0).toLocaleString()}
+                    {staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? '+' : ''}
+                    {staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0).toLocaleString()}
                   </span>
                   <span className="text-xs text-neutral-900 font-bold font-mono text-right">
-                    {kpis.top10.reduce((sum, item) => sum + item.ratio, 0).toFixed(1)}%
+                    {staticTop10.top10.reduce((sum, item) => sum + item.ratio, 0).toFixed(1)}%
                   </span>
                   <span className={`text-xs font-bold text-right ${
                     (() => {
-                      const currentTotal = kpis.top10.reduce((sum, item) => sum + item.total, 0);
-                      const absChange = kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
+                      const currentTotal = staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
+                      const absChange = staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
                       const priorTotal = currentTotal - absChange;
                       const yoy = priorTotal > 0 ? (absChange / priorTotal * 100) : 0;
                       return yoy >= 0.5 ? 'text-emerald-600' : yoy <= -0.5 ? 'text-rose-600' : 'text-neutral-500';
                     })()
                   }`}>
                     {(() => {
-                      const currentTotal = kpis.top10.reduce((sum, item) => sum + item.total, 0);
-                      const absChange = kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
+                      const currentTotal = staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
+                      const absChange = staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
                       const priorTotal = currentTotal - absChange;
                       const yoy = priorTotal > 0 ? (absChange / priorTotal * 100) : 0;
                       return (yoy > 0 ? '+' : '') + yoy.toFixed(1) + '%';
@@ -782,39 +823,22 @@ export default function DataDashboard() {
                     <span className="text-xs text-neutral-600">Other Nationalities</span>
                   </div>
                   <span className="text-xs text-neutral-500 font-mono text-right">
-                    {(parseInt(kpis.ttmTotal.replace(/,/g, '')) - kpis.top10.reduce((sum, item) => sum + item.total, 0)).toLocaleString()}
+                    {(staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0)).toLocaleString()}
                   </span>
-                  <span className={`text-xs font-medium text-right ${
-                    ((parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0)) >= 0 
-                      ? 'text-emerald-600' : 'text-rose-600'
-                  }`}>
-                    {((parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0)) >= 0 ? '+' : ''}
-                    {((parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0)).toLocaleString()}
+                  <span className="text-xs font-medium text-right text-neutral-400">
+                    —
                   </span>
                   <span className="text-xs text-neutral-500 font-mono text-right">
-                    {(100 - kpis.top10.reduce((sum, item) => sum + item.ratio, 0)).toFixed(1)}%
+                    {(100 - staticTop10.top10.reduce((sum, item) => sum + item.ratio, 0)).toFixed(1)}%
                   </span>
-                  <span className={`text-xs font-medium text-right ${
-                    (() => {
-                      const currentOther = parseInt(kpis.ttmTotal.replace(/,/g, '')) - kpis.top10.reduce((sum, item) => sum + item.total, 0);
-                      const otherAbsChange = (parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
-                      const priorOther = currentOther - otherAbsChange;
-                      const yoy = priorOther > 0 ? (otherAbsChange / priorOther * 100) : 0;
-                      return yoy >= 0.5 ? 'text-emerald-600' : yoy <= -0.5 ? 'text-rose-600' : 'text-neutral-500';
-                    })()
-                  }`}>
-                    {(() => {
-                      const currentOther = parseInt(kpis.ttmTotal.replace(/,/g, '')) - kpis.top10.reduce((sum, item) => sum + item.total, 0);
-                      const otherAbsChange = (parseInt(kpis.ttmTotal.replace(/,/g, '')) - parseInt(kpis.lastTtmTotal.replace(/,/g, ''))) - kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
-                      const priorOther = currentOther - otherAbsChange;
-                      const yoy = priorOther > 0 ? (otherAbsChange / priorOther * 100) : 0;
-                      return (yoy > 0 ? '+' : '') + yoy.toFixed(1) + '%';
-                    })()}
+                  <span className="text-xs font-medium text-right text-neutral-400">
+                    —
                   </span>
                 </div>
               </div>
             </div>
             
+            {kpis && (
             <div className="lg:col-span-1 bg-white rounded-xl border border-neutral-200 p-6 shadow-sm">
               <h3 className="text-xl font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 By Continent (TTM)
@@ -849,6 +873,7 @@ export default function DataDashboard() {
                 ))}
               </div>
             </div>
+            )}
           </div>
         )}
 
