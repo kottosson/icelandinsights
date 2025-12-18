@@ -371,6 +371,101 @@ export default function DataDashboard() {
       ytdComparisonData.push(ytdData);
     }
     
+    // Calculate 6-month YoY % sparkline data for executive snapshot
+    const sixMonthsAgo = new Date(currentMonth.date);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5); // -5 to include current month = 6 total
+    
+    // Overall 6-month YoY % trend
+    const overallSparkline = [];
+    for (let i = 0; i < 6; i++) {
+      const targetDate = new Date(sixMonthsAgo);
+      targetDate.setMonth(targetDate.getMonth() + i);
+      
+      // Current year data
+      const currentYearData = allData.filter(row => {
+        const rowDate = new Date(row.date);
+        return rowDate.getMonth() === targetDate.getMonth() && 
+               rowDate.getFullYear() === targetDate.getFullYear();
+      });
+      const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+      
+      // Prior year data (same month, one year earlier)
+      const priorYearData = allData.filter(row => {
+        const rowDate = new Date(row.date);
+        return rowDate.getMonth() === targetDate.getMonth() && 
+               rowDate.getFullYear() === targetDate.getFullYear() - 1;
+      });
+      const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+      
+      // Calculate YoY %
+      const yoyPercent = priorTotal > 0 ? ((currentTotal - priorTotal) / priorTotal * 100) : 0;
+      overallSparkline.push({ value: yoyPercent, month: targetDate.getMonth() + 1 });
+    }
+    
+    // Top grower 6-month YoY % trend
+    const topGrowerSparkline = staticTop10?.topGrower ? (() => {
+      const sparkline = [];
+      for (let i = 0; i < 6; i++) {
+        const targetDate = new Date(sixMonthsAgo);
+        targetDate.setMonth(targetDate.getMonth() + i);
+        
+        // Current year data
+        const currentYearData = allData.filter(row => {
+          const rowDate = new Date(row.date);
+          return rowDate.getMonth() === targetDate.getMonth() && 
+                 rowDate.getFullYear() === targetDate.getFullYear() &&
+                 row.flokkur === staticTop10.topGrower.name;
+        });
+        const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        // Prior year data
+        const priorYearData = allData.filter(row => {
+          const rowDate = new Date(row.date);
+          return rowDate.getMonth() === targetDate.getMonth() && 
+                 rowDate.getFullYear() === targetDate.getFullYear() - 1 &&
+                 row.flokkur === staticTop10.topGrower.name;
+        });
+        const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        // Calculate YoY %
+        const yoyPercent = priorTotal > 0 ? ((currentTotal - priorTotal) / priorTotal * 100) : 0;
+        sparkline.push({ value: yoyPercent, month: targetDate.getMonth() + 1 });
+      }
+      return sparkline;
+    })() : [];
+    
+    // Top decliner 6-month YoY % trend
+    const topDeclinerSparkline = staticTop10?.topDecliner ? (() => {
+      const sparkline = [];
+      for (let i = 0; i < 6; i++) {
+        const targetDate = new Date(sixMonthsAgo);
+        targetDate.setMonth(targetDate.getMonth() + i);
+        
+        // Current year data
+        const currentYearData = allData.filter(row => {
+          const rowDate = new Date(row.date);
+          return rowDate.getMonth() === targetDate.getMonth() && 
+                 rowDate.getFullYear() === targetDate.getFullYear() &&
+                 row.flokkur === staticTop10.topDecliner.name;
+        });
+        const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        // Prior year data
+        const priorYearData = allData.filter(row => {
+          const rowDate = new Date(row.date);
+          return rowDate.getMonth() === targetDate.getMonth() && 
+                 rowDate.getFullYear() === targetDate.getFullYear() - 1 &&
+                 row.flokkur === staticTop10.topDecliner.name;
+        });
+        const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        // Calculate YoY %
+        const yoyPercent = priorTotal > 0 ? ((currentTotal - priorTotal) / priorTotal * 100) : 0;
+        sparkline.push({ value: yoyPercent, month: targetDate.getMonth() + 1 });
+      }
+      return sparkline;
+    })() : [];
+    
     setKpis({
       currentMonth: currentMonth.fjöldi.toLocaleString(),
       currentMonthName: `${currentMonthName} ${currentMonth.year}`,
@@ -388,7 +483,11 @@ export default function DataDashboard() {
       topGrower: staticTop10?.topGrower || null,
       topDecliner: staticTop10?.topDecliner || null,
       top10: staticTop10?.top10 || [],
-      continents: continentData
+      continents: continentData,
+      // Executive snapshot sparklines
+      overallSparkline,
+      topGrowerSparkline,
+      topDeclinerSparkline
     });
     
     // Load insights from JSON file
@@ -558,8 +657,10 @@ export default function DataDashboard() {
       <style>{`
         .text-sage-600 { color: #6E8B74; }
         .text-sage-700 { color: #5D7A63; }
+        .bg-sage-50 { background-color: #F5F8F6; }
         .bg-sage-100 { background-color: #EDF2EF; }
         .text-terracotta-600 { color: #B8847D; }
+        .bg-terracotta-50 { background-color: #FBF7F6; }
         .bg-terracotta-100 { background-color: #F7EFED; }
         .border-sage-200 { border-color: #D4E2D8; }
         .border-terracotta-200 { border-color: #E8D7D4; }
@@ -630,6 +731,7 @@ export default function DataDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 pb-6 space-y-4">
+
 
         {kpis && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -755,30 +857,356 @@ export default function DataDashboard() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-              Key Insights
-            </h2>
-            {loading && <Sparkles className="w-4 h-4 text-neutral-400 animate-pulse" />}
-          </div>
-          {insights.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-              {insights.map((insight, i) => (
-                <div key={i} style={{ paddingLeft: '12px', borderLeft: '4px solid #6B7C8C' }}>
-                  <p className="text-xs font-semibold text-neutral-900 mb-1.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                    {insight.category}
-                  </p>
-                  <p className="text-xs text-neutral-600 leading-relaxed">
-                    {insight.text}
-                  </p>
-                </div>
-              ))}
+        {/* Executive Summary - Key Insights with Visual Support */}
+        {kpis && (
+          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-5 shadow-md">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-sage-600 animate-pulse"></div>
+                <h2 className="text-xl font-bold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                  Executive Summary
+                </h2>
+              </div>
+              <span className="text-[10px] text-neutral-500 uppercase tracking-wide">Last 6 months trend</span>
             </div>
-          ) : (
-            <p className="text-xs text-neutral-400">Generating insights...</p>
-          )}
-        </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              
+              {/* Insight 1: Current Month Performance */}
+              <div className="bg-white rounded-lg p-4 border border-neutral-200">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold text-neutral-900 mb-2">Current Month Performance</h3>
+                    <p className="text-xs text-neutral-700 leading-relaxed mb-3">
+                      {kpis.currentMonthName} recorded <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
+                      {kpis.yoyChange >= 0 ? ' up ' : ' down '}
+                      <span className={`font-semibold ${kpis.yoyChange >= 0 ? 'text-sage-600' : 'text-terracotta-600'}`}>
+                        {Math.abs(kpis.yoyChange).toFixed(1)}% YoY
+                      </span>
+                      {kpis.yoyChange < 0 ? '. However, TTM trend remains positive at +' + kpis.ttmChange.toFixed(1) + '%.' : '.'}
+                    </p>
+                  </div>
+                </div>
+                {/* 6-month YoY % trend with proper axes */}
+                {kpis.overallSparkline && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[10px] font-medium text-neutral-600">YoY % Growth (Last 6 Months)</p>
+                      <p className="text-[9px] text-neutral-500">Current Month: 
+                        <span className={`font-semibold ml-1 ${
+                          kpis.yoyChange >= 0 
+                            ? 'text-sage-600' : 'text-terracotta-600'
+                        }`}>
+                          {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}%
+                        </span>
+                      </p>
+                    </div>
+                    <div className="bg-neutral-50 rounded-lg p-3">
+                      <div className="relative">
+                        <svg width="100%" height="120" viewBox="0 0 280 120" className="overflow-visible">
+                          {/* Calculate scale */}
+                          {(() => {
+                            const maxVal = Math.max(...kpis.overallSparkline.map(p => Math.abs(p.value)));
+                            const scale = Math.ceil(maxVal / 5) * 5; // Round to nearest 5
+                            const chartLeft = 35;
+                            const chartRight = 270;
+                            const chartTop = 10;
+                            const chartBottom = 90;
+                            const chartMiddle = (chartTop + chartBottom) / 2;
+                            
+                            return (
+                              <>
+                                {/* Y-axis labels */}
+                                <text x="30" y={chartTop + 5} textAnchor="end" className="text-[9px]" fill="#999">+{scale}%</text>
+                                <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[9px]" fill="#666">0%</text>
+                                <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[9px]" fill="#999">-{scale}%</text>
+                                
+                                {/* Horizontal grid lines */}
+                                <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#e5e5e5" strokeWidth="0.5" />
+                                <line x1={chartLeft} y1={chartMiddle} x2={chartRight} y2={chartMiddle} stroke="#333" strokeWidth="1" strokeDasharray="3,3" />
+                                <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="#e5e5e5" strokeWidth="0.5" />
+                                
+                                {/* Vertical grid lines */}
+                                {kpis.overallSparkline.map((point, i) => {
+                                  const x = chartLeft + (i / (kpis.overallSparkline.length - 1)) * (chartRight - chartLeft);
+                                  return (
+                                    <line key={`vgrid-${i}`} x1={x} y1={chartTop} x2={x} y2={chartBottom} stroke="#f0f0f0" strokeWidth="0.5" />
+                                  );
+                                })}
+                                
+                                {/* Data line */}
+                                {kpis.overallSparkline.map((point, i) => {
+                                  if (i === 0) return null;
+                                  const prevPoint = kpis.overallSparkline[i - 1];
+                                  
+                                  const x1 = chartLeft + ((i - 1) / (kpis.overallSparkline.length - 1)) * (chartRight - chartLeft);
+                                  const x2 = chartLeft + (i / (kpis.overallSparkline.length - 1)) * (chartRight - chartLeft);
+                                  const y1 = chartMiddle - (prevPoint.value / scale) * (chartMiddle - chartTop);
+                                  const y2 = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
+                                  
+                                  return (
+                                    <line
+                                      key={i}
+                                      x1={x1}
+                                      y1={y1}
+                                      x2={x2}
+                                      y2={y2}
+                                      stroke="#6B7C8C"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                    />
+                                  );
+                                })}
+                                
+                                {/* Data points */}
+                                {kpis.overallSparkline.map((point, i) => {
+                                  const x = chartLeft + (i / (kpis.overallSparkline.length - 1)) * (chartRight - chartLeft);
+                                  const y = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
+                                  
+                                  return (
+                                    <circle
+                                      key={`dot-${i}`}
+                                      cx={x}
+                                      cy={y}
+                                      r="3"
+                                      fill={point.value >= 0 ? '#6E8B74' : '#B8847D'}
+                                      stroke="#fff"
+                                      strokeWidth="1.5"
+                                    />
+                                  );
+                                })}
+                                
+                                {/* X-axis month labels */}
+                                {kpis.overallSparkline.map((point, i) => {
+                                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                  const x = chartLeft + (i / (kpis.overallSparkline.length - 1)) * (chartRight - chartLeft);
+                                  return (
+                                    <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[9px]" fill="#999">
+                                      {monthNames[point.month - 1]}
+                                    </text>
+                                  );
+                                })}
+                              </>
+                            );
+                          })()}
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Insight 2: Top Growth Market */}
+              {kpis.topGrower && (
+                <div className="rounded-lg p-4 border-2 border-sage-200" style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)'
+                }}>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-sage-700 mb-2">Leading Growth Market</h3>
+                      <p className="text-xs text-neutral-700 leading-relaxed mb-3">
+                        <span className="font-semibold">{getCountryName(kpis.topGrower.name)}</span> leads with 
+                        <span className="font-semibold text-sage-600"> +{kpis.topGrower.change} passengers</span>
+                        , representing a <span className="font-semibold text-sage-600">+{kpis.topGrower.percent.toFixed(1)}%</span> increase. 
+                        Growth trajectory shows sustained momentum.
+                      </p>
+                    </div>
+                  </div>
+                  {/* 6-month YoY % trend with proper axes */}
+                  {kpis.topGrowerSparkline && (
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-medium text-sage-700">YoY % Growth (Last 6 Months)</p>
+                        <p className="text-[9px] text-neutral-600">TTM YoY: 
+                          <span className="font-semibold ml-1 text-sage-600">
+                            +{kpis.topGrower.percent.toFixed(1)}%
+                          </span>
+                        </p>
+                      </div>
+                      <div className="bg-sage-50 rounded-lg p-3">
+                        <div className="relative">
+                          <svg width="100%" height="120" viewBox="0 0 280 120" className="overflow-visible">
+                            {(() => {
+                              const maxVal = Math.max(...kpis.topGrowerSparkline.map(p => Math.abs(p.value)));
+                              const scale = Math.ceil(maxVal / 5) * 5;
+                              const chartLeft = 35;
+                              const chartRight = 270;
+                              const chartTop = 10;
+                              const chartBottom = 90;
+                              const chartMiddle = (chartTop + chartBottom) / 2;
+                              
+                              return (
+                                <>
+                                  {/* Y-axis labels */}
+                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-[9px]" fill="#5D7A63">+{scale}%</text>
+                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[9px]" fill="#666">0%</text>
+                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[9px]" fill="#999">-{scale}%</text>
+                                  
+                                  {/* Grid lines */}
+                                  <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#D4E2D8" strokeWidth="0.5" />
+                                  <line x1={chartLeft} y1={chartMiddle} x2={chartRight} y2={chartMiddle} stroke="#6E8B74" strokeWidth="1" strokeDasharray="3,3" />
+                                  <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="#D4E2D8" strokeWidth="0.5" />
+                                  
+                                  {kpis.topGrowerSparkline.map((point, i) => {
+                                    const x = chartLeft + (i / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    return (
+                                      <line key={`vgrid-${i}`} x1={x} y1={chartTop} x2={x} y2={chartBottom} stroke="#EDF2EF" strokeWidth="0.5" />
+                                    );
+                                  })}
+                                  
+                                  {/* Data line */}
+                                  {kpis.topGrowerSparkline.map((point, i) => {
+                                    if (i === 0) return null;
+                                    const prevPoint = kpis.topGrowerSparkline[i - 1];
+                                    
+                                    const x1 = chartLeft + ((i - 1) / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    const x2 = chartLeft + (i / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    const y1 = chartMiddle - (prevPoint.value / scale) * (chartMiddle - chartTop);
+                                    const y2 = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
+                                    
+                                    return (
+                                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#6E8B74" strokeWidth="2" strokeLinecap="round" />
+                                    );
+                                  })}
+                                  
+                                  {/* Data points */}
+                                  {kpis.topGrowerSparkline.map((point, i) => {
+                                    const x = chartLeft + (i / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    const y = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
+                                    
+                                    return (
+                                      <circle key={`dot-${i}`} cx={x} cy={y} r="3" fill="#6E8B74" stroke="#fff" strokeWidth="1.5" />
+                                    );
+                                  })}
+                                  
+                                  {/* X-axis labels */}
+                                  {kpis.topGrowerSparkline.map((point, i) => {
+                                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                    const x = chartLeft + (i / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    return (
+                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[9px]" fill="#999">
+                                        {monthNames[point.month - 1]}
+                                      </text>
+                                    );
+                                  })}
+                                </>
+                              );
+                            })()}
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Insight 3: Attention Market */}
+              {kpis.topDecliner && (
+                <div className="rounded-lg p-4 border-2 border-terracotta-200" style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)'
+                }}>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-terracotta-600 mb-2">Market Requiring Attention</h3>
+                      <p className="text-xs text-neutral-700 leading-relaxed mb-3">
+                        <span className="font-semibold">{getCountryName(kpis.topDecliner.name)}</span> declined by 
+                        <span className="font-semibold text-terracotta-600"> -{kpis.topDecliner.change} passengers</span>
+                        , a <span className="font-semibold text-terracotta-600">{kpis.topDecliner.percent.toFixed(1)}%</span> decrease. 
+                        Strategic review recommended.
+                      </p>
+                    </div>
+                  </div>
+                  {/* 6-month YoY % trend with proper axes */}
+                  {kpis.topDeclinerSparkline && (
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-medium text-terracotta-600">YoY % Change (Last 6 Months)</p>
+                        <p className="text-[9px] text-neutral-600">TTM YoY: 
+                          <span className="font-semibold ml-1 text-terracotta-600">
+                            {kpis.topDecliner.percent.toFixed(1)}%
+                          </span>
+                        </p>
+                      </div>
+                      <div className="bg-terracotta-50 rounded-lg p-3">
+                        <div className="relative">
+                          <svg width="100%" height="120" viewBox="0 0 280 120" className="overflow-visible">
+                            {(() => {
+                              const maxVal = Math.max(...kpis.topDeclinerSparkline.map(p => Math.abs(p.value)));
+                              const scale = Math.ceil(maxVal / 5) * 5;
+                              const chartLeft = 35;
+                              const chartRight = 270;
+                              const chartTop = 10;
+                              const chartBottom = 90;
+                              const chartMiddle = (chartTop + chartBottom) / 2;
+                              
+                              return (
+                                <>
+                                  {/* Y-axis labels */}
+                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-[9px]" fill="#999">+{scale}%</text>
+                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[9px]" fill="#666">0%</text>
+                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[9px]" fill="#B8847D">-{scale}%</text>
+                                  
+                                  {/* Grid lines */}
+                                  <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#E8D7D4" strokeWidth="0.5" />
+                                  <line x1={chartLeft} y1={chartMiddle} x2={chartRight} y2={chartMiddle} stroke="#B8847D" strokeWidth="1" strokeDasharray="3,3" />
+                                  <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="#E8D7D4" strokeWidth="0.5" />
+                                  
+                                  {kpis.topDeclinerSparkline.map((point, i) => {
+                                    const x = chartLeft + (i / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    return (
+                                      <line key={`vgrid-${i}`} x1={x} y1={chartTop} x2={x} y2={chartBottom} stroke="#F7EFED" strokeWidth="0.5" />
+                                    );
+                                  })}
+                                  
+                                  {/* Data line */}
+                                  {kpis.topDeclinerSparkline.map((point, i) => {
+                                    if (i === 0) return null;
+                                    const prevPoint = kpis.topDeclinerSparkline[i - 1];
+                                    
+                                    const x1 = chartLeft + ((i - 1) / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    const x2 = chartLeft + (i / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    const y1 = chartMiddle - (prevPoint.value / scale) * (chartMiddle - chartTop);
+                                    const y2 = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
+                                    
+                                    return (
+                                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#B8847D" strokeWidth="2" strokeLinecap="round" />
+                                    );
+                                  })}
+                                  
+                                  {/* Data points */}
+                                  {kpis.topDeclinerSparkline.map((point, i) => {
+                                    const x = chartLeft + (i / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    const y = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
+                                    
+                                    return (
+                                      <circle key={`dot-${i}`} cx={x} cy={y} r="3" fill="#B8847D" stroke="#fff" strokeWidth="1.5" />
+                                    );
+                                  })}
+                                  
+                                  {/* X-axis labels */}
+                                  {kpis.topDeclinerSparkline.map((point, i) => {
+                                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                    const x = chartLeft + (i / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
+                                    return (
+                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[9px]" fill="#999">
+                                        {monthNames[point.month - 1]}
+                                      </text>
+                                    );
+                                  })}
+                                </>
+                              );
+                            })()}
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
 
         {/* Top 10 Markets - Completely Static, Never Affected by Filters */}
         {staticTop10 && (
