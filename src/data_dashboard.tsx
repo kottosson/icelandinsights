@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, Minus, Share2 } from 'lucide-react';
 
 export default function DataDashboard() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('Farþegar alls');
-  const [selectedCategories, setSelectedCategories] = useState(['Farþegar alls']);
+  const [selectedCategory, setSelectedCategory] = useState('Útlendingar alls');
+  const [selectedCategories, setSelectedCategories] = useState(['Útlendingar alls']);
   const [categories, setCategories] = useState([]);
   const [insights, setInsights] = useState([]);
   const [kpis, setKpis] = useState(null);
@@ -94,7 +94,7 @@ export default function DataDashboard() {
         setData(fullData);
         const uniqueCategories = [...new Set(fullData.map(row => row.flokkur))];
         setCategories(uniqueCategories);
-        setSelectedCategory('Farþegar alls');
+        setSelectedCategory('Útlendingar alls');
         
         // Calculate static Top 10 once - never changes after this
         calculateStaticTop10(fullData);
@@ -131,6 +131,18 @@ export default function DataDashboard() {
     });
     
     const foreignTotal = Object.values(nationalityTotals).reduce((a, b) => a + b, 0);
+    
+    // Calculate prior TTM foreign total for "Other" calculation
+    const priorLtmData = foreignPassengerData.filter(row => {
+      const date = new Date(row.date);
+      const startCutoff = new Date(currentMonth.date);
+      startCutoff.setFullYear(startCutoff.getFullYear() - 2);
+      const endCutoff = new Date(currentMonth.date);
+      endCutoff.setFullYear(endCutoff.getFullYear() - 1);
+      return date > startCutoff && date <= endCutoff;
+    });
+    
+    const priorForeignTotal = priorLtmData.reduce((sum, r) => sum + r.fjöldi, 0);
     
     // Calculate YoY changes
     const nationalityChanges = {};
@@ -197,7 +209,8 @@ export default function DataDashboard() {
         current: topDecliner[1].current,
         prior: topDecliner[1].prior
       },
-      ttmTotal: foreignTotal
+      ttmTotal: foreignTotal,
+      priorTtmTotal: priorForeignTotal
     });
   };
 
@@ -309,56 +322,53 @@ export default function DataDashboard() {
     // Calculate yearly totals for Annual + YTD chart (2017 onwards) - based on selected categories
     const currentYearMonth = currentMonth.month; // e.g., 10 for October (1-indexed)
     
-    // Calculate full year totals for 2017-2024 using selected categories
+    // Calculate full year totals for 2017-2024 - support multiple series
     const annualData = [];
     
     // Years 2017-2024 (full years)
     for (let year = 2017; year <= 2024; year++) {
-      const yearTotal = data.filter(row => {
+      const yearData = { year: year.toString(), label: year.toString() };
+      
+      selectedCats.forEach(cat => {
+        const yearTotal = data.filter(row => {
+          const date = new Date(row.date);
+          return date.getFullYear() === year && row.flokkur === cat;
+        }).reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        yearData[cat] = yearTotal;
+      });
+      
+      annualData.push(yearData);
+    }
+    
+    // YTD 2025 (Jan to current month inclusive) - support multiple series
+    const ytd2025Data = { year: '2025', label: '2025 YTD' };
+    selectedCats.forEach(cat => {
+      const ytd2025 = data.filter(row => {
         const date = new Date(row.date);
-        return date.getFullYear() === year && selectedCategories.includes(row.flokkur);
+        return date.getFullYear() === 2025 && date.getMonth() + 1 <= currentYearMonth && row.flokkur === cat;
       }).reduce((sum, r) => sum + r.fjöldi, 0);
       
-      if (yearTotal > 0) {
-        annualData.push({
-          year: year.toString(),
-          value: yearTotal,
-          label: year.toString()
-        });
-      }
-    }
+      ytd2025Data[cat] = ytd2025;
+    });
+    annualData.push(ytd2025Data);
     
-    // YTD 2025 (Jan to current month inclusive) using selected categories
-    const ytd2025 = data.filter(row => {
-      const date = new Date(row.date);
-      return date.getFullYear() === 2025 && date.getMonth() + 1 <= currentYearMonth && selectedCategories.includes(row.flokkur);
-    }).reduce((sum, r) => sum + r.fjöldi, 0);
-    
-    if (ytd2025 > 0) {
-      annualData.push({
-        year: '2025',
-        value: ytd2025,
-        label: `2025 YTD`
-      });
-    }
-    
-    // Calculate YTD comparison for 2017-2025 (Jan to current month inclusive) using selected categories
+    // Calculate YTD comparison for 2017-2025 - support multiple series
     const ytdComparisonData = [];
     
-    // Calculate YTD for each year 2017-2025
     for (let year = 2017; year <= 2025; year++) {
-      const ytdValue = data.filter(row => {
-        const date = new Date(row.date);
-        return date.getFullYear() === year && date.getMonth() + 1 <= currentYearMonth && selectedCategories.includes(row.flokkur);
-      }).reduce((sum, r) => sum + r.fjöldi, 0);
+      const ytdData = { year: year.toString(), label: `${year}` };
       
-      if (ytdValue > 0) {
-        ytdComparisonData.push({
-          year: year.toString(),
-          value: ytdValue,
-          label: `${year}`
-        });
-      }
+      selectedCats.forEach(cat => {
+        const ytdValue = data.filter(row => {
+          const date = new Date(row.date);
+          return date.getFullYear() === year && date.getMonth() + 1 <= currentYearMonth && row.flokkur === cat;
+        }).reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        ytdData[cat] = ytdValue;
+      });
+      
+      ytdComparisonData.push(ytdData);
     }
     
     setKpis({
@@ -826,14 +836,38 @@ export default function DataDashboard() {
                   <span className="text-xs text-neutral-500 font-mono text-right">
                     {(staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0)).toLocaleString()}
                   </span>
-                  <span className="text-xs font-medium text-right text-neutral-400">
-                    —
+                  <span className={`text-xs font-medium text-right ${
+                    (() => {
+                      const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
+                      const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
+                      const otherAbsChange = currentOther - priorOther;
+                      return otherAbsChange >= 0 ? 'text-emerald-600' : 'text-rose-600';
+                    })()
+                  }`}>
+                    {(() => {
+                      const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
+                      const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
+                      const otherAbsChange = currentOther - priorOther;
+                      return (otherAbsChange >= 0 ? '+' : '') + otherAbsChange.toLocaleString();
+                    })()}
                   </span>
                   <span className="text-xs text-neutral-500 font-mono text-right">
                     {(100 - staticTop10.top10.reduce((sum, item) => sum + item.ratio, 0)).toFixed(1)}%
                   </span>
-                  <span className="text-xs font-medium text-right text-neutral-400">
-                    —
+                  <span className={`text-xs font-medium text-right ${
+                    (() => {
+                      const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
+                      const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
+                      const otherYoy = priorOther > 0 ? ((currentOther - priorOther) / priorOther * 100) : 0;
+                      return otherYoy >= 0.5 ? 'text-emerald-600' : otherYoy <= -0.5 ? 'text-rose-600' : 'text-neutral-400';
+                    })()
+                  }`}>
+                    {(() => {
+                      const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
+                      const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
+                      const otherYoy = priorOther > 0 ? ((currentOther - priorOther) / priorOther * 100) : 0;
+                      return (otherYoy > 0 ? '+' : '') + otherYoy.toFixed(1) + '%';
+                    })()}
                   </span>
                 </div>
               </div>
@@ -895,9 +929,9 @@ export default function DataDashboard() {
                 </div>
               </div>
             </div>
-            {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && (
+            {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && !selectedCategories.includes('Útlendingar alls') && (
               <button
-                onClick={() => setSelectedCategories(['Farþegar alls'])}
+                onClick={() => setSelectedCategories(['Útlendingar alls'])}
                 className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all"
               >
                 Reset filters
@@ -906,7 +940,7 @@ export default function DataDashboard() {
           </div>
 
           {/* Active Filters Display */}
-          {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && (
+          {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && !selectedCategories.includes('Útlendingar alls') && (
             <div className="mb-4 flex items-center gap-2">
               <span className="text-xs font-medium text-neutral-500">Active filters:</span>
               {selectedCategories.map(cat => (
@@ -1090,8 +1124,8 @@ export default function DataDashboard() {
                 Annual Overview
               </h3>
               <p className="text-[10px] text-neutral-500 mb-3">2017-2025 YTD</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={kpis.annualData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <ResponsiveContainer width="100%" height={selectedCategories.length > 1 ? 240 : 200}>
+                <BarChart data={kpis.annualData} margin={{ top: 5, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis 
                     dataKey="label" 
@@ -1116,20 +1150,30 @@ export default function DataDashboard() {
                       boxShadow: '0 4px 6px rgba(0,0,0,0.07)'
                     }}
                     cursor={{ fill: 'rgba(0,0,0,0.03)' }}
-                    formatter={(value) => [value.toLocaleString(), 'Passengers']}
+                    formatter={(value, name) => [value.toLocaleString(), getCountryName(name)]}
                   />
-                  <Bar 
-                    dataKey="value"
-                    fill={chartColors.length > 0 ? chartColors[0] : '#007AFF'}
-                    radius={[4, 4, 0, 0]}
-                    name="Passengers"
-                    label={{ 
-                      position: 'top', 
-                      formatter: (value) => `${(value/1000000).toFixed(2)}M`,
-                      fontSize: 9,
-                      fill: '#737373'
-                    }}
-                  />
+                  {selectedCategories.length > 1 && (
+                    <Legend 
+                      wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}
+                      formatter={(value) => getCountryName(value)}
+                    />
+                  )}
+                  {selectedCategories.map((cat, idx) => (
+                    <Bar 
+                      key={cat}
+                      dataKey={cat}
+                      fill={chartColors[idx] || '#007AFF'}
+                      radius={[4, 4, 0, 0]}
+                      name={cat}
+                      maxBarSize={selectedCategories.length > 1 ? 35 : 50}
+                      label={selectedCategories.length === 1 ? { 
+                        position: 'top', 
+                        formatter: (value) => value > 0 ? `${(value/1000000).toFixed(2)}M` : '',
+                        fontSize: 9,
+                        fill: '#737373'
+                      } : undefined}
+                    />
+                  ))}
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -1142,8 +1186,8 @@ export default function DataDashboard() {
                 YTD Comparison
               </h3>
               <p className="text-[10px] text-neutral-500 mb-3">Jan - {kpis.currentMonthName.split(' ')[0]} (2017-2025)</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={kpis.ytdComparisonData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <ResponsiveContainer width="100%" height={selectedCategories.length > 1 ? 240 : 200}>
+                <BarChart data={kpis.ytdComparisonData} margin={{ top: 5, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis 
                     dataKey="year" 
@@ -1168,20 +1212,30 @@ export default function DataDashboard() {
                       boxShadow: '0 4px 6px rgba(0,0,0,0.07)'
                     }}
                     cursor={{ fill: 'rgba(0,0,0,0.03)' }}
-                    formatter={(value) => [value.toLocaleString(), 'YTD Passengers']}
+                    formatter={(value, name) => [value.toLocaleString(), getCountryName(name)]}
                   />
-                  <Bar 
-                    dataKey="value"
-                    fill={chartColors.length > 0 ? chartColors[0] : '#FF375F'}
-                    radius={[4, 4, 0, 0]}
-                    name="YTD Passengers"
-                    label={{ 
-                      position: 'top', 
-                      formatter: (value) => `${(value/1000000).toFixed(2)}M`,
-                      fontSize: 9,
-                      fill: '#737373'
-                    }}
-                  />
+                  {selectedCategories.length > 1 && (
+                    <Legend 
+                      wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}
+                      formatter={(value) => getCountryName(value)}
+                    />
+                  )}
+                  {selectedCategories.map((cat, idx) => (
+                    <Bar 
+                      key={cat}
+                      dataKey={cat}
+                      fill={chartColors[idx] || '#FF375F'}
+                      radius={[4, 4, 0, 0]}
+                      name={cat}
+                      maxBarSize={selectedCategories.length > 1 ? 35 : 50}
+                      label={selectedCategories.length === 1 ? { 
+                        position: 'top', 
+                        formatter: (value) => value > 0 ? `${(value/1000000).toFixed(2)}M` : '',
+                        fontSize: 9,
+                        fill: '#737373'
+                      } : undefined}
+                    />
+                  ))}
                 </BarChart>
               </ResponsiveContainer>
             </div>
