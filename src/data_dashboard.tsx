@@ -17,7 +17,7 @@ export default function DataDashboard() {
   const countryInfo = {
     // Totals
     'Farþegar alls': { name: 'All Passengers', continent: 'Total', color: '#1C1C1E' },
-    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#007AFF' },
+    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#6B7C8C' },
     'Ísland': { name: 'Iceland', continent: 'Europe', color: '#003897' },
     
     // North America
@@ -61,7 +61,7 @@ export default function DataDashboard() {
   };
 
   const getCountryName = (icelandic) => countryInfo[icelandic]?.name || icelandic;
-  const getCountryColor = (icelandic) => countryInfo[icelandic]?.color || '#007AFF';
+  const getCountryColor = (icelandic) => countryInfo[icelandic]?.color || '#6B7C8C';
   const getContinent = (icelandic) => countryInfo[icelandic]?.continent || 'Other';
 
   useEffect(() => {
@@ -554,19 +554,31 @@ export default function DataDashboard() {
     <div className="min-h-screen bg-neutral-50">
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       
-      {/* Subtle gradient border - thinner, more refined */}
+      {/* Custom Elegant Neutral Palette */}
+      <style>{`
+        .text-sage-600 { color: #6E8B74; }
+        .text-sage-700 { color: #5D7A63; }
+        .bg-sage-100 { background-color: #EDF2EF; }
+        .text-terracotta-600 { color: #B8847D; }
+        .bg-terracotta-100 { background-color: #F7EFED; }
+        .border-sage-200 { border-color: #D4E2D8; }
+        .border-terracotta-200 { border-color: #E8D7D4; }
+        .bg-slate-50 { background-color: #F8F9FA; }
+      `}</style>
+      
+      {/* Subtle gradient border - soft charcoal */}
       <div style={{ 
         height: '1px', 
-        background: 'linear-gradient(90deg, rgba(0, 122, 255, 0.3) 0%, rgba(0, 91, 187, 0.3) 100%)' 
+        background: 'linear-gradient(90deg, rgba(107, 124, 140, 0.25) 0%, rgba(139, 149, 165, 0.25) 100%)' 
       }}></div>
       
       {/* Hero Header - Refined spacing and alignment */}
-      <div className="pt-16 pb-12 px-6" style={{
+      <div className="pt-12 pb-8 px-6" style={{
         background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(249, 249, 251, 0) 100%)'
       }}>
         <div className="max-w-7xl mx-auto">
           {/* Logo - Properly sized */}
-          <div className="mb-5 flex justify-center">
+          <div className="mb-4 flex justify-center">
             <img 
               src="/iceland-insights-logo.png" 
               alt="Iceland Insights Logo" 
@@ -604,7 +616,7 @@ export default function DataDashboard() {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 style={{
-                  color: '#007AFF',
+                  color: '#6B7C8C',
                   textDecoration: 'none'
                 }}
                 onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
@@ -617,113 +629,125 @@ export default function DataDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 pb-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-6 pb-6 space-y-4">
 
         {kpis && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm relative">
+            <div className="rounded-xl border border-neutral-200 p-4 shadow-sm relative" style={{
+              background: kpis.yoyChange >= 0.5 ? 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)' : 
+                          kpis.yoyChange <= -0.5 ? 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)' : 
+                          '#ffffff'
+            }}>
               <button 
                 onClick={() => shareKPI('Monthly Passengers', `${kpis.currentMonth} passengers in ${kpis.currentMonthName}\n${kpis.yoyChange > 0 ? '+' : ''}${kpis.yoyChange.toFixed(1)}% YoY vs ${kpis.lastYearMonthName}`)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="absolute top-3 right-3 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                 aria-label="Share"
               >
                 <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
               </button>
               <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">Monthly Passengers</p>
-              <p className="text-[9px] text-neutral-400 mb-2">{kpis.currentMonthName}</p>
-              <div className="flex items-baseline gap-2 mb-2 flex-wrap">
+              <p className="text-[9px] text-neutral-400 mb-1.5">{kpis.currentMonthName}</p>
+              <div className="flex items-baseline gap-2 mb-1.5 flex-wrap">
                 <p className="text-2xl lg:text-3xl font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                   {kpis.currentMonth}
                 </p>
               </div>
-              <p className="text-xs text-neutral-600 mb-3">
+              <p className="text-xs text-neutral-600 mb-2">
                 vs {kpis.lastYearMonth} in {kpis.lastYearMonthName}
               </p>
               <div className="flex items-center gap-2">
-                {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-4 h-4 text-emerald-600" /> : 
-                 kpis.yoyChange <= -0.5 ? <TrendingDown className="w-4 h-4 text-rose-600" /> :
+                {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-4 h-4 text-sage-600" /> : 
+                 kpis.yoyChange <= -0.5 ? <TrendingDown className="w-4 h-4 text-terracotta-600" /> :
                  <Minus className="w-4 h-4 text-neutral-400" />}
                 <span className={`text-sm font-semibold ${
-                  kpis.yoyChange >= 0.5 ? 'text-emerald-600' : 
-                  kpis.yoyChange <= -0.5 ? 'text-rose-600' : 'text-neutral-500'
+                  kpis.yoyChange >= 0.5 ? 'text-sage-600' : 
+                  kpis.yoyChange <= -0.5 ? 'text-terracotta-600' : 'text-neutral-500'
                 }`}>
                   {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}% YoY
                 </span>
               </div>
             </div>
             
-            <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm relative">
+            <div className="rounded-xl border border-neutral-200 p-4 shadow-sm relative" style={{
+              background: kpis.ttmChange >= 0.5 ? 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)' : 
+                          kpis.ttmChange <= -0.5 ? 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)' : 
+                          '#ffffff'
+            }}>
               <button 
                 onClick={() => shareKPI('TTM - Foreign Passengers', `${kpis.ttmTotal} passengers (${kpis.ttmPeriod})\n${kpis.ttmChange > 0 ? '+' : ''}${kpis.ttmChange.toFixed(1)}% vs prior TTM`)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="absolute top-3 right-3 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                 aria-label="Share"
               >
                 <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
               </button>
               <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Foreign Passengers</p>
-              <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
-              <p className="text-2xl lg:text-3xl font-semibold text-neutral-900 mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+              <p className="text-[9px] text-neutral-400 mb-1.5">{kpis.ttmPeriod}</p>
+              <p className="text-2xl lg:text-3xl font-semibold text-neutral-900 mb-1.5" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                 {kpis.ttmTotal}
               </p>
-              <p className="text-xs text-neutral-600 mb-3">
+              <p className="text-xs text-neutral-600 mb-2">
                 vs {kpis.lastTtmTotal} {kpis.priorTtmPeriod}
               </p>
               <div className="flex items-center gap-2">
-                {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-4 h-4 text-emerald-600" /> : 
-                 kpis.ttmChange <= -0.5 ? <TrendingDown className="w-4 h-4 text-rose-600" /> :
+                {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-4 h-4 text-sage-600" /> : 
+                 kpis.ttmChange <= -0.5 ? <TrendingDown className="w-4 h-4 text-terracotta-600" /> :
                  <Minus className="w-4 h-4 text-neutral-400" />}
                 <span className={`text-sm font-semibold ${
-                  kpis.ttmChange >= 0.5 ? 'text-emerald-600' : 
-                  kpis.ttmChange <= -0.5 ? 'text-rose-600' : 'text-neutral-500'
+                  kpis.ttmChange >= 0.5 ? 'text-sage-600' : 
+                  kpis.ttmChange <= -0.5 ? 'text-terracotta-600' : 'text-neutral-500'
                 }`}>
                   {kpis.ttmChange > 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}% vs prior TTM
                 </span>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm relative">
+            <div className="rounded-xl border border-neutral-200 p-4 shadow-sm relative" style={{
+              background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)'
+            }}>
               <button 
                 onClick={() => shareKPI('TTM - Largest Gain', `${getCountryName(kpis.topGrower?.name)}\n${kpis.topGrower?.current.toLocaleString()} vs ${kpis.topGrower?.prior.toLocaleString()} prior TTM\n+${kpis.topGrower?.change} (+${kpis.topGrower?.percent.toFixed(1)}%)`)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="absolute top-3 right-3 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                 aria-label="Share"
               >
                 <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
               </button>
               <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Largest Gain</p>
-              <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
-              <p className="text-xl lg:text-2xl font-semibold text-neutral-900 mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+              <p className="text-[9px] text-neutral-400 mb-1.5">{kpis.ttmPeriod}</p>
+              <p className="text-xl lg:text-2xl font-semibold text-neutral-900 mb-1.5" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                 {kpis.topGrower && getCountryName(kpis.topGrower.name)}
               </p>
-              <p className="text-xs text-neutral-600 mb-3">
+              <p className="text-xs text-neutral-600 mb-2">
                 {kpis.topGrower?.current.toLocaleString()} vs {kpis.topGrower?.prior.toLocaleString()} {kpis.priorTtmPeriod}
               </p>
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
-                <span className="text-sm font-semibold text-emerald-600">
+                <TrendingUp className="w-4 h-4 text-sage-600" />
+                <span className="text-sm font-semibold text-sage-600">
                   +{kpis.topGrower?.change} (+{kpis.topGrower?.percent.toFixed(1)}%)
                 </span>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm relative">
+            <div className="rounded-xl border border-neutral-200 p-4 shadow-sm relative" style={{
+              background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)'
+            }}>
               <button 
                 onClick={() => shareKPI('TTM - Largest Decline', `${getCountryName(kpis.topDecliner?.name)}\n${kpis.topDecliner?.current.toLocaleString()} vs ${kpis.topDecliner?.prior.toLocaleString()} prior TTM\n-${kpis.topDecliner?.change} (${kpis.topDecliner?.percent.toFixed(1)}%)`)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="absolute top-3 right-3 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                 aria-label="Share"
               >
                 <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
               </button>
               <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Largest Decline</p>
-              <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
-              <p className="text-xl lg:text-2xl font-semibold text-neutral-900 mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+              <p className="text-[9px] text-neutral-400 mb-1.5">{kpis.ttmPeriod}</p>
+              <p className="text-xl lg:text-2xl font-semibold text-neutral-900 mb-1.5" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                 {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
               </p>
-              <p className="text-xs text-neutral-600 mb-3">
+              <p className="text-xs text-neutral-600 mb-2">
                 {kpis.topDecliner?.current.toLocaleString()} vs {kpis.topDecliner?.prior.toLocaleString()} {kpis.priorTtmPeriod}
               </p>
               <div className="flex items-center gap-2">
-                <TrendingDown className="w-4 h-4 text-rose-600" />
-                <span className="text-sm font-semibold text-rose-600">
+                <TrendingDown className="w-4 h-4 text-terracotta-600" />
+                <span className="text-sm font-semibold text-terracotta-600">
                   -{kpis.topDecliner?.change} ({kpis.topDecliner?.percent.toFixed(1)}%)
                 </span>
               </div>
@@ -731,18 +755,18 @@ export default function DataDashboard() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+        <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
               Key Insights
             </h2>
             {loading && <Sparkles className="w-4 h-4 text-neutral-400 animate-pulse" />}
           </div>
           {insights.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
               {insights.map((insight, i) => (
-                <div key={i}>
-                  <p className="text-xs font-semibold text-neutral-900 mb-2" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                <div key={i} style={{ paddingLeft: '12px', borderLeft: '4px solid #6B7C8C' }}>
+                  <p className="text-xs font-semibold text-neutral-900 mb-1.5" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                     {insight.category}
                   </p>
                   <p className="text-xs text-neutral-600 leading-relaxed">
@@ -758,43 +782,45 @@ export default function DataDashboard() {
 
         {/* Top 10 Markets - Completely Static, Never Affected by Filters */}
         {staticTop10 && (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            <div className="lg:col-span-3 bg-white rounded-xl border border-neutral-200 p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Top 10 Markets (TTM)
               </h3>
-              <p className="text-xs text-neutral-500 mb-5">Nov 2024 - Oct 2025</p>
-              <div className="grid grid-cols-6 gap-2 mb-3 pb-2 border-b border-neutral-200">
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium col-span-2">Nationality</p>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">Abs Change</p>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">% Total</p>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">YoY %</p>
+              <p className="text-xs text-neutral-500 mb-3">Nov 2024 - Oct 2025</p>
+              <div className="grid grid-cols-6 gap-2 mb-2 pb-1.5 border-b border-neutral-200">
+                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium col-span-2">Nationality</p>
+                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
+                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">Abs Change</p>
+                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">% Total</p>
+                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">YoY %</p>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {staticTop10.top10.map((item, i) => (
-                  <div key={i} className="grid grid-cols-6 gap-2 py-1.5">
+                  <div key={i} className="grid grid-cols-6 gap-2 py-1 px-2 rounded" style={{
+                    backgroundColor: i % 2 === 0 ? '#ffffff' : '#F8FAFB'
+                  }}>
                     <div className="flex items-center gap-2 col-span-2">
-                      <span className="text-[10px] text-neutral-400 w-4">{i + 1}</span>
-                      <span className="text-xs text-neutral-700">{getCountryName(item.nat)}</span>
+                      <span className="text-[9px] text-neutral-400 w-3">{i + 1}</span>
+                      <span className="text-[11px] text-neutral-700">{getCountryName(item.nat)}</span>
                     </div>
-                    <span className="text-xs text-neutral-500 font-mono text-right">{item.total.toLocaleString()}</span>
-                    <span className={`text-xs font-medium text-right ${
-                      item.absoluteChange >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                    <span className="text-[11px] text-neutral-500 font-mono text-right">{item.total.toLocaleString()}</span>
+                    <span className={`text-[11px] font-medium text-right ${
+                      item.absoluteChange >= 0 ? 'text-sage-600' : 'text-terracotta-600'
                     }`}>
                       {item.absoluteChange >= 0 ? '+' : ''}{item.absoluteChange.toLocaleString()}
                     </span>
-                    <span className="text-xs text-neutral-500 font-mono text-right">{item.ratio.toFixed(1)}%</span>
-                    <span className={`text-xs font-medium text-right ${
-                      item.yoy >= 0.5 ? 'text-emerald-600' : 
-                      item.yoy <= -0.5 ? 'text-rose-600' : 'text-neutral-400'
+                    <span className="text-[11px] text-neutral-500 font-mono text-right">{item.ratio.toFixed(1)}%</span>
+                    <span className={`text-[11px] font-medium text-right ${
+                      item.yoy >= 0.5 ? 'text-sage-600' : 
+                      item.yoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-400'
                     }`}>
                       {item.yoy > 0 ? '+' : ''}{item.yoy.toFixed(1)}%
                     </span>
                   </div>
                 ))}
                 {/* Total row */}
-                <div className="grid grid-cols-6 gap-2 py-2 mt-2 pt-3 border-t-2 border-neutral-300">
+                <div className="grid grid-cols-6 gap-2 py-1.5 mt-1.5 pt-2.5 border-t-2 border-neutral-300">
                   <div className="flex items-center gap-2 col-span-2">
                     <span className="text-xs font-bold text-neutral-900">Total (Top 10)</span>
                   </div>
@@ -802,7 +828,7 @@ export default function DataDashboard() {
                     {staticTop10.top10.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
                   </span>
                   <span className={`text-xs font-bold text-right ${
-                    staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                    staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? 'text-sage-600' : 'text-terracotta-600'
                   }`}>
                     {staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? '+' : ''}
                     {staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0).toLocaleString()}
@@ -816,7 +842,7 @@ export default function DataDashboard() {
                       const absChange = staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
                       const priorTotal = currentTotal - absChange;
                       const yoy = priorTotal > 0 ? (absChange / priorTotal * 100) : 0;
-                      return yoy >= 0.5 ? 'text-emerald-600' : yoy <= -0.5 ? 'text-rose-600' : 'text-neutral-500';
+                      return yoy >= 0.5 ? 'text-sage-600' : yoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-500';
                     })()
                   }`}>
                     {(() => {
@@ -841,7 +867,7 @@ export default function DataDashboard() {
                       const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
                       const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
                       const otherAbsChange = currentOther - priorOther;
-                      return otherAbsChange >= 0 ? 'text-emerald-600' : 'text-rose-600';
+                      return otherAbsChange >= 0 ? 'text-sage-600' : 'text-terracotta-600';
                     })()
                   }`}>
                     {(() => {
@@ -859,7 +885,7 @@ export default function DataDashboard() {
                       const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
                       const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
                       const otherYoy = priorOther > 0 ? ((currentOther - priorOther) / priorOther * 100) : 0;
-                      return otherYoy >= 0.5 ? 'text-emerald-600' : otherYoy <= -0.5 ? 'text-rose-600' : 'text-neutral-400';
+                      return otherYoy >= 0.5 ? 'text-sage-600' : otherYoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-400';
                     })()
                   }`}>
                     {(() => {
@@ -874,15 +900,15 @@ export default function DataDashboard() {
             </div>
             
             {kpis && (
-            <div className="lg:col-span-1 bg-white rounded-xl border border-neutral-200 p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+            <div className="lg:col-span-1 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 By Continent (TTM)
               </h3>
-              <p className="text-xs text-neutral-500 mb-5">{kpis.ttmPeriod}</p>
-              <div className="grid grid-cols-3 gap-2 mb-3 pb-2 border-b border-neutral-200">
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium">Region</p>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium text-right">YoY %</p>
+              <p className="text-xs text-neutral-500 mb-3">{kpis.ttmPeriod}</p>
+              <div className="grid grid-cols-3 gap-2 mb-2 pb-1.5 border-b border-neutral-200">
+                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium">Region</p>
+                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
+                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">YoY %</p>
               </div>
               <div className="space-y-3">
                 {kpis.continents.map((continent, i) => (
@@ -893,14 +919,14 @@ export default function DataDashboard() {
                         {continent.total.toLocaleString()}
                       </span>
                       <span className={`text-xs font-semibold text-right ${
-                        continent.yoy >= 0.5 ? 'text-emerald-600' : 
-                        continent.yoy <= -0.5 ? 'text-rose-600' : 'text-neutral-400'
+                        continent.yoy >= 0.5 ? 'text-sage-600' : 
+                        continent.yoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-400'
                       }`}>
                         {continent.yoy > 0 ? '+' : ''}{continent.yoy.toFixed(1)}%
                       </span>
                     </div>
                     <div className={`text-[10px] font-mono mt-1 ${
-                      continent.change >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                      continent.change >= 0 ? 'text-sage-600' : 'text-terracotta-600'
                     }`}>
                       {continent.change >= 0 ? '+' : ''}{continent.change.toLocaleString()}
                     </div>
@@ -913,8 +939,8 @@ export default function DataDashboard() {
         )}
 
         {/* Enhanced Filter Section with Visual State */}
-        <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <h3 className="text-base font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                 Filter by Nationality
@@ -922,7 +948,7 @@ export default function DataDashboard() {
               <div className="flex items-center gap-2">
                 <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                   selectedCategories.length === 2 
-                    ? 'bg-emerald-100 text-emerald-700' 
+                    ? 'bg-sage-100 text-sage-700' 
                     : 'bg-neutral-100 text-neutral-600'
                 }`}>
                   {selectedCategories.length}/2 selected
@@ -993,7 +1019,7 @@ export default function DataDashboard() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
+          <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
             <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
               Monthly Trends
             </h3>
@@ -1045,7 +1071,7 @@ export default function DataDashboard() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
+          <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
             <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
               Year-over-Year Comparison
             </h3>
@@ -1081,9 +1107,9 @@ export default function DataDashboard() {
                 <Line 
                   type="monotone" 
                   dataKey="2025"
-                  stroke="#007AFF"
+                  stroke="#6B7C8C"
                   strokeWidth={2.5}
-                  dot={{ fill: '#fff', stroke: '#007AFF', strokeWidth: 2, r: 3 }}
+                  dot={{ fill: '#fff', stroke: '#6B7C8C', strokeWidth: 2, r: 3 }}
                   activeDot={{ r: 5 }}
                   name="2025"
                   connectNulls
@@ -1119,7 +1145,7 @@ export default function DataDashboard() {
         <div className="grid md:grid-cols-2 gap-4">
           {/* Annual + YTD Bar Chart */}
           {kpis && kpis.annualData && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
+            <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
               <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Annual Overview
               </h3>
@@ -1162,7 +1188,7 @@ export default function DataDashboard() {
                     <Bar 
                       key={cat}
                       dataKey={cat}
-                      fill={chartColors[idx] || '#007AFF'}
+                      fill={chartColors[idx] || '#6B7C8C'}
                       radius={[4, 4, 0, 0]}
                       name={cat}
                       maxBarSize={selectedCategories.length > 1 ? 35 : 50}
@@ -1181,7 +1207,7 @@ export default function DataDashboard() {
 
           {/* YTD Comparison Bar Chart */}
           {kpis && kpis.ytdComparisonData && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm">
+            <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
               <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 YTD Comparison
               </h3>
