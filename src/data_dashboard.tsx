@@ -1013,9 +1013,27 @@ export default function DataDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
               {/* Insight 1: Current Month Performance */}
-              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200">
+              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200 relative group">
+                {/* Buttons - Top Right (show on hover) */}
+                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button 
+                    onClick={() => generateEmbedCode('insight', 'Current Month Performance')}
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors shadow-sm"
+                    title="Get embed code"
+                  >
+                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                  <button 
+                    onClick={() => shareKPI('Current Month Performance', `${kpis.currentMonthName} recorded ${kpis.currentMonth} passengers, ${kpis.yoyChange >= 0 ? 'up' : 'down'} ${Math.abs(kpis.yoyChange).toFixed(1)}% YoY`)}
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors shadow-sm"
+                    title="Share on Twitter"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                </div>
+                
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1 min-h-[100px]">
+                  <div className="flex-1">
                     <h3 className="text-sm font-bold text-neutral-900 mb-2">Current Month Performance</h3>
                     <p className="text-xs text-neutral-700 leading-relaxed mb-3">
                       {kpis.currentMonthName} recorded <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
@@ -1138,44 +1156,35 @@ export default function DataDashboard() {
 
               {/* Insight 2: Top Growth Market */}
               {kpis.topGrower && (
-                <div className="rounded-lg p-4 border-2 border-sage-200" style={{
+                <div className="rounded-lg p-4 border-2 border-sage-200 relative group" style={{
                   background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)'
                 }}>
+                  {/* Buttons - Top Right (show on hover) */}
+                  <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button 
+                      onClick={() => generateEmbedCode('insight', 'Leading Growth Market')}
+                      className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      title="Get embed code"
+                    >
+                      <Code className="w-3.5 h-3.5 text-neutral-500" />
+                    </button>
+                    <button 
+                      onClick={() => shareKPI('Leading Growth Market', `${getCountryName(kpis.topGrower.name)} leads with +${kpis.topGrower.change} passengers, representing a +${kpis.topGrower.percent.toFixed(1)}% increase`)}
+                      className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      title="Share on Twitter"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                    </button>
+                  </div>
+                  
                   <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1 min-h-[100px]">
+                    <div className="flex-1">
                       <h3 className="text-sm font-bold text-sage-700 mb-2">Leading Growth Market</h3>
                       <p className="text-xs text-neutral-700 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topGrower.name)}</span> leads with 
                         <span className="font-semibold text-sage-600"> +{kpis.topGrower.change} passengers</span>
                         , representing a <span className="font-semibold text-sage-600">+{kpis.topGrower.percent.toFixed(1)}%</span> increase.
                       </p>
-                      {/* Share buttons */}
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <button
-                          onClick={() => shareInsight('twitter', `🇮🇸 ${getCountryName(kpis.topGrower.name)} leads Iceland tourism growth: +${kpis.topGrower.percent.toFixed(1)}% YoY\n+${kpis.topGrower.change} passengers | ${kpis.currentMonthName}`)}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="Share on Twitter"
-                        >
-                          <Twitter className="w-3 h-3" />
-                          Tweet
-                        </button>
-                        <button
-                          onClick={() => shareInsight('linkedin', `${getCountryName(kpis.topGrower.name)} leads Iceland tourism growth: +${kpis.topGrower.percent.toFixed(1)}% YoY (+${kpis.topGrower.change} passengers in ${kpis.currentMonthName})`)}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-blue-700 hover:bg-blue-50 rounded transition-colors"
-                          title="Share on LinkedIn"
-                        >
-                          <Linkedin className="w-3 h-3" />
-                          Share
-                        </button>
-                        <button
-                          onClick={() => shareInsight('copy', `${getCountryName(kpis.topGrower.name)} leads Iceland tourism growth: +${kpis.topGrower.percent.toFixed(1)}% YoY | +${kpis.topGrower.change} passengers | ${kpis.currentMonthName}`)}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-neutral-600 hover:bg-neutral-100 rounded transition-colors"
-                          title="Copy link"
-                        >
-                          <Link2 className="w-3 h-3" />
-                          Copy
-                        </button>
-                      </div>
                     </div>
                   </div>
                   {/* 6-month YoY % trend with proper axes */}
@@ -1268,44 +1277,35 @@ export default function DataDashboard() {
 
               {/* Insight 3: Attention Market */}
               {kpis.topDecliner && (
-                <div className="rounded-lg p-4 border-2 border-terracotta-200" style={{
+                <div className="rounded-lg p-4 border-2 border-terracotta-200 relative group" style={{
                   background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)'
                 }}>
+                  {/* Buttons - Top Right (show on hover) */}
+                  <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button 
+                      onClick={() => generateEmbedCode('insight', 'Market Requiring Attention')}
+                      className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      title="Get embed code"
+                    >
+                      <Code className="w-3.5 h-3.5 text-neutral-500" />
+                    </button>
+                    <button 
+                      onClick={() => shareKPI('Market Requiring Attention', `${getCountryName(kpis.topDecliner.name)} declined by -${kpis.topDecliner.change} passengers, a ${kpis.topDecliner.percent.toFixed(1)}% decrease`)}
+                      className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      title="Share on Twitter"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                    </button>
+                  </div>
+                  
                   <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1 min-h-[100px]">
+                    <div className="flex-1">
                       <h3 className="text-sm font-bold text-terracotta-600 mb-2">Market Requiring Attention</h3>
                       <p className="text-xs text-neutral-700 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topDecliner.name)}</span> declined by 
                         <span className="font-semibold text-terracotta-600"> -{kpis.topDecliner.change} passengers</span>
                         , a <span className="font-semibold text-terracotta-600">{kpis.topDecliner.percent.toFixed(1)}%</span> decrease.
                       </p>
-                      {/* Share buttons */}
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <button
-                          onClick={() => shareInsight('twitter', `📉 ${getCountryName(kpis.topDecliner.name)} tourism to Iceland: ${kpis.topDecliner.percent.toFixed(1)}% decline\n-${kpis.topDecliner.change} passengers | ${kpis.currentMonthName}`)}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="Share on Twitter"
-                        >
-                          <Twitter className="w-3 h-3" />
-                          Tweet
-                        </button>
-                        <button
-                          onClick={() => shareInsight('linkedin', `${getCountryName(kpis.topDecliner.name)} tourism to Iceland declined ${kpis.topDecliner.percent.toFixed(1)}% YoY (-${kpis.topDecliner.change} passengers in ${kpis.currentMonthName})`)}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-blue-700 hover:bg-blue-50 rounded transition-colors"
-                          title="Share on LinkedIn"
-                        >
-                          <Linkedin className="w-3 h-3" />
-                          Share
-                        </button>
-                        <button
-                          onClick={() => shareInsight('copy', `${getCountryName(kpis.topDecliner.name)} tourism to Iceland: ${kpis.topDecliner.percent.toFixed(1)}% decline | -${kpis.topDecliner.change} passengers | ${kpis.currentMonthName}`)}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-neutral-600 hover:bg-neutral-100 rounded transition-colors"
-                          title="Copy link"
-                        >
-                          <Link2 className="w-3 h-3" />
-                          Copy
-                        </button>
-                      </div>
                     </div>
                   </div>
                   {/* 6-month YoY % trend with proper axes */}
