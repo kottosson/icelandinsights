@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Sparkles, TrendingUp, TrendingDown, Minus, Share2 } from 'lucide-react';
+import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin } from 'lucide-react';
 
 export default function DataDashboard() {
   const [data, setData] = useState([]);
@@ -11,6 +11,7 @@ export default function DataDashboard() {
   const [insights, setInsights] = useState([]);
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: 'ratio', direction: 'desc' }); // Default sort by % Total descending
 
   // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
@@ -526,26 +527,15 @@ export default function DataDashboard() {
   };
 
   const shareKPI = async (kpiName, kpiData) => {
-    const shareText = `KEF Airport - ${kpiName}\n${kpiData}`;
+    const shareText = `🇮🇸 ${kpiName}\n${kpiData}\n\nvia IcelandInsights`;
+    const url = window.location.href;
     
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `KEF Airport - ${kpiName}`,
-          text: shareText,
-        });
-      } catch (err) {
-        // User cancelled or share failed, copy to clipboard instead
-        if (err.name !== 'AbortError') {
-          navigator.clipboard.writeText(shareText);
-          alert('Copied to clipboard!');
-        }
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(shareText);
-      alert('Copied to clipboard!');
-    }
+    // Open Twitter with pre-filled tweet
+    const tweetText = encodeURIComponent(shareText);
+    const tweetUrl = encodeURIComponent(url);
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${tweetUrl}&hashtags=Iceland,Tourism,KEF`;
+    
+    window.open(twitterUrl, '_blank', 'width=550,height=420');
   };
 
   const exportToExcel = () => {
@@ -567,12 +557,57 @@ export default function DataDashboard() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `kef_passenger_data_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `iceland-tourism-data-${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
+  const generateEmbedCode = (type, title) => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const params = new URLSearchParams();
+    
+    // Add current filters to embed
+    if (selectedCategories.length > 0 && !selectedCategories.includes('Útlendingar alls')) {
+      params.set('countries', selectedCategories.join(','));
+    }
+    
+    const embedUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+    
+    const embedCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0" title="${title} - Iceland Tourism Data"></iframe>`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(embedCode).then(() => {
+      alert(`✓ Embed code copied!\n\nPaste this into your website:\n\n${embedCode}`);
+    }).catch(() => {
+      // Fallback: show in prompt
+      prompt('Copy this embed code:', embedCode);
+    });
+  };
+
+  const shareInsight = async (platform, text, url = window.location.href) => {
+    const encodedText = encodeURIComponent(text);
+    const encodedUrl = encodeURIComponent(url);
+    
+    const shareUrls = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}&hashtags=Iceland,Tourism,Data`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+      copy: null // Handle separately
+    };
+
+    if (platform === 'copy') {
+      try {
+        await navigator.clipboard.writeText(`${text}\n\n${url}`);
+        alert('✓ Copied to clipboard!');
+      } catch (err) {
+        alert('Failed to copy to clipboard');
+      }
+    } else if (shareUrls[platform]) {
+      window.open(shareUrls[platform], '_blank', 'width=600,height=400');
+    }
+  };
+
 
   // Prepare data for charts - create merged dataset with all selected categories
   const prepareChartData = () => {
@@ -736,129 +771,232 @@ export default function DataDashboard() {
 
 
         {kpis && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="rounded-xl border border-neutral-200 p-4 shadow-sm relative" style={{
-              background: kpis.yoyChange >= 0.5 ? 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)' : 
-                          kpis.yoyChange <= -0.5 ? 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)' : 
-                          '#ffffff'
-            }}>
-              <button 
-                onClick={() => shareKPI('Monthly Passengers', `${kpis.currentMonth} passengers in ${kpis.currentMonthName}\n${kpis.yoyChange > 0 ? '+' : ''}${kpis.yoyChange.toFixed(1)}% YoY vs ${kpis.lastYearMonthName}`)}
-                className="absolute top-3 right-3 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
-                aria-label="Share"
-              >
-                <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
-              </button>
-              <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">Monthly Passengers</p>
-              <p className="text-[9px] text-neutral-400 mb-1.5">{kpis.currentMonthName}</p>
-              <div className="flex items-baseline gap-2 mb-1.5 flex-wrap">
-                <p className="text-2xl lg:text-3xl font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                  {kpis.currentMonth}
-                </p>
-              </div>
-              <p className="text-xs text-neutral-600 mb-2">
-                vs {kpis.lastYearMonth} in {kpis.lastYearMonthName}
-              </p>
-              <div className="flex items-center gap-2">
-                {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-4 h-4 text-sage-600" /> : 
-                 kpis.yoyChange <= -0.5 ? <TrendingDown className="w-4 h-4 text-terracotta-600" /> :
-                 <Minus className="w-4 h-4 text-neutral-400" />}
-                <span className={`text-sm font-semibold ${
-                  kpis.yoyChange >= 0.5 ? 'text-sage-600' : 
-                  kpis.yoyChange <= -0.5 ? 'text-terracotta-600' : 'text-neutral-500'
-                }`}>
-                  {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}% YoY
-                </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Card 1: Monthly Passengers */}
+            <div className={`group rounded-xl bg-white border-l-4 ${
+              kpis.yoyChange >= 0 ? 'border-sage-500' : 'border-terracotta-400'
+            } border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-lg transition-all duration-200 relative`}>
+              
+              <div className={`absolute inset-0 rounded-xl ${
+                kpis.yoyChange >= 0 ? 'bg-gradient-to-br from-sage-50/0 to-sage-50/10' : 'bg-gradient-to-br from-terracotta-50/0 to-terracotta-50/10'
+              } opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+              
+              <div className="relative">
+                {/* Buttons - Top Right (show on hover) */}
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button 
+                    onClick={() => generateEmbedCode('kpi', 'Monthly Passengers')}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Get embed code"
+                  >
+                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                  <button 
+                    onClick={() => shareKPI('Monthly Passengers', `${kpis.currentMonth} passengers in ${kpis.currentMonthName}\n${kpis.yoyChange > 0 ? '+' : ''}${kpis.yoyChange.toFixed(1)}% YoY vs ${kpis.lastYearMonthName}`)}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Share on Twitter"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                </div>
+                
+                <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">Monthly Passengers</p>
+                <p className="text-[9px] text-neutral-400 mb-2">{kpis.currentMonthName}</p>
+                
+                <div className="mb-1.5 h-12 flex items-center">
+                  <p className="text-2xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                    {kpis.currentMonth}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-[11px] text-neutral-500">vs {kpis.lastYearMonth}</span>
+                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
+                    kpis.yoyChange >= 0.5 ? 'bg-sage-50 border border-sage-200' : 
+                    kpis.yoyChange <= -0.5 ? 'bg-terracotta-50 border border-terracotta-200' : 'bg-neutral-100 border border-neutral-200'
+                  }`}>
+                    {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-sage-600" /> : 
+                     kpis.yoyChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-terracotta-600" /> :
+                     <Minus className="w-3.5 h-3.5 text-neutral-500" />}
+                    <span className={`text-xs font-semibold ${
+                      kpis.yoyChange >= 0.5 ? 'text-sage-700' : 
+                      kpis.yoyChange <= -0.5 ? 'text-terracotta-700' : 'text-neutral-600'
+                    }`}>
+                      {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}% YoY
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Clean Footer */}
+                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
+                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                </div>
               </div>
             </div>
             
-            <div className="rounded-xl border border-neutral-200 p-4 shadow-sm relative" style={{
-              background: kpis.ttmChange >= 0.5 ? 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)' : 
-                          kpis.ttmChange <= -0.5 ? 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)' : 
-                          '#ffffff'
-            }}>
-              <button 
-                onClick={() => shareKPI('TTM - Foreign Passengers', `${kpis.ttmTotal} passengers (${kpis.ttmPeriod})\n${kpis.ttmChange > 0 ? '+' : ''}${kpis.ttmChange.toFixed(1)}% vs prior TTM`)}
-                className="absolute top-3 right-3 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
-                aria-label="Share"
-              >
-                <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
-              </button>
-              <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Foreign Passengers</p>
-              <p className="text-[9px] text-neutral-400 mb-1.5">{kpis.ttmPeriod}</p>
-              <p className="text-2xl lg:text-3xl font-semibold text-neutral-900 mb-1.5" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                {kpis.ttmTotal}
-              </p>
-              <p className="text-xs text-neutral-600 mb-2">
-                vs {kpis.lastTtmTotal} {kpis.priorTtmPeriod}
-              </p>
-              <div className="flex items-center gap-2">
-                {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-4 h-4 text-sage-600" /> : 
-                 kpis.ttmChange <= -0.5 ? <TrendingDown className="w-4 h-4 text-terracotta-600" /> :
-                 <Minus className="w-4 h-4 text-neutral-400" />}
-                <span className={`text-sm font-semibold ${
-                  kpis.ttmChange >= 0.5 ? 'text-sage-600' : 
-                  kpis.ttmChange <= -0.5 ? 'text-terracotta-600' : 'text-neutral-500'
-                }`}>
-                  {kpis.ttmChange > 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}% vs prior TTM
-                </span>
+            {/* Card 2: TTM Passengers */}
+            <div className={`group rounded-xl bg-white border-l-4 ${
+              kpis.ttmChange >= 0 ? 'border-sage-500' : 'border-terracotta-400'
+            } border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-lg transition-all duration-200 relative`}>
+              
+              <div className={`absolute inset-0 rounded-xl ${
+                kpis.ttmChange >= 0 ? 'bg-gradient-to-br from-sage-50/0 to-sage-50/10' : 'bg-gradient-to-br from-terracotta-50/0 to-terracotta-50/10'
+              } opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+              
+              <div className="relative">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button 
+                    onClick={() => generateEmbedCode('kpi', 'TTM - Foreign Passengers')}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Get embed code"
+                  >
+                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                  <button 
+                    onClick={() => shareKPI('TTM - Foreign Passengers', `${kpis.ttmTotal} passengers (${kpis.ttmPeriod})\n${kpis.ttmChange > 0 ? '+' : ''}${kpis.ttmChange.toFixed(1)}% vs prior TTM`)}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Share on Twitter"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                </div>
+                
+                <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM Passengers</p>
+                <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
+                
+                <div className="mb-1.5 h-12 flex items-center">
+                  <p className="text-2xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                    {kpis.ttmTotal}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-[11px] text-neutral-500">vs {kpis.lastTtmTotal}</span>
+                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
+                    kpis.ttmChange >= 0.5 ? 'bg-sage-50 border border-sage-200' : 
+                    kpis.ttmChange <= -0.5 ? 'bg-terracotta-50 border border-terracotta-200' : 'bg-neutral-100 border border-neutral-200'
+                  }`}>
+                    {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-sage-600" /> : 
+                     kpis.ttmChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-terracotta-600" /> :
+                     <Minus className="w-3.5 h-3.5 text-neutral-500" />}
+                    <span className={`text-xs font-semibold ${
+                      kpis.ttmChange >= 0.5 ? 'text-sage-700' : 
+                      kpis.ttmChange <= -0.5 ? 'text-terracotta-700' : 'text-neutral-600'
+                    }`}>
+                      {kpis.ttmChange > 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}% YoY
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
+                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-neutral-200 p-4 shadow-sm relative" style={{
-              background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)'
-            }}>
-              <button 
-                onClick={() => shareKPI('TTM - Largest Gain', `${getCountryName(kpis.topGrower?.name)}\n${kpis.topGrower?.current.toLocaleString()} vs ${kpis.topGrower?.prior.toLocaleString()} prior TTM\n+${kpis.topGrower?.change} (+${kpis.topGrower?.percent.toFixed(1)}%)`)}
-                className="absolute top-3 right-3 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
-                aria-label="Share"
-              >
-                <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
-              </button>
-              <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Largest Gain</p>
-              <p className="text-[9px] text-neutral-400 mb-1.5">{kpis.ttmPeriod}</p>
-              <p className="text-xl lg:text-2xl font-semibold text-neutral-900 mb-1.5" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                {kpis.topGrower && getCountryName(kpis.topGrower.name)}
-              </p>
-              <p className="text-xs text-neutral-600 mb-2">
-                {kpis.topGrower?.current.toLocaleString()} vs {kpis.topGrower?.prior.toLocaleString()} {kpis.priorTtmPeriod}
-              </p>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-sage-600" />
-                <span className="text-sm font-semibold text-sage-600">
-                  +{kpis.topGrower?.change} (+{kpis.topGrower?.percent.toFixed(1)}%)
-                </span>
+            {/* Card 3: Largest Gain */}
+            <div className="group rounded-xl bg-white border-l-4 border-sage-500 border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-lg transition-all duration-200 relative">
+              
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-sage-50/0 to-sage-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              
+              <div className="relative">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button 
+                    onClick={() => generateEmbedCode('kpi', 'TTM - Largest Gain')}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Get embed code"
+                  >
+                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                  <button 
+                    onClick={() => shareKPI('TTM - Largest Gain', `${getCountryName(kpis.topGrower?.name)}\n${kpis.topGrower?.current.toLocaleString()} vs ${kpis.topGrower?.prior.toLocaleString()} prior TTM\n+${kpis.topGrower?.change} (+${kpis.topGrower?.percent.toFixed(1)}%)`)}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Share on Twitter"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                </div>
+                
+                <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">Largest Gain</p>
+                <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
+                
+                <div className="mb-1.5 h-12 flex items-center">
+                  <p className="text-2xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                    {kpis.topGrower && getCountryName(kpis.topGrower.name)}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-[11px] text-neutral-500">+{kpis.topGrower?.change}</span>
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-sage-50 border border-sage-200">
+                    <TrendingUp className="w-3.5 h-3.5 text-sage-600" />
+                    <span className="text-xs font-semibold text-sage-700">
+                      +{kpis.topGrower?.percent.toFixed(1)}% YoY
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
+                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-neutral-200 p-4 shadow-sm relative" style={{
-              background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)'
-            }}>
-              <button 
-                onClick={() => shareKPI('TTM - Largest Decline', `${getCountryName(kpis.topDecliner?.name)}\n${kpis.topDecliner?.current.toLocaleString()} vs ${kpis.topDecliner?.prior.toLocaleString()} prior TTM\n-${kpis.topDecliner?.change} (${kpis.topDecliner?.percent.toFixed(1)}%)`)}
-                className="absolute top-3 right-3 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
-                aria-label="Share"
-              >
-                <Share2 className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
-              </button>
-              <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM - Largest Decline</p>
-              <p className="text-[9px] text-neutral-400 mb-1.5">{kpis.ttmPeriod}</p>
-              <p className="text-xl lg:text-2xl font-semibold text-neutral-900 mb-1.5" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
-              </p>
-              <p className="text-xs text-neutral-600 mb-2">
-                {kpis.topDecliner?.current.toLocaleString()} vs {kpis.topDecliner?.prior.toLocaleString()} {kpis.priorTtmPeriod}
-              </p>
-              <div className="flex items-center gap-2">
-                <TrendingDown className="w-4 h-4 text-terracotta-600" />
-                <span className="text-sm font-semibold text-terracotta-600">
-                  -{kpis.topDecliner?.change} ({kpis.topDecliner?.percent.toFixed(1)}%)
-                </span>
+            {/* Card 4: Largest Decline */}
+            <div className="group rounded-xl bg-white border-l-4 border-terracotta-400 border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-lg transition-all duration-200 relative">
+              
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-terracotta-50/0 to-terracotta-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              
+              <div className="relative">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button 
+                    onClick={() => generateEmbedCode('kpi', 'TTM - Largest Decline')}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Get embed code"
+                  >
+                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                  <button 
+                    onClick={() => shareKPI('TTM - Largest Decline', `${getCountryName(kpis.topDecliner?.name)}\n${kpis.topDecliner?.current.toLocaleString()} vs ${kpis.topDecliner?.prior.toLocaleString()} prior TTM\n-${kpis.topDecliner?.change} (${kpis.topDecliner?.percent.toFixed(1)}%)`)}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Share on Twitter"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                </div>
+                
+                <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">Largest Decline</p>
+                <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
+                
+                <div className="mb-1.5 h-12 flex items-center">
+                  <p className="text-2xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                    {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-[11px] text-neutral-500">-{kpis.topDecliner?.change}</span>
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-terracotta-50 border border-terracotta-200">
+                    <TrendingDown className="w-3.5 h-3.5 text-terracotta-600" />
+                    <span className="text-xs font-semibold text-terracotta-700">
+                      {kpis.topDecliner?.percent.toFixed(1)}% YoY
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
+                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                </div>
               </div>
             </div>
+            
           </div>
         )}
-
         {/* Executive Summary - Key Insights with Visual Support */}
         {kpis && (
           <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-5 shadow-md">
@@ -875,9 +1013,9 @@ export default function DataDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
               {/* Insight 1: Current Month Performance */}
-              <div className="bg-white rounded-lg p-4 border border-neutral-200">
+              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200">
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
+                  <div className="flex-1 min-h-[100px]">
                     <h3 className="text-sm font-bold text-neutral-900 mb-2">Current Month Performance</h3>
                     <p className="text-xs text-neutral-700 leading-relaxed mb-3">
                       {kpis.currentMonthName} recorded <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
@@ -1004,13 +1142,40 @@ export default function DataDashboard() {
                   background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)'
                 }}>
                   <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
+                    <div className="flex-1 min-h-[100px]">
                       <h3 className="text-sm font-bold text-sage-700 mb-2">Leading Growth Market</h3>
                       <p className="text-xs text-neutral-700 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topGrower.name)}</span> leads with 
                         <span className="font-semibold text-sage-600"> +{kpis.topGrower.change} passengers</span>
                         , representing a <span className="font-semibold text-sage-600">+{kpis.topGrower.percent.toFixed(1)}%</span> increase.
                       </p>
+                      {/* Share buttons */}
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <button
+                          onClick={() => shareInsight('twitter', `🇮🇸 ${getCountryName(kpis.topGrower.name)} leads Iceland tourism growth: +${kpis.topGrower.percent.toFixed(1)}% YoY\n+${kpis.topGrower.change} passengers | ${kpis.currentMonthName}`)}
+                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="Share on Twitter"
+                        >
+                          <Twitter className="w-3 h-3" />
+                          Tweet
+                        </button>
+                        <button
+                          onClick={() => shareInsight('linkedin', `${getCountryName(kpis.topGrower.name)} leads Iceland tourism growth: +${kpis.topGrower.percent.toFixed(1)}% YoY (+${kpis.topGrower.change} passengers in ${kpis.currentMonthName})`)}
+                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                          title="Share on LinkedIn"
+                        >
+                          <Linkedin className="w-3 h-3" />
+                          Share
+                        </button>
+                        <button
+                          onClick={() => shareInsight('copy', `${getCountryName(kpis.topGrower.name)} leads Iceland tourism growth: +${kpis.topGrower.percent.toFixed(1)}% YoY | +${kpis.topGrower.change} passengers | ${kpis.currentMonthName}`)}
+                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-neutral-600 hover:bg-neutral-100 rounded transition-colors"
+                          title="Copy link"
+                        >
+                          <Link2 className="w-3 h-3" />
+                          Copy
+                        </button>
+                      </div>
                     </div>
                   </div>
                   {/* 6-month YoY % trend with proper axes */}
@@ -1107,13 +1272,40 @@ export default function DataDashboard() {
                   background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)'
                 }}>
                   <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
+                    <div className="flex-1 min-h-[100px]">
                       <h3 className="text-sm font-bold text-terracotta-600 mb-2">Market Requiring Attention</h3>
                       <p className="text-xs text-neutral-700 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topDecliner.name)}</span> declined by 
                         <span className="font-semibold text-terracotta-600"> -{kpis.topDecliner.change} passengers</span>
                         , a <span className="font-semibold text-terracotta-600">{kpis.topDecliner.percent.toFixed(1)}%</span> decrease.
                       </p>
+                      {/* Share buttons */}
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <button
+                          onClick={() => shareInsight('twitter', `📉 ${getCountryName(kpis.topDecliner.name)} tourism to Iceland: ${kpis.topDecliner.percent.toFixed(1)}% decline\n-${kpis.topDecliner.change} passengers | ${kpis.currentMonthName}`)}
+                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="Share on Twitter"
+                        >
+                          <Twitter className="w-3 h-3" />
+                          Tweet
+                        </button>
+                        <button
+                          onClick={() => shareInsight('linkedin', `${getCountryName(kpis.topDecliner.name)} tourism to Iceland declined ${kpis.topDecliner.percent.toFixed(1)}% YoY (-${kpis.topDecliner.change} passengers in ${kpis.currentMonthName})`)}
+                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                          title="Share on LinkedIn"
+                        >
+                          <Linkedin className="w-3 h-3" />
+                          Share
+                        </button>
+                        <button
+                          onClick={() => shareInsight('copy', `${getCountryName(kpis.topDecliner.name)} tourism to Iceland: ${kpis.topDecliner.percent.toFixed(1)}% decline | -${kpis.topDecliner.change} passengers | ${kpis.currentMonthName}`)}
+                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-neutral-600 hover:bg-neutral-100 rounded transition-colors"
+                          title="Copy link"
+                        >
+                          <Link2 className="w-3 h-3" />
+                          Copy
+                        </button>
+                      </div>
                     </div>
                   </div>
                   {/* 6-month YoY % trend with proper axes */}
@@ -1215,22 +1407,115 @@ export default function DataDashboard() {
               <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Top 10 Markets (TTM)
               </h3>
-              <p className="text-xs text-neutral-500 mb-3">{kpis.ttmPeriod}</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-neutral-500">{kpis.ttmPeriod}</p>
+                <p className="text-[9px] text-neutral-400 italic">Click row to filter</p>
+              </div>
+              
+              {/* Sortable column headers */}
               <div className="grid grid-cols-6 gap-2 mb-2 pb-1.5 border-b border-neutral-200">
                 <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium col-span-2">Nationality</p>
-                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
-                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">Abs Change</p>
-                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">% Total</p>
-                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">YoY %</p>
+                
+                <button 
+                  onClick={() => {
+                    setSortConfig({
+                      key: 'total',
+                      direction: sortConfig.key === 'total' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
+                    });
+                  }}
+                  className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right hover:text-neutral-700 flex items-center justify-end gap-1 transition-colors"
+                >
+                  Passengers
+                  {sortConfig.key === 'total' ? (
+                    sortConfig.direction === 'desc' ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />
+                  ) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    setSortConfig({
+                      key: 'absoluteChange',
+                      direction: sortConfig.key === 'absoluteChange' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
+                    });
+                  }}
+                  className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right hover:text-neutral-700 flex items-center justify-end gap-1 transition-colors"
+                >
+                  Abs Change
+                  {sortConfig.key === 'absoluteChange' ? (
+                    sortConfig.direction === 'desc' ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />
+                  ) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    setSortConfig({
+                      key: 'ratio',
+                      direction: sortConfig.key === 'ratio' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
+                    });
+                  }}
+                  className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right hover:text-neutral-700 flex items-center justify-end gap-1 transition-colors"
+                >
+                  % Total
+                  {sortConfig.key === 'ratio' ? (
+                    sortConfig.direction === 'desc' ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />
+                  ) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    setSortConfig({
+                      key: 'yoy',
+                      direction: sortConfig.key === 'yoy' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
+                    });
+                  }}
+                  className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right hover:text-neutral-700 flex items-center justify-end gap-1 transition-colors"
+                >
+                  YoY %
+                  {sortConfig.key === 'yoy' ? (
+                    sortConfig.direction === 'desc' ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />
+                  ) : <ArrowUpDown className="w-3 h-3 opacity-30" />}
+                </button>
               </div>
+              
               <div className="space-y-0.5">
-                {kpis.top10.map((item, i) => (
-                  <div key={i} className="grid grid-cols-6 gap-2 py-1 px-2 rounded" style={{
-                    backgroundColor: i % 2 === 0 ? '#ffffff' : '#F8FAFB'
-                  }}>
+                {(() => {
+                  // Sort the top10 array based on sortConfig
+                  const sorted = [...kpis.top10].sort((a, b) => {
+                    const aVal = a[sortConfig.key];
+                    const bVal = b[sortConfig.key];
+                    if (sortConfig.direction === 'asc') {
+                      return aVal > bVal ? 1 : -1;
+                    } else {
+                      return aVal < bVal ? 1 : -1;
+                    }
+                  });
+                  
+                  return sorted.map((item, i) => {
+                    const isSelected = selectedCategories.includes(item.nat) && selectedCategories.length === 1;
+                    return (
+                  <div 
+                    key={i} 
+                    onClick={() => {
+                      // If this nationality is already selected, reset to Foreign Passengers
+                      if (selectedCategories.length === 1 && selectedCategories[0] === item.nat) {
+                        setSelectedCategories(['Útlendingar alls']);
+                      } else {
+                        // Filter to this nationality
+                        setSelectedCategories([item.nat]);
+                      }
+                    }}
+                    className={`grid grid-cols-6 gap-2 py-1 px-2 rounded cursor-pointer hover:bg-neutral-100 transition-all ${
+                      isSelected ? 'ring-2 ring-blue-400 bg-blue-50' : ''
+                    }`}
+                    style={{
+                      backgroundColor: isSelected ? '#EFF6FF' : (i % 2 === 0 ? '#ffffff' : '#F8FAFB')
+                    }}
+                  >
                     <div className="flex items-center gap-2 col-span-2">
                       <span className="text-[9px] text-neutral-400 w-3">{i + 1}</span>
-                      <span className="text-[11px] text-neutral-700">{getCountryName(item.nat)}</span>
+                      <span className={`text-[11px] ${isSelected ? 'font-semibold text-blue-700' : 'text-neutral-700'}`}>
+                        {getCountryName(item.nat)}
+                      </span>
                     </div>
                     <span className="text-[11px] text-neutral-500 font-mono text-right">{item.total.toLocaleString()}</span>
                     <span className={`text-[11px] font-medium text-right ${
@@ -1246,7 +1531,9 @@ export default function DataDashboard() {
                       {item.yoy > 0 ? '+' : ''}{item.yoy.toFixed(1)}%
                     </span>
                   </div>
-                ))}
+                  );
+                  });
+                })()}
                 {/* Total row */}
                 <div className="grid grid-cols-6 gap-2 py-1.5 mt-1.5 pt-2.5 border-t-2 border-neutral-300">
                   <div className="flex items-center gap-2 col-span-2">
@@ -1383,14 +1670,24 @@ export default function DataDashboard() {
                 </div>
               </div>
             </div>
-            {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && !selectedCategories.includes('Útlendingar alls') && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setSelectedCategories(['Útlendingar alls'])}
-                className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all"
+                onClick={exportToExcel}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all border border-neutral-200"
+                title="Export filtered data as CSV"
               >
-                Reset filters
+                <FileDown className="w-3.5 h-3.5" />
+                Export CSV
               </button>
-            )}
+              {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && !selectedCategories.includes('Útlendingar alls') && (
+                <button
+                  onClick={() => setSelectedCategories(['Útlendingar alls'])}
+                  className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all"
+                >
+                  Reset filters
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Active Filters Display */}
@@ -1447,11 +1744,25 @@ export default function DataDashboard() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-              Monthly Trends
-            </h3>
-            <p className="text-[10px] text-neutral-500 mb-3">{monthlyChartPeriod}</p>
+          <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm" id="monthly-trends-chart">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                Monthly Trends
+              </h3>
+              <button
+                onClick={() => generateEmbedCode('chart', 'Monthly Trends')}
+                className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
+                title="Get embed code"
+              >
+                <Code className="w-4 h-4 text-neutral-500" />
+              </button>
+            </div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-neutral-500">{monthlyChartPeriod}</p>
+              {!selectedCategories.includes('Farþegar alls') && !selectedCategories.includes('Útlendingar alls') && (
+                <p className="text-[9px] text-neutral-400 italic">Click bar to filter</p>
+              )}
+            </div>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -1493,16 +1804,38 @@ export default function DataDashboard() {
                     fill={chartColors[idx % chartColors.length]}
                     radius={[4, 4, 0, 0]}
                     name={getCountryName(cat)}
+                    cursor="pointer"
+                    onClick={() => {
+                      // Don't filter on "All Passengers" or "Foreign Passengers"
+                      if (cat === 'Farþegar alls' || cat === 'Útlendingar alls') return;
+                      
+                      // If this category is already the only one selected, reset to Foreign Passengers
+                      if (selectedCategories.length === 1 && selectedCategories[0] === cat) {
+                        setSelectedCategories(['Útlendingar alls']);
+                      } else {
+                        // Otherwise, filter to just this category
+                        setSelectedCategories([cat]);
+                      }
+                    }}
                   />
                 ))}
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-              Year-over-Year Comparison
-            </h3>
+          <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm" id="yoy-comparison-chart">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                Year-over-Year Comparison
+              </h3>
+              <button
+                onClick={() => generateEmbedCode('chart', 'Year-over-Year Comparison')}
+                className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
+                title="Get embed code"
+              >
+                <Code className="w-4 h-4 text-neutral-500" />
+              </button>
+            </div>
             <p className="text-[10px] text-neutral-500 mb-3">Jan - {yoyCurrentMonth} (2023 vs 2024 vs 2025)</p>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={yoyChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
@@ -1573,10 +1906,19 @@ export default function DataDashboard() {
         <div className="grid md:grid-cols-2 gap-4">
           {/* Annual + YTD Bar Chart */}
           {kpis && kpis.annualData && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
-              <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-                Annual Overview
-              </h3>
+            <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm" id="annual-overview-chart">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                  Annual Overview
+                </h3>
+                <button
+                  onClick={() => generateEmbedCode('chart', 'Annual Overview')}
+                  className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
+                  title="Get embed code"
+                >
+                  <Code className="w-4 h-4 text-neutral-500" />
+                </button>
+              </div>
               <p className="text-[10px] text-neutral-500 mb-3">2017-2025 YTD</p>
               <ResponsiveContainer width="100%" height={selectedCategories.length > 1 ? 240 : 200}>
                 <BarChart data={kpis.annualData} margin={{ top: 5, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
@@ -1635,10 +1977,19 @@ export default function DataDashboard() {
 
           {/* YTD Comparison Bar Chart */}
           {kpis && kpis.ytdComparisonData && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
-              <h3 className="text-sm font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-                YTD Comparison
-              </h3>
+            <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm" id="ytd-comparison-chart">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                  YTD Comparison
+                </h3>
+                <button
+                  onClick={() => generateEmbedCode('chart', 'YTD Comparison')}
+                  className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
+                  title="Get embed code"
+                >
+                  <Code className="w-4 h-4 text-neutral-500" />
+                </button>
+              </div>
               <p className="text-[10px] text-neutral-500 mb-3">Jan - {kpis.currentMonthName.split(' ')[0]} (2017-2025)</p>
               <ResponsiveContainer width="100%" height={selectedCategories.length > 1 ? 240 : 200}>
                 <BarChart data={kpis.ytdComparisonData} margin={{ top: 5, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
