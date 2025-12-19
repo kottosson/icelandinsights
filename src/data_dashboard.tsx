@@ -657,6 +657,7 @@ export default function DataDashboard() {
         .text-sage-700 { color: #5D7A63; }
         .bg-sage-50 { background-color: #F5F8F6; }
         .bg-sage-100 { background-color: #EDF2EF; }
+        .bg-sage-600 { background-color: #6E8B74; }
         .text-terracotta-600 { color: #B8847D; }
         .bg-terracotta-50 { background-color: #FBF7F6; }
         .bg-terracotta-100 { background-color: #F7EFED; }
