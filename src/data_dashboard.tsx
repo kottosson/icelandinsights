@@ -162,8 +162,11 @@ export default function DataDashboard() {
     const currentMonthName = monthNames[currentMonth.month - 1];
     const lastYearMonthName = monthNames[lastYearSameMonth.month - 1];
     
-    const ttmStart = new Date(ttmData[0].date);
-    const ttmEnd = new Date(ttmData[ttmData.length - 1].date);
+    // Calculate TTM period from current month (not from filtered data to avoid multi-category issues)
+    const ttmEnd = new Date(currentMonth.date);
+    const ttmStart = new Date(currentMonth.date);
+    ttmStart.setFullYear(ttmStart.getFullYear() - 1);
+    ttmStart.setMonth(ttmStart.getMonth() + 1); // Add 1 to get the start of TTM period
     const ttmPeriod = `${monthNames[ttmStart.getMonth()]} ${ttmStart.getFullYear()} - ${monthNames[ttmEnd.getMonth()]} ${ttmEnd.getFullYear()}`;
     
     // Calculate prior TTM period (one year earlier)
