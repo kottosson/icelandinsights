@@ -11,7 +11,6 @@ export default function DataDashboard() {
   const [insights, setInsights] = useState([]);
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [staticTop10, setStaticTop10] = useState(null); // Static Top 10 that never changes
 
   // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
@@ -96,8 +95,7 @@ export default function DataDashboard() {
         setCategories(uniqueCategories);
         setSelectedCategory('Útlendingar alls');
         
-        // Calculate static Top 10 once - never changes after this
-        calculateStaticTop10(fullData);
+        // No longer calculating static Top 10 here - will be dynamic
       } catch (error) {
         console.error('Error loading data:', error);
       }
@@ -106,118 +104,10 @@ export default function DataDashboard() {
     loadData();
   }, []);
 
-  // Calculate Top 10 ONCE - completely independent of filters
-  const calculateStaticTop10 = (allData) => {
-    const foreignPassengerData = allData.filter(row => 
-      row.flokkur !== 'Farþegar alls' && 
-      row.flokkur !== 'Ísland' && 
-      row.flokkur !== 'Útlendingar alls'
-    );
-    
-    // Get last month's date for TTM calculation
-    const sortedData = [...foreignPassengerData].sort((a, b) => new Date(b.date) - new Date(a.date));
-    const currentMonth = sortedData[0];
-    
-    const ltmData = foreignPassengerData.filter(row => {
-      const date = new Date(row.date);
-      const cutoff = new Date(currentMonth.date);
-      cutoff.setFullYear(cutoff.getFullYear() - 1);
-      return date > cutoff;
-    });
-    
-    const nationalityTotals = {};
-    ltmData.forEach(row => {
-      nationalityTotals[row.flokkur] = (nationalityTotals[row.flokkur] || 0) + row.fjöldi;
-    });
-    
-    const foreignTotal = Object.values(nationalityTotals).reduce((a, b) => a + b, 0);
-    
-    // Calculate prior TTM foreign total for "Other" calculation
-    const priorLtmData = foreignPassengerData.filter(row => {
-      const date = new Date(row.date);
-      const startCutoff = new Date(currentMonth.date);
-      startCutoff.setFullYear(startCutoff.getFullYear() - 2);
-      const endCutoff = new Date(currentMonth.date);
-      endCutoff.setFullYear(endCutoff.getFullYear() - 1);
-      return date > startCutoff && date <= endCutoff;
-    });
-    
-    const priorForeignTotal = priorLtmData.reduce((sum, r) => sum + r.fjöldi, 0);
-    
-    // Calculate YoY changes
-    const nationalityChanges = {};
-    
-    Object.keys(nationalityTotals).forEach(nat => {
-      const currentTtmData = ltmData.filter(row => row.flokkur === nat);
-      const priorTtmData = foreignPassengerData.filter(row => {
-        const date = new Date(row.date);
-        const startCutoff = new Date(currentMonth.date);
-        startCutoff.setFullYear(startCutoff.getFullYear() - 2);
-        const endCutoff = new Date(currentMonth.date);
-        endCutoff.setFullYear(endCutoff.getFullYear() - 1);
-        return date > startCutoff && date <= endCutoff && row.flokkur === nat;
-      });
-      
-      const currentTotal = currentTtmData.reduce((sum, r) => sum + r.fjöldi, 0);
-      const priorTotal = priorTtmData.reduce((sum, r) => sum + r.fjöldi, 0);
-      const absoluteChange = currentTotal - priorTotal;
-      const percentChange = priorTotal > 0 ? (absoluteChange / priorTotal * 100) : 0;
-      
-      nationalityChanges[nat] = { absoluteChange, percentChange, current: currentTotal, prior: priorTotal };
-    });
-    
-    // Create Top 10
-    const top10 = Object.entries(nationalityTotals)
-      .map(([nat, total]) => {
-        const changes = nationalityChanges[nat] || { absoluteChange: 0, percentChange: 0 };
-        const ratio = (total / foreignTotal * 100);
-        return { 
-          nat, 
-          total, 
-          absoluteChange: changes.absoluteChange,
-          yoy: changes.percentChange,
-          ratio 
-        };
-      })
-      .sort((a, b) => b.ratio - a.ratio)
-      .slice(0, 10);
-    
-    const sortedByGrowth = Object.entries(nationalityChanges)
-      .sort((a, b) => b[1].absoluteChange - a[1].absoluteChange);
-    
-    const topGrower = sortedByGrowth[0];
-    
-    const decliners = Object.entries(nationalityChanges)
-      .filter(([_, data]) => data.absoluteChange < 0)
-      .sort((a, b) => a[1].absoluteChange - b[1].absoluteChange);
-    
-    const topDecliner = decliners.length > 0 ? decliners[0] : sortedByGrowth[sortedByGrowth.length - 1];
-    
-    setStaticTop10({
-      top10,
-      topGrower: {
-        name: topGrower[0],
-        change: topGrower[1].absoluteChange.toLocaleString(),
-        percent: topGrower[1].percentChange,
-        current: topGrower[1].current,
-        prior: topGrower[1].prior
-      },
-      topDecliner: {
-        name: topDecliner[0],
-        change: Math.abs(topDecliner[1].absoluteChange).toLocaleString(),
-        percent: topDecliner[1].percentChange,
-        current: topDecliner[1].current,
-        prior: topDecliner[1].prior
-      },
-      ttmTotal: foreignTotal,
-      priorTtmTotal: priorForeignTotal
-    });
-  };
-
 
 
   useEffect(() => {
-    if (data.length > 0 && selectedCategories.length > 0 && staticTop10) {
+    if (data.length > 0 && selectedCategories.length > 0) {
       const filtered = data
         .filter(row => selectedCategories.includes(row.flokkur))
         .sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -232,7 +122,7 @@ export default function DataDashboard() {
         generateInsightsAndKPIs(data, filtered, selectedCategories);
       }
     }
-  }, [selectedCategories, data, staticTop10]);
+  }, [selectedCategories, data]);
 
   const generateInsightsAndKPIs = async (allData, filteredData, selectedCats = selectedCategories) => {
     setLoading(true);
@@ -319,6 +209,207 @@ export default function DataDashboard() {
       }))
       .sort((a, b) => b.total - a.total);
     
+    // Calculate Top 10 Markets (ALWAYS uses ALL foreign passengers, never filtered)
+    const foreignDataForTop10 = allData.filter(row => 
+      row.flokkur !== 'Farþegar alls' && 
+      row.flokkur !== 'Ísland' && 
+      row.flokkur !== 'Útlendingar alls'
+    );
+    
+    // Get last month's date from ALL data (not filtered)
+    const sortedAllData = [...foreignDataForTop10].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const currentMonthForTop10 = sortedAllData[0];
+    
+    const ltmDataForTop10 = foreignDataForTop10.filter(row => {
+      const date = new Date(row.date);
+      const cutoff = new Date(currentMonthForTop10.date);
+      cutoff.setFullYear(cutoff.getFullYear() - 1);
+      return date > cutoff;
+    });
+    
+    const nationalityTotalsForTop10 = {};
+    ltmDataForTop10.forEach(row => {
+      nationalityTotalsForTop10[row.flokkur] = (nationalityTotalsForTop10[row.flokkur] || 0) + row.fjöldi;
+    });
+    
+    const foreignTotal = Object.values(nationalityTotalsForTop10).reduce((a, b) => a + b, 0);
+    
+    // Calculate prior TTM foreign total for "Other" calculation
+    const priorLtmData = foreignDataForTop10.filter(row => {
+      const date = new Date(row.date);
+      const startCutoff = new Date(currentMonthForTop10.date);
+      startCutoff.setFullYear(startCutoff.getFullYear() - 2);
+      const endCutoff = new Date(currentMonthForTop10.date);
+      endCutoff.setFullYear(endCutoff.getFullYear() - 1);
+      return date > startCutoff && date <= endCutoff;
+    });
+    
+    const priorForeignTotal = priorLtmData.reduce((sum, r) => sum + r.fjöldi, 0);
+    
+    // Calculate YoY changes
+    const nationalityChanges = {};
+    
+    Object.keys(nationalityTotalsForTop10).forEach(nat => {
+      const currentTtmData = ltmDataForTop10.filter(row => row.flokkur === nat);
+      const priorTtmData = foreignDataForTop10.filter(row => {
+        const date = new Date(row.date);
+        const startCutoff = new Date(currentMonthForTop10.date);
+        startCutoff.setFullYear(startCutoff.getFullYear() - 2);
+        const endCutoff = new Date(currentMonthForTop10.date);
+        endCutoff.setFullYear(endCutoff.getFullYear() - 1);
+        return date > startCutoff && date <= endCutoff && row.flokkur === nat;
+      });
+      
+      const currentTotal = currentTtmData.reduce((sum, r) => sum + r.fjöldi, 0);
+      const priorTotal = priorTtmData.reduce((sum, r) => sum + r.fjöldi, 0);
+      const absoluteChange = currentTotal - priorTotal;
+      const percentChange = priorTotal > 0 ? (absoluteChange / priorTotal * 100) : 0;
+      
+      nationalityChanges[nat] = { absoluteChange, percentChange, current: currentTotal, prior: priorTotal };
+    });
+    
+    // Create Top 10
+    const top10 = Object.entries(nationalityTotalsForTop10)
+      .map(([nat, total]) => {
+        const changes = nationalityChanges[nat] || { absoluteChange: 0, percentChange: 0 };
+        const ratio = (total / foreignTotal * 100);
+        return { 
+          nat, 
+          total, 
+          absoluteChange: changes.absoluteChange,
+          yoy: changes.percentChange,
+          ratio 
+        };
+      })
+      .sort((a, b) => b.ratio - a.ratio)
+      .slice(0, 10);
+    
+    const sortedByGrowth = Object.entries(nationalityChanges)
+      .sort((a, b) => b[1].absoluteChange - a[1].absoluteChange);
+    
+    const topGrower = sortedByGrowth[0];
+    
+    const decliners = Object.entries(nationalityChanges)
+      .filter(([_, data]) => data.absoluteChange < 0)
+      .sort((a, b) => a[1].absoluteChange - b[1].absoluteChange);
+    
+    const topDecliner = decliners.length > 0 ? decliners[0] : sortedByGrowth[sortedByGrowth.length - 1];
+    
+    const calculatedTop10 = {
+      top10,
+      topGrower: {
+        name: topGrower[0],
+        change: topGrower[1].absoluteChange.toLocaleString(),
+        percent: topGrower[1].percentChange,
+        current: topGrower[1].current,
+        prior: topGrower[1].prior
+      },
+      topDecliner: {
+        name: topDecliner[0],
+        change: Math.abs(topDecliner[1].absoluteChange).toLocaleString(),
+        percent: topDecliner[1].percentChange,
+        current: topDecliner[1].current,
+        prior: topDecliner[1].prior
+      },
+      ttmTotal: foreignTotal,
+      priorTtmTotal: priorForeignTotal
+    };
+    
+    // Calculate 6-month YoY % sparkline data for executive snapshot (moved after Top 10 calculation)
+    const sixMonthsAgo = new Date(currentMonth.date);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5); // -5 to include current month = 6 total
+    
+    // Overall 6-month YoY % trend
+    const overallSparkline = [];
+    for (let i = 0; i < 6; i++) {
+      const targetDate = new Date(sixMonthsAgo);
+      targetDate.setMonth(targetDate.getMonth() + i);
+      
+      // Current year data
+      const currentYearData = allData.filter(row => {
+        const rowDate = new Date(row.date);
+        return rowDate.getMonth() === targetDate.getMonth() && 
+               rowDate.getFullYear() === targetDate.getFullYear();
+      });
+      const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+      
+      // Prior year data (same month, one year earlier)
+      const priorYearData = allData.filter(row => {
+        const rowDate = new Date(row.date);
+        return rowDate.getMonth() === targetDate.getMonth() && 
+               rowDate.getFullYear() === targetDate.getFullYear() - 1;
+      });
+      const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+      
+      // Calculate YoY %
+      const yoyPercent = priorTotal > 0 ? ((currentTotal - priorTotal) / priorTotal * 100) : 0;
+      overallSparkline.push({ value: yoyPercent, month: targetDate.getMonth() + 1 });
+    }
+    
+    // Top grower 6-month YoY % trend
+    const topGrowerSparkline = calculatedTop10.topGrower ? (() => {
+      const sparkline = [];
+      for (let i = 0; i < 6; i++) {
+        const targetDate = new Date(sixMonthsAgo);
+        targetDate.setMonth(targetDate.getMonth() + i);
+        
+        // Current year data
+        const currentYearData = allData.filter(row => {
+          const rowDate = new Date(row.date);
+          return rowDate.getMonth() === targetDate.getMonth() && 
+                 rowDate.getFullYear() === targetDate.getFullYear() &&
+                 row.flokkur === calculatedTop10.topGrower.name;
+        });
+        const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        // Prior year data
+        const priorYearData = allData.filter(row => {
+          const rowDate = new Date(row.date);
+          return rowDate.getMonth() === targetDate.getMonth() && 
+                 rowDate.getFullYear() === targetDate.getFullYear() - 1 &&
+                 row.flokkur === calculatedTop10.topGrower.name;
+        });
+        const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        // Calculate YoY %
+        const yoyPercent = priorTotal > 0 ? ((currentTotal - priorTotal) / priorTotal * 100) : 0;
+        sparkline.push({ value: yoyPercent, month: targetDate.getMonth() + 1 });
+      }
+      return sparkline;
+    })() : [];
+    
+    // Top decliner 6-month YoY % trend
+    const topDeclinerSparkline = calculatedTop10.topDecliner ? (() => {
+      const sparkline = [];
+      for (let i = 0; i < 6; i++) {
+        const targetDate = new Date(sixMonthsAgo);
+        targetDate.setMonth(targetDate.getMonth() + i);
+        
+        // Current year data
+        const currentYearData = allData.filter(row => {
+          const rowDate = new Date(row.date);
+          return rowDate.getMonth() === targetDate.getMonth() && 
+                 rowDate.getFullYear() === targetDate.getFullYear() &&
+                 row.flokkur === calculatedTop10.topDecliner.name;
+        });
+        const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        // Prior year data
+        const priorYearData = allData.filter(row => {
+          const rowDate = new Date(row.date);
+          return rowDate.getMonth() === targetDate.getMonth() && 
+                 rowDate.getFullYear() === targetDate.getFullYear() - 1 &&
+                 row.flokkur === calculatedTop10.topDecliner.name;
+        });
+        const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        // Calculate YoY %
+        const yoyPercent = priorTotal > 0 ? ((currentTotal - priorTotal) / priorTotal * 100) : 0;
+        sparkline.push({ value: yoyPercent, month: targetDate.getMonth() + 1 });
+      }
+      return sparkline;
+    })() : [];
+    
     // Calculate yearly totals for Annual + YTD chart (2017 onwards) - based on selected categories
     const currentYearMonth = currentMonth.month; // e.g., 10 for October (1-indexed)
     
@@ -371,101 +462,6 @@ export default function DataDashboard() {
       ytdComparisonData.push(ytdData);
     }
     
-    // Calculate 6-month YoY % sparkline data for executive snapshot
-    const sixMonthsAgo = new Date(currentMonth.date);
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5); // -5 to include current month = 6 total
-    
-    // Overall 6-month YoY % trend
-    const overallSparkline = [];
-    for (let i = 0; i < 6; i++) {
-      const targetDate = new Date(sixMonthsAgo);
-      targetDate.setMonth(targetDate.getMonth() + i);
-      
-      // Current year data
-      const currentYearData = allData.filter(row => {
-        const rowDate = new Date(row.date);
-        return rowDate.getMonth() === targetDate.getMonth() && 
-               rowDate.getFullYear() === targetDate.getFullYear();
-      });
-      const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
-      
-      // Prior year data (same month, one year earlier)
-      const priorYearData = allData.filter(row => {
-        const rowDate = new Date(row.date);
-        return rowDate.getMonth() === targetDate.getMonth() && 
-               rowDate.getFullYear() === targetDate.getFullYear() - 1;
-      });
-      const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
-      
-      // Calculate YoY %
-      const yoyPercent = priorTotal > 0 ? ((currentTotal - priorTotal) / priorTotal * 100) : 0;
-      overallSparkline.push({ value: yoyPercent, month: targetDate.getMonth() + 1 });
-    }
-    
-    // Top grower 6-month YoY % trend
-    const topGrowerSparkline = staticTop10?.topGrower ? (() => {
-      const sparkline = [];
-      for (let i = 0; i < 6; i++) {
-        const targetDate = new Date(sixMonthsAgo);
-        targetDate.setMonth(targetDate.getMonth() + i);
-        
-        // Current year data
-        const currentYearData = allData.filter(row => {
-          const rowDate = new Date(row.date);
-          return rowDate.getMonth() === targetDate.getMonth() && 
-                 rowDate.getFullYear() === targetDate.getFullYear() &&
-                 row.flokkur === staticTop10.topGrower.name;
-        });
-        const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
-        
-        // Prior year data
-        const priorYearData = allData.filter(row => {
-          const rowDate = new Date(row.date);
-          return rowDate.getMonth() === targetDate.getMonth() && 
-                 rowDate.getFullYear() === targetDate.getFullYear() - 1 &&
-                 row.flokkur === staticTop10.topGrower.name;
-        });
-        const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
-        
-        // Calculate YoY %
-        const yoyPercent = priorTotal > 0 ? ((currentTotal - priorTotal) / priorTotal * 100) : 0;
-        sparkline.push({ value: yoyPercent, month: targetDate.getMonth() + 1 });
-      }
-      return sparkline;
-    })() : [];
-    
-    // Top decliner 6-month YoY % trend
-    const topDeclinerSparkline = staticTop10?.topDecliner ? (() => {
-      const sparkline = [];
-      for (let i = 0; i < 6; i++) {
-        const targetDate = new Date(sixMonthsAgo);
-        targetDate.setMonth(targetDate.getMonth() + i);
-        
-        // Current year data
-        const currentYearData = allData.filter(row => {
-          const rowDate = new Date(row.date);
-          return rowDate.getMonth() === targetDate.getMonth() && 
-                 rowDate.getFullYear() === targetDate.getFullYear() &&
-                 row.flokkur === staticTop10.topDecliner.name;
-        });
-        const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
-        
-        // Prior year data
-        const priorYearData = allData.filter(row => {
-          const rowDate = new Date(row.date);
-          return rowDate.getMonth() === targetDate.getMonth() && 
-                 rowDate.getFullYear() === targetDate.getFullYear() - 1 &&
-                 row.flokkur === staticTop10.topDecliner.name;
-        });
-        const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
-        
-        // Calculate YoY %
-        const yoyPercent = priorTotal > 0 ? ((currentTotal - priorTotal) / priorTotal * 100) : 0;
-        sparkline.push({ value: yoyPercent, month: targetDate.getMonth() + 1 });
-      }
-      return sparkline;
-    })() : [];
-    
     setKpis({
       currentMonth: currentMonth.fjöldi.toLocaleString(),
       currentMonthName: `${currentMonthName} ${currentMonth.year}`,
@@ -479,10 +475,12 @@ export default function DataDashboard() {
       ttmChange,
       annualData,
       ytdComparisonData,
-      // Use static Top 10 that never changes
-      topGrower: staticTop10?.topGrower || null,
-      topDecliner: staticTop10?.topDecliner || null,
-      top10: staticTop10?.top10 || [],
+      // Dynamic Top 10 - recalculates with latest data
+      topGrower: calculatedTop10.topGrower,
+      topDecliner: calculatedTop10.topDecliner,
+      top10: calculatedTop10.top10,
+      top10TtmTotal: calculatedTop10.ttmTotal,
+      top10PriorTtmTotal: calculatedTop10.priorTtmTotal,
       continents: continentData,
       // Executive snapshot sparklines
       overallSparkline,
@@ -1007,8 +1005,7 @@ export default function DataDashboard() {
                       <p className="text-xs text-neutral-700 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topGrower.name)}</span> leads with 
                         <span className="font-semibold text-sage-600"> +{kpis.topGrower.change} passengers</span>
-                        , representing a <span className="font-semibold text-sage-600">+{kpis.topGrower.percent.toFixed(1)}%</span> increase. 
-                        Growth trajectory shows sustained momentum.
+                        , representing a <span className="font-semibold text-sage-600">+{kpis.topGrower.percent.toFixed(1)}%</span> increase.
                       </p>
                     </div>
                   </div>
@@ -1111,8 +1108,7 @@ export default function DataDashboard() {
                       <p className="text-xs text-neutral-700 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topDecliner.name)}</span> declined by 
                         <span className="font-semibold text-terracotta-600"> -{kpis.topDecliner.change} passengers</span>
-                        , a <span className="font-semibold text-terracotta-600">{kpis.topDecliner.percent.toFixed(1)}%</span> decrease. 
-                        Strategic review recommended.
+                        , a <span className="font-semibold text-terracotta-600">{kpis.topDecliner.percent.toFixed(1)}%</span> decrease.
                       </p>
                     </div>
                   </div>
@@ -1209,13 +1205,13 @@ export default function DataDashboard() {
         )}
 
         {/* Top 10 Markets - Completely Static, Never Affected by Filters */}
-        {staticTop10 && (
+        {kpis && kpis.top10 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
               <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Top 10 Markets (TTM)
               </h3>
-              <p className="text-xs text-neutral-500 mb-3">Nov 2024 - Oct 2025</p>
+              <p className="text-xs text-neutral-500 mb-3">{kpis.ttmPeriod}</p>
               <div className="grid grid-cols-6 gap-2 mb-2 pb-1.5 border-b border-neutral-200">
                 <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium col-span-2">Nationality</p>
                 <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
@@ -1224,7 +1220,7 @@ export default function DataDashboard() {
                 <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">YoY %</p>
               </div>
               <div className="space-y-0.5">
-                {staticTop10.top10.map((item, i) => (
+                {kpis.top10.map((item, i) => (
                   <div key={i} className="grid grid-cols-6 gap-2 py-1 px-2 rounded" style={{
                     backgroundColor: i % 2 === 0 ? '#ffffff' : '#F8FAFB'
                   }}>
@@ -1253,29 +1249,29 @@ export default function DataDashboard() {
                     <span className="text-xs font-bold text-neutral-900">Total (Top 10)</span>
                   </div>
                   <span className="text-xs text-neutral-900 font-bold font-mono text-right">
-                    {staticTop10.top10.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
+                    {kpis.top10.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
                   </span>
                   <span className={`text-xs font-bold text-right ${
-                    staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? 'text-sage-600' : 'text-terracotta-600'
+                    kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? 'text-sage-600' : 'text-terracotta-600'
                   }`}>
-                    {staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? '+' : ''}
-                    {staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0).toLocaleString()}
+                    {kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? '+' : ''}
+                    {kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0).toLocaleString()}
                   </span>
                   <span className="text-xs text-neutral-900 font-bold font-mono text-right">
-                    {staticTop10.top10.reduce((sum, item) => sum + item.ratio, 0).toFixed(1)}%
+                    {kpis.top10.reduce((sum, item) => sum + item.ratio, 0).toFixed(1)}%
                   </span>
                   <span className={`text-xs font-bold text-right ${
                     (() => {
-                      const currentTotal = staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
-                      const absChange = staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
+                      const currentTotal = kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const absChange = kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
                       const priorTotal = currentTotal - absChange;
                       const yoy = priorTotal > 0 ? (absChange / priorTotal * 100) : 0;
                       return yoy >= 0.5 ? 'text-sage-600' : yoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-500';
                     })()
                   }`}>
                     {(() => {
-                      const currentTotal = staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
-                      const absChange = staticTop10.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
+                      const currentTotal = kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const absChange = kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
                       const priorTotal = currentTotal - absChange;
                       const yoy = priorTotal > 0 ? (absChange / priorTotal * 100) : 0;
                       return (yoy > 0 ? '+' : '') + yoy.toFixed(1) + '%';
@@ -1288,37 +1284,37 @@ export default function DataDashboard() {
                     <span className="text-xs text-neutral-600">Other Nationalities</span>
                   </div>
                   <span className="text-xs text-neutral-500 font-mono text-right">
-                    {(staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0)).toLocaleString()}
+                    {(kpis.top10TtmTotal - kpis.top10.reduce((sum, item) => sum + item.total, 0)).toLocaleString()}
                   </span>
                   <span className={`text-xs font-medium text-right ${
                     (() => {
-                      const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
-                      const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
+                      const currentOther = kpis.top10TtmTotal - kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const priorOther = kpis.top10PriorTtmTotal - kpis.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
                       const otherAbsChange = currentOther - priorOther;
                       return otherAbsChange >= 0 ? 'text-sage-600' : 'text-terracotta-600';
                     })()
                   }`}>
                     {(() => {
-                      const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
-                      const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
+                      const currentOther = kpis.top10TtmTotal - kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const priorOther = kpis.top10PriorTtmTotal - kpis.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
                       const otherAbsChange = currentOther - priorOther;
                       return (otherAbsChange >= 0 ? '+' : '') + otherAbsChange.toLocaleString();
                     })()}
                   </span>
                   <span className="text-xs text-neutral-500 font-mono text-right">
-                    {(100 - staticTop10.top10.reduce((sum, item) => sum + item.ratio, 0)).toFixed(1)}%
+                    {(100 - kpis.top10.reduce((sum, item) => sum + item.ratio, 0)).toFixed(1)}%
                   </span>
                   <span className={`text-xs font-medium text-right ${
                     (() => {
-                      const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
-                      const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
+                      const currentOther = kpis.top10TtmTotal - kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const priorOther = kpis.top10PriorTtmTotal - kpis.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
                       const otherYoy = priorOther > 0 ? ((currentOther - priorOther) / priorOther * 100) : 0;
                       return otherYoy >= 0.5 ? 'text-sage-600' : otherYoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-400';
                     })()
                   }`}>
                     {(() => {
-                      const currentOther = staticTop10.ttmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total, 0);
-                      const priorOther = staticTop10.priorTtmTotal - staticTop10.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
+                      const currentOther = kpis.top10TtmTotal - kpis.top10.reduce((sum, item) => sum + item.total, 0);
+                      const priorOther = kpis.top10PriorTtmTotal - kpis.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
                       const otherYoy = priorOther > 0 ? ((currentOther - priorOther) / priorOther * 100) : 0;
                       return (otherYoy > 0 ? '+' : '') + otherYoy.toFixed(1) + '%';
                     })()}
