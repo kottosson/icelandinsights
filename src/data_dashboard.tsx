@@ -2,6 +2,51 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin } from 'lucide-react';
 
+// Add custom animations
+const styles = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes countUp {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+  
+  .animate-count-up {
+    animation: countUp 0.3s ease-out;
+  }
+  
+  .pulse-subtle {
+    animation: pulse-subtle 2s ease-in-out infinite;
+  }
+`;
+
 export default function DataDashboard() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -686,8 +731,17 @@ export default function DataDashboard() {
   const yoyCurrentMonth = yoyChartData.length > 0 ? yoyChartData[yoyChartData.length - 1].month : 'Oct';
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-neutral-50" style={{
+      background: `
+        radial-gradient(circle at 20% 50%, rgba(110, 139, 116, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(184, 132, 125, 0.02) 0%, transparent 50%),
+        #FAFAFA
+      `
+    }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+      
+      {/* Custom Styles */}
+      <style>{styles}</style>
       
       {/* Custom Elegant Neutral Palette */}
       <style>{`
@@ -696,11 +750,12 @@ export default function DataDashboard() {
         .bg-sage-50 { background-color: #F5F8F6; }
         .bg-sage-100 { background-color: #EDF2EF; }
         .bg-sage-600 { background-color: #6E8B74; }
-        .text-terracotta-600 { color: #B8847D; }
-        .bg-terracotta-50 { background-color: #FBF7F6; }
-        .bg-terracotta-100 { background-color: #F7EFED; }
+        .text-terracotta-600 { color: #C67B5C; }
+        .text-rose-600 { color: #DC6B5F; }
+        .bg-terracotta-50 { background-color: #FFF5F2; }
+        .bg-rose-100 { background-color: #FFE5E0; }
         .border-sage-200 { border-color: #D4E2D8; }
-        .border-terracotta-200 { border-color: #E8D7D4; }
+        .border-terracotta-200 { border-color: #F4D5C8; }
         .bg-slate-50 { background-color: #F8F9FA; }
       `}</style>
       
@@ -774,17 +829,25 @@ export default function DataDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             
             {/* Card 1: Monthly Passengers */}
-            <div className={`group rounded-xl bg-white border-l-4 ${
-              kpis.yoyChange >= 0 ? 'border-sage-500' : 'border-terracotta-400'
-            } border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-lg transition-all duration-200 relative`}>
+            <div 
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              style={{ 
+                animationDelay: '0ms',
+                borderLeft: `4px solid ${kpis.yoyChange >= 0 ? '#6E8B74' : '#C67B5C'}`,
+                boxShadow: Math.abs(kpis.yoyChange) > 10 
+                  ? `0 4px 20px rgba(${kpis.yoyChange >= 0 ? '110, 139, 116' : '198, 123, 92'}, 0.2)` 
+                  : undefined,
+                willChange: 'box-shadow'
+              }}
+            >
               
               <div className={`absolute inset-0 rounded-xl ${
-                kpis.yoyChange >= 0 ? 'bg-gradient-to-br from-sage-50/0 to-sage-50/10' : 'bg-gradient-to-br from-terracotta-50/0 to-terracotta-50/10'
+                kpis.yoyChange >= 0 ? 'bg-gradient-to-br from-sage-100/0 to-sage-100/20' : 'bg-gradient-to-br from-rose-100/0 to-rose-100/25'
               } opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
               
               <div className="relative">
                 {/* Buttons - Top Right (show on hover) */}
-                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                   <button 
                     onClick={() => generateEmbedCode('kpi', 'Monthly Passengers')}
                     className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
@@ -801,27 +864,27 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">Monthly Passengers</p>
-                <p className="text-[9px] text-neutral-400 mb-2">{kpis.currentMonthName}</p>
+                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-600 mb-1 font-semibold">Monthly Passengers</p>
+                <p className="text-[9px] text-neutral-400 mb-2.5">{kpis.currentMonthName}</p>
                 
-                <div className="mb-1.5 h-12 flex items-center">
-                  <p className="text-2xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                <div className="mb-2 h-12 flex items-center">
+                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                     {kpis.currentMonth}
                   </p>
                 </div>
                 
                 <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[11px] text-neutral-500">vs {kpis.lastYearMonth}</span>
+                  <span className="text-[10px] text-neutral-500">vs {kpis.lastYearMonth}</span>
                   <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
-                    kpis.yoyChange >= 0.5 ? 'bg-sage-50 border border-sage-200' : 
-                    kpis.yoyChange <= -0.5 ? 'bg-terracotta-50 border border-terracotta-200' : 'bg-neutral-100 border border-neutral-200'
+                    kpis.yoyChange >= 0.5 ? 'bg-sage-100' : 
+                    kpis.yoyChange <= -0.5 ? 'bg-rose-100' : 'bg-neutral-100'
                   }`}>
-                    {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-sage-600" /> : 
-                     kpis.yoyChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-terracotta-600" /> :
+                    {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-sage-700" /> : 
+                     kpis.yoyChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-rose-600" /> :
                      <Minus className="w-3.5 h-3.5 text-neutral-500" />}
                     <span className={`text-xs font-semibold ${
                       kpis.yoyChange >= 0.5 ? 'text-sage-700' : 
-                      kpis.yoyChange <= -0.5 ? 'text-terracotta-700' : 'text-neutral-600'
+                      kpis.yoyChange <= -0.5 ? 'text-rose-600' : 'text-neutral-600'
                     }`}>
                       {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}% YoY
                     </span>
@@ -837,16 +900,24 @@ export default function DataDashboard() {
             </div>
             
             {/* Card 2: TTM Passengers */}
-            <div className={`group rounded-xl bg-white border-l-4 ${
-              kpis.ttmChange >= 0 ? 'border-sage-500' : 'border-terracotta-400'
-            } border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-lg transition-all duration-200 relative`}>
+            <div 
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              style={{ 
+                animationDelay: '100ms',
+                borderLeft: `4px solid ${kpis.ttmChange >= 0 ? '#6E8B74' : '#C67B5C'}`,
+                boxShadow: Math.abs(kpis.ttmChange) > 10 
+                  ? `0 4px 20px rgba(${kpis.ttmChange >= 0 ? '110, 139, 116' : '198, 123, 92'}, 0.2)` 
+                  : undefined,
+                willChange: 'box-shadow'
+              }}
+            >
               
               <div className={`absolute inset-0 rounded-xl ${
-                kpis.ttmChange >= 0 ? 'bg-gradient-to-br from-sage-50/0 to-sage-50/10' : 'bg-gradient-to-br from-terracotta-50/0 to-terracotta-50/10'
+                kpis.ttmChange >= 0 ? 'bg-gradient-to-br from-sage-100/0 to-sage-100/20' : 'bg-gradient-to-br from-rose-100/0 to-rose-100/25'
               } opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
               
               <div className="relative">
-                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                   <button 
                     onClick={() => generateEmbedCode('kpi', 'TTM - Foreign Passengers')}
                     className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
@@ -863,27 +934,27 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">TTM Passengers</p>
-                <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
+                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-600 mb-1 font-semibold">TTM Passengers</p>
+                <p className="text-[9px] text-neutral-400 mb-2.5">{kpis.ttmPeriod}</p>
                 
-                <div className="mb-1.5 h-12 flex items-center">
-                  <p className="text-2xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                <div className="mb-2 h-12 flex items-center">
+                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                     {kpis.ttmTotal}
                   </p>
                 </div>
                 
                 <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[11px] text-neutral-500">vs {kpis.lastTtmTotal}</span>
+                  <span className="text-[10px] text-neutral-500">vs {kpis.lastTtmTotal}</span>
                   <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
-                    kpis.ttmChange >= 0.5 ? 'bg-sage-50 border border-sage-200' : 
-                    kpis.ttmChange <= -0.5 ? 'bg-terracotta-50 border border-terracotta-200' : 'bg-neutral-100 border border-neutral-200'
+                    kpis.ttmChange >= 0.5 ? 'bg-sage-100' : 
+                    kpis.ttmChange <= -0.5 ? 'bg-rose-100' : 'bg-neutral-100'
                   }`}>
-                    {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-sage-600" /> : 
-                     kpis.ttmChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-terracotta-600" /> :
+                    {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-sage-700" /> : 
+                     kpis.ttmChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-rose-600" /> :
                      <Minus className="w-3.5 h-3.5 text-neutral-500" />}
                     <span className={`text-xs font-semibold ${
                       kpis.ttmChange >= 0.5 ? 'text-sage-700' : 
-                      kpis.ttmChange <= -0.5 ? 'text-terracotta-700' : 'text-neutral-600'
+                      kpis.ttmChange <= -0.5 ? 'text-rose-600' : 'text-neutral-600'
                     }`}>
                       {kpis.ttmChange > 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}% YoY
                     </span>
@@ -898,12 +969,22 @@ export default function DataDashboard() {
             </div>
 
             {/* Card 3: Largest Gain */}
-            <div className="group rounded-xl bg-white border-l-4 border-sage-500 border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-lg transition-all duration-200 relative">
+            <div 
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              style={{ 
+                animationDelay: '200ms',
+                borderLeft: `4px solid #6E8B74`,
+                boxShadow: Math.abs(kpis.topGrower?.percent || 0) > 10 
+                  ? `0 4px 20px rgba(110, 139, 116, 0.2)` 
+                  : undefined,
+                willChange: 'box-shadow'
+              }}
+            >
               
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-sage-50/0 to-sage-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-sage-100/0 to-sage-100/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               
               <div className="relative">
-                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                   <button 
                     onClick={() => generateEmbedCode('kpi', 'TTM - Largest Gain')}
                     className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
@@ -920,19 +1001,19 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">Largest Gain</p>
-                <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
+                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-600 mb-1 font-semibold">Largest Gain</p>
+                <p className="text-[9px] text-neutral-400 mb-2.5">{kpis.ttmPeriod}</p>
                 
-                <div className="mb-1.5 h-12 flex items-center">
-                  <p className="text-2xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                <div className="mb-2 h-12 flex items-center">
+                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                     {kpis.topGrower && getCountryName(kpis.topGrower.name)}
                   </p>
                 </div>
                 
                 <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[11px] text-neutral-500">+{kpis.topGrower?.change}</span>
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-sage-50 border border-sage-200">
-                    <TrendingUp className="w-3.5 h-3.5 text-sage-600" />
+                  <span className="text-[10px] text-neutral-500">+{kpis.topGrower?.change}</span>
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-sage-100">
+                    <TrendingUp className="w-3.5 h-3.5 text-sage-700" />
                     <span className="text-xs font-semibold text-sage-700">
                       +{kpis.topGrower?.percent.toFixed(1)}% YoY
                     </span>
@@ -947,12 +1028,22 @@ export default function DataDashboard() {
             </div>
 
             {/* Card 4: Largest Decline */}
-            <div className="group rounded-xl bg-white border-l-4 border-terracotta-400 border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-lg transition-all duration-200 relative">
+            <div 
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              style={{ 
+                animationDelay: '300ms',
+                borderLeft: `4px solid #C67B5C`,
+                boxShadow: Math.abs(kpis.topDecliner?.percent || 0) > 10 
+                  ? `0 4px 20px rgba(198, 123, 92, 0.2)` 
+                  : undefined,
+                willChange: 'box-shadow'
+              }}
+            >
               
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-terracotta-50/0 to-terracotta-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-rose-100/0 to-rose-100/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               
               <div className="relative">
-                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                   <button 
                     onClick={() => generateEmbedCode('kpi', 'TTM - Largest Decline')}
                     className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
@@ -969,20 +1060,20 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-[11px] uppercase tracking-widest text-neutral-500 mb-1 font-semibold">Largest Decline</p>
-                <p className="text-[9px] text-neutral-400 mb-2">{kpis.ttmPeriod}</p>
+                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-600 mb-1 font-semibold">Largest Decline</p>
+                <p className="text-[9px] text-neutral-400 mb-2.5">{kpis.ttmPeriod}</p>
                 
-                <div className="mb-1.5 h-12 flex items-center">
-                  <p className="text-2xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                <div className="mb-2 h-12 flex items-center">
+                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                     {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
                   </p>
                 </div>
                 
                 <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[11px] text-neutral-500">-{kpis.topDecliner?.change}</span>
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-terracotta-50 border border-terracotta-200">
-                    <TrendingDown className="w-3.5 h-3.5 text-terracotta-600" />
-                    <span className="text-xs font-semibold text-terracotta-700">
+                  <span className="text-[10px] text-neutral-500">-{kpis.topDecliner?.change}</span>
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100">
+                    <TrendingDown className="w-3.5 h-3.5 text-rose-600" />
+                    <span className="text-xs font-semibold text-rose-600">
                       {kpis.topDecliner?.percent.toFixed(1)}% YoY
                     </span>
                   </div>
@@ -999,21 +1090,21 @@ export default function DataDashboard() {
         )}
         {/* Executive Summary - Key Insights with Visual Support */}
         {kpis && (
-          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-5 shadow-md">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md">
+            <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-sage-600 animate-pulse"></div>
-                <h2 className="text-xl font-bold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                <div className="w-2 h-2 rounded-full bg-sage-600 pulse-subtle"></div>
+                <h2 className="text-2xl font-bold text-neutral-800" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.03em' }}>
                   Executive Summary
                 </h2>
               </div>
-              <span className="text-[10px] text-neutral-500 uppercase tracking-wide">Last 6 months trend</span>
+              <span className="text-[9px] text-neutral-500 uppercase tracking-wider font-medium">Last 6 months trend</span>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
               {/* Insight 1: Current Month Performance */}
-              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200 relative group">
+              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '400ms', willChange: 'box-shadow' }}>
                 {/* Buttons - Top Right (show on hover) */}
                 <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <button 
@@ -1034,8 +1125,8 @@ export default function DataDashboard() {
                 
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
-                    <h3 className="text-sm font-bold text-neutral-900 mb-2">Current Month Performance</h3>
-                    <p className="text-xs text-neutral-700 leading-relaxed mb-3">
+                    <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Current Month Performance</h3>
+                    <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
                       {kpis.currentMonthName} recorded <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
                       {kpis.yoyChange >= 0 ? ' up ' : ' down '}
                       <span className={`font-semibold ${kpis.yoyChange >= 0 ? 'text-sage-600' : 'text-terracotta-600'}`}>
@@ -1120,17 +1211,31 @@ export default function DataDashboard() {
                                 {kpis.overallSparkline.map((point, i) => {
                                   const x = chartLeft + (i / (kpis.overallSparkline.length - 1)) * (chartRight - chartLeft);
                                   const y = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
+                                  const isLast = i === kpis.overallSparkline.length - 1;
                                   
                                   return (
-                                    <circle
-                                      key={`dot-${i}`}
-                                      cx={x}
-                                      cy={y}
-                                      r="3"
-                                      fill={point.value >= 0 ? '#6E8B74' : '#B8847D'}
-                                      stroke="#fff"
-                                      strokeWidth="1.5"
-                                    />
+                                    <g key={`dot-${i}`}>
+                                      {isLast && (
+                                        <circle
+                                          cx={x}
+                                          cy={y}
+                                          r="8"
+                                          fill={point.value >= 0 ? '#6E8B74' : '#C67B5C'}
+                                          opacity="0.2"
+                                          className="pulse-subtle"
+                                        />
+                                      )}
+                                      <circle
+                                        cx={x}
+                                        cy={y}
+                                        r={isLast ? "5" : "3"}
+                                        fill={point.value >= 0 ? '#6E8B74' : '#C67B5C'}
+                                        stroke="#fff"
+                                        strokeWidth="2"
+                                        opacity={isLast ? "1" : "0.9"}
+                                        style={isLast ? { filter: 'drop-shadow(0 0 3px rgba(110, 139, 116, 0.6))' } : {}}
+                                      />
+                                    </g>
                                   );
                                 })}
                                 
@@ -1156,8 +1261,10 @@ export default function DataDashboard() {
 
               {/* Insight 2: Top Growth Market */}
               {kpis.topGrower && (
-                <div className="rounded-lg p-4 border-2 border-sage-200 relative group" style={{
-                  background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)'
+                <div className="rounded-lg p-4 border-2 border-sage-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)',
+                  animationDelay: '500ms',
+                  willChange: 'box-shadow'
                 }}>
                   {/* Buttons - Top Right (show on hover) */}
                   <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -1179,8 +1286,8 @@ export default function DataDashboard() {
                   
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <h3 className="text-sm font-bold text-sage-700 mb-2">Leading Growth Market</h3>
-                      <p className="text-xs text-neutral-700 leading-relaxed mb-3">
+                      <h3 className="text-[13px] font-bold text-sage-700 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Leading Growth Market</h3>
+                      <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topGrower.name)}</span> leads with 
                         <span className="font-semibold text-sage-600"> +{kpis.topGrower.change} passengers</span>
                         , representing a <span className="font-semibold text-sage-600">+{kpis.topGrower.percent.toFixed(1)}%</span> increase.
@@ -1248,9 +1355,31 @@ export default function DataDashboard() {
                                   {kpis.topGrowerSparkline.map((point, i) => {
                                     const x = chartLeft + (i / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
                                     const y = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
+                                    const isLast = i === kpis.topGrowerSparkline.length - 1;
                                     
                                     return (
-                                      <circle key={`dot-${i}`} cx={x} cy={y} r="3" fill="#6E8B74" stroke="#fff" strokeWidth="1.5" />
+                                      <g key={`dot-${i}`}>
+                                        {isLast && (
+                                          <circle
+                                            cx={x}
+                                            cy={y}
+                                            r="8"
+                                            fill="#6E8B74"
+                                            opacity="0.2"
+                                            className="pulse-subtle"
+                                          />
+                                        )}
+                                        <circle 
+                                          cx={x} 
+                                          cy={y} 
+                                          r={isLast ? "5" : "3"} 
+                                          fill="#6E8B74" 
+                                          stroke="#fff" 
+                                          strokeWidth="2"
+                                          opacity={isLast ? "1" : "0.9"}
+                                          style={isLast ? { filter: 'drop-shadow(0 0 3px rgba(110, 139, 116, 0.6))' } : {}}
+                                        />
+                                      </g>
                                     );
                                   })}
                                   
@@ -1277,8 +1406,10 @@ export default function DataDashboard() {
 
               {/* Insight 3: Attention Market */}
               {kpis.topDecliner && (
-                <div className="rounded-lg p-4 border-2 border-terracotta-200 relative group" style={{
-                  background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)'
+                <div className="rounded-lg p-4 border-2 border-terracotta-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{
+                  background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)',
+                  animationDelay: '600ms',
+                  willChange: 'box-shadow'
                 }}>
                   {/* Buttons - Top Right (show on hover) */}
                   <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -1300,8 +1431,8 @@ export default function DataDashboard() {
                   
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <h3 className="text-sm font-bold text-terracotta-600 mb-2">Market Requiring Attention</h3>
-                      <p className="text-xs text-neutral-700 leading-relaxed mb-3">
+                      <h3 className="text-[13px] font-bold text-terracotta-600 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Market Requiring Attention</h3>
+                      <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topDecliner.name)}</span> declined by 
                         <span className="font-semibold text-terracotta-600"> -{kpis.topDecliner.change} passengers</span>
                         , a <span className="font-semibold text-terracotta-600">{kpis.topDecliner.percent.toFixed(1)}%</span> decrease.
@@ -1369,9 +1500,31 @@ export default function DataDashboard() {
                                   {kpis.topDeclinerSparkline.map((point, i) => {
                                     const x = chartLeft + (i / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
                                     const y = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
+                                    const isLast = i === kpis.topDeclinerSparkline.length - 1;
                                     
                                     return (
-                                      <circle key={`dot-${i}`} cx={x} cy={y} r="3" fill="#B8847D" stroke="#fff" strokeWidth="1.5" />
+                                      <g key={`dot-${i}`}>
+                                        {isLast && (
+                                          <circle
+                                            cx={x}
+                                            cy={y}
+                                            r="8"
+                                            fill="#C67B5C"
+                                            opacity="0.2"
+                                            className="pulse-subtle"
+                                          />
+                                        )}
+                                        <circle 
+                                          cx={x} 
+                                          cy={y} 
+                                          r={isLast ? "5" : "3"} 
+                                          fill="#C67B5C" 
+                                          stroke="#fff" 
+                                          strokeWidth="2"
+                                          opacity={isLast ? "1" : "0.9"}
+                                          style={isLast ? { filter: 'drop-shadow(0 0 3px rgba(198, 123, 92, 0.6))' } : {}}
+                                        />
+                                      </g>
                                     );
                                   })}
                                   
