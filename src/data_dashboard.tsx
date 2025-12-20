@@ -833,17 +833,12 @@ export default function DataDashboard() {
               className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
               style={{ 
                 animationDelay: '0ms',
-                borderLeft: `4px solid ${kpis.yoyChange >= 0 ? '#6E8B74' : '#C67B5C'}`,
-                boxShadow: Math.abs(kpis.yoyChange) > 10 
-                  ? `0 4px 20px rgba(${kpis.yoyChange >= 0 ? '110, 139, 116' : '198, 123, 92'}, 0.2)` 
-                  : undefined,
+                borderLeft: `4px solid #3B82F6`,
                 willChange: 'box-shadow'
               }}
             >
               
-              <div className={`absolute inset-0 rounded-xl ${
-                kpis.yoyChange >= 0 ? 'bg-gradient-to-br from-sage-100/0 to-sage-100/20' : 'bg-gradient-to-br from-rose-100/0 to-rose-100/25'
-              } opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               
               <div className="relative">
                 {/* Buttons - Top Right (show on hover) */}
@@ -864,8 +859,8 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-600 mb-1 font-semibold">Monthly Passengers</p>
-                <p className="text-[9px] text-neutral-400 mb-2.5">{kpis.currentMonthName}</p>
+                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Monthly Passengers</p>
+                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.currentMonthName}</p>
                 
                 <div className="mb-2 h-12 flex items-center">
                   <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
@@ -875,16 +870,18 @@ export default function DataDashboard() {
                 
                 <div className="flex items-center gap-2 flex-wrap mb-3">
                   <span className="text-[10px] text-neutral-500">vs {kpis.lastYearMonth}</span>
-                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
-                    kpis.yoyChange >= 0.5 ? 'bg-sage-100' : 
-                    kpis.yoyChange <= -0.5 ? 'bg-rose-100' : 'bg-neutral-100'
+                  <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${
+                    kpis.yoyChange >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
+                    kpis.yoyChange <= -0.5 ? 'bg-red-50 border border-red-200' : 
+                    'bg-neutral-100 border border-neutral-200'
                   }`}>
-                    {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-sage-700" /> : 
-                     kpis.yoyChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-rose-600" /> :
+                    {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
+                     kpis.yoyChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
                      <Minus className="w-3.5 h-3.5 text-neutral-500" />}
                     <span className={`text-xs font-semibold ${
-                      kpis.yoyChange >= 0.5 ? 'text-sage-700' : 
-                      kpis.yoyChange <= -0.5 ? 'text-rose-600' : 'text-neutral-600'
+                      kpis.yoyChange >= 0.5 ? 'text-emerald-700' : 
+                      kpis.yoyChange <= -0.5 ? 'text-red-700' : 
+                      'text-neutral-600'
                     }`}>
                       {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}% YoY
                     </span>
@@ -904,17 +901,12 @@ export default function DataDashboard() {
               className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
               style={{ 
                 animationDelay: '100ms',
-                borderLeft: `4px solid ${kpis.ttmChange >= 0 ? '#6E8B74' : '#C67B5C'}`,
-                boxShadow: Math.abs(kpis.ttmChange) > 10 
-                  ? `0 4px 20px rgba(${kpis.ttmChange >= 0 ? '110, 139, 116' : '198, 123, 92'}, 0.2)` 
-                  : undefined,
+                borderLeft: `4px solid #3B82F6`,
                 willChange: 'box-shadow'
               }}
             >
               
-              <div className={`absolute inset-0 rounded-xl ${
-                kpis.ttmChange >= 0 ? 'bg-gradient-to-br from-sage-100/0 to-sage-100/20' : 'bg-gradient-to-br from-rose-100/0 to-rose-100/25'
-              } opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               
               <div className="relative">
                 <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
@@ -934,8 +926,8 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-600 mb-1 font-semibold">TTM Passengers</p>
-                <p className="text-[9px] text-neutral-400 mb-2.5">{kpis.ttmPeriod}</p>
+                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">TTM Passengers</p>
+                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
                 
                 <div className="mb-2 h-12 flex items-center">
                   <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
@@ -945,16 +937,18 @@ export default function DataDashboard() {
                 
                 <div className="flex items-center gap-2 flex-wrap mb-3">
                   <span className="text-[10px] text-neutral-500">vs {kpis.lastTtmTotal}</span>
-                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
-                    kpis.ttmChange >= 0.5 ? 'bg-sage-100' : 
-                    kpis.ttmChange <= -0.5 ? 'bg-rose-100' : 'bg-neutral-100'
+                  <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${
+                    kpis.ttmChange >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
+                    kpis.ttmChange <= -0.5 ? 'bg-red-50 border border-red-200' : 
+                    'bg-neutral-100 border border-neutral-200'
                   }`}>
-                    {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-sage-700" /> : 
-                     kpis.ttmChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-rose-600" /> :
+                    {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
+                     kpis.ttmChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
                      <Minus className="w-3.5 h-3.5 text-neutral-500" />}
                     <span className={`text-xs font-semibold ${
-                      kpis.ttmChange >= 0.5 ? 'text-sage-700' : 
-                      kpis.ttmChange <= -0.5 ? 'text-rose-600' : 'text-neutral-600'
+                      kpis.ttmChange >= 0.5 ? 'text-emerald-700' : 
+                      kpis.ttmChange <= -0.5 ? 'text-red-700' : 
+                      'text-neutral-600'
                     }`}>
                       {kpis.ttmChange > 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}% YoY
                     </span>
@@ -973,15 +967,12 @@ export default function DataDashboard() {
               className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
               style={{ 
                 animationDelay: '200ms',
-                borderLeft: `4px solid #6E8B74`,
-                boxShadow: Math.abs(kpis.topGrower?.percent || 0) > 10 
-                  ? `0 4px 20px rgba(110, 139, 116, 0.2)` 
-                  : undefined,
+                borderLeft: `4px solid #3B82F6`,
                 willChange: 'box-shadow'
               }}
             >
               
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-sage-100/0 to-sage-100/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               
               <div className="relative">
                 <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
@@ -1001,8 +992,8 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-600 mb-1 font-semibold">Largest Gain</p>
-                <p className="text-[9px] text-neutral-400 mb-2.5">{kpis.ttmPeriod}</p>
+                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Largest Gain</p>
+                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
                 
                 <div className="mb-2 h-12 flex items-center">
                   <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
@@ -1012,9 +1003,9 @@ export default function DataDashboard() {
                 
                 <div className="flex items-center gap-2 flex-wrap mb-3">
                   <span className="text-[10px] text-neutral-500">+{kpis.topGrower?.change}</span>
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-sage-100">
-                    <TrendingUp className="w-3.5 h-3.5 text-sage-700" />
-                    <span className="text-xs font-semibold text-sage-700">
+                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
+                    <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-xs font-semibold text-emerald-700">
                       +{kpis.topGrower?.percent.toFixed(1)}% YoY
                     </span>
                   </div>
@@ -1032,15 +1023,12 @@ export default function DataDashboard() {
               className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
               style={{ 
                 animationDelay: '300ms',
-                borderLeft: `4px solid #C67B5C`,
-                boxShadow: Math.abs(kpis.topDecliner?.percent || 0) > 10 
-                  ? `0 4px 20px rgba(198, 123, 92, 0.2)` 
-                  : undefined,
+                borderLeft: `4px solid #3B82F6`,
                 willChange: 'box-shadow'
               }}
             >
               
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-rose-100/0 to-rose-100/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               
               <div className="relative">
                 <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
@@ -1060,8 +1048,8 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-[10px] uppercase tracking-[0.1em] text-neutral-600 mb-1 font-semibold">Largest Decline</p>
-                <p className="text-[9px] text-neutral-400 mb-2.5">{kpis.ttmPeriod}</p>
+                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Largest Decline</p>
+                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
                 
                 <div className="mb-2 h-12 flex items-center">
                   <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
@@ -1071,9 +1059,9 @@ export default function DataDashboard() {
                 
                 <div className="flex items-center gap-2 flex-wrap mb-3">
                   <span className="text-[10px] text-neutral-500">-{kpis.topDecliner?.change}</span>
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100">
-                    <TrendingDown className="w-3.5 h-3.5 text-rose-600" />
-                    <span className="text-xs font-semibold text-rose-600">
+                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 border border-red-200">
+                    <TrendingDown className="w-3.5 h-3.5 text-red-600" />
+                    <span className="text-xs font-semibold text-red-700">
                       {kpis.topDecliner?.percent.toFixed(1)}% YoY
                     </span>
                   </div>
@@ -1093,7 +1081,7 @@ export default function DataDashboard() {
           <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-sage-600 pulse-subtle"></div>
+                <div className="w-2 h-2 rounded-full bg-amber-500 pulse-subtle"></div>
                 <h2 className="text-2xl font-bold text-neutral-800" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.03em' }}>
                   Executive Summary
                 </h2>
@@ -1212,6 +1200,7 @@ export default function DataDashboard() {
                                   const x = chartLeft + (i / (kpis.overallSparkline.length - 1)) * (chartRight - chartLeft);
                                   const y = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
                                   const isLast = i === kpis.overallSparkline.length - 1;
+                                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                   
                                   return (
                                     <g key={`dot-${i}`}>
@@ -1220,7 +1209,7 @@ export default function DataDashboard() {
                                           cx={x}
                                           cy={y}
                                           r="8"
-                                          fill={point.value >= 0 ? '#6E8B74' : '#C67B5C'}
+                                          fill={point.value >= 0 ? '#10B981' : '#EF4444'}
                                           opacity="0.2"
                                           className="pulse-subtle"
                                         />
@@ -1229,12 +1218,15 @@ export default function DataDashboard() {
                                         cx={x}
                                         cy={y}
                                         r={isLast ? "5" : "3"}
-                                        fill={point.value >= 0 ? '#6E8B74' : '#C67B5C'}
+                                        fill={point.value >= 0 ? '#10B981' : '#EF4444'}
                                         stroke="#fff"
                                         strokeWidth="2"
                                         opacity={isLast ? "1" : "0.9"}
-                                        style={isLast ? { filter: 'drop-shadow(0 0 3px rgba(110, 139, 116, 0.6))' } : {}}
-                                      />
+                                        style={isLast ? { filter: `drop-shadow(0 0 3px ${point.value >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'})` } : {}}
+                                        className="cursor-pointer hover:r-6 transition-all"
+                                      >
+                                        <title>{monthNames[point.month - 1]}: {point.value > 0 ? '+' : ''}{point.value.toFixed(1)}%</title>
+                                      </circle>
                                     </g>
                                   );
                                 })}
@@ -1356,6 +1348,7 @@ export default function DataDashboard() {
                                     const x = chartLeft + (i / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
                                     const y = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
                                     const isLast = i === kpis.topGrowerSparkline.length - 1;
+                                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                     
                                     return (
                                       <g key={`dot-${i}`}>
@@ -1364,7 +1357,7 @@ export default function DataDashboard() {
                                             cx={x}
                                             cy={y}
                                             r="8"
-                                            fill="#6E8B74"
+                                            fill={point.value >= 0 ? '#10B981' : '#EF4444'}
                                             opacity="0.2"
                                             className="pulse-subtle"
                                           />
@@ -1373,12 +1366,15 @@ export default function DataDashboard() {
                                           cx={x} 
                                           cy={y} 
                                           r={isLast ? "5" : "3"} 
-                                          fill="#6E8B74" 
+                                          fill={point.value >= 0 ? '#10B981' : '#EF4444'}
                                           stroke="#fff" 
                                           strokeWidth="2"
                                           opacity={isLast ? "1" : "0.9"}
-                                          style={isLast ? { filter: 'drop-shadow(0 0 3px rgba(110, 139, 116, 0.6))' } : {}}
-                                        />
+                                          style={isLast ? { filter: `drop-shadow(0 0 3px ${point.value >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'})` } : {}}
+                                          className="cursor-pointer hover:r-6 transition-all"
+                                        >
+                                          <title>{monthNames[point.month - 1]}: {point.value > 0 ? '+' : ''}{point.value.toFixed(1)}%</title>
+                                        </circle>
                                       </g>
                                     );
                                   })}
@@ -1501,6 +1497,7 @@ export default function DataDashboard() {
                                     const x = chartLeft + (i / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
                                     const y = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
                                     const isLast = i === kpis.topDeclinerSparkline.length - 1;
+                                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                     
                                     return (
                                       <g key={`dot-${i}`}>
@@ -1509,7 +1506,7 @@ export default function DataDashboard() {
                                             cx={x}
                                             cy={y}
                                             r="8"
-                                            fill="#C67B5C"
+                                            fill={point.value >= 0 ? '#10B981' : '#EF4444'}
                                             opacity="0.2"
                                             className="pulse-subtle"
                                           />
@@ -1518,12 +1515,15 @@ export default function DataDashboard() {
                                           cx={x} 
                                           cy={y} 
                                           r={isLast ? "5" : "3"} 
-                                          fill="#C67B5C" 
+                                          fill={point.value >= 0 ? '#10B981' : '#EF4444'}
                                           stroke="#fff" 
                                           strokeWidth="2"
                                           opacity={isLast ? "1" : "0.9"}
-                                          style={isLast ? { filter: 'drop-shadow(0 0 3px rgba(198, 123, 92, 0.6))' } : {}}
-                                        />
+                                          style={isLast ? { filter: `drop-shadow(0 0 3px ${point.value >= 0 ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)'})` } : {}}
+                                          className="cursor-pointer hover:r-6 transition-all"
+                                        >
+                                          <title>{monthNames[point.month - 1]}: {point.value > 0 ? '+' : ''}{point.value.toFixed(1)}%</title>
+                                        </circle>
                                       </g>
                                     );
                                   })}
