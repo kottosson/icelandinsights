@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin } from 'lucide-react';
+import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Add custom animations
 const styles = `
@@ -49,7 +49,8 @@ const styles = `
 
 export default function DataDashboard() {
   const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]); // This will now be for sections ABOVE filters (always full data)
+  const [userFilteredData, setUserFilteredData] = useState([]); // This is for sections BELOW filters
   const [selectedCategory, setSelectedCategory] = useState('Útlendingar alls');
   const [selectedCategories, setSelectedCategories] = useState(['Útlendingar alls']);
   const [categories, setCategories] = useState([]);
@@ -57,6 +58,14 @@ export default function DataDashboard() {
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: 'ratio', direction: 'desc' }); // Default sort by % Total descending
+
+  // Date range selector state (for user filters only)
+  const [dateRangePreset, setDateRangePreset] = useState('last6months');
+  const [availableYears, setAvailableYears] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [customStartDate, setCustomStartDate] = useState(null);
+  const [customEndDate, setCustomEndDate] = useState(null);
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
 
   // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
@@ -109,6 +118,68 @@ export default function DataDashboard() {
   const getCountryColor = (icelandic) => countryInfo[icelandic]?.color || '#6B7C8C';
   const getContinent = (icelandic) => countryInfo[icelandic]?.continent || 'Other';
 
+  // Date range filtering helper
+  const getFilteredDataByDateRange = (fullData) => {
+    if (!fullData || fullData.length === 0) return [];
+    
+    // Sort data by date
+    const sortedData = [...fullData].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    let startDate, endDate;
+    const latestDate = new Date(sortedData[sortedData.length - 1].date);
+    
+    switch (dateRangePreset) {
+      case 'last6months':
+        startDate = new Date(latestDate);
+        startDate.setMonth(startDate.getMonth() - 6);
+        endDate = latestDate;
+        break;
+        
+      case 'last12months':
+        startDate = new Date(latestDate);
+        startDate.setMonth(startDate.getMonth() - 12);
+        endDate = latestDate;
+        break;
+        
+      case 'ytd':
+        startDate = new Date(latestDate.getFullYear(), 0, 1);
+        endDate = latestDate;
+        break;
+        
+      case 'last2years':
+        startDate = new Date(latestDate);
+        startDate.setFullYear(startDate.getFullYear() - 2);
+        endDate = latestDate;
+        break;
+        
+      case 'specificYear':
+        if (selectedYear) {
+          startDate = new Date(selectedYear, 0, 1);
+          endDate = new Date(selectedYear, 11, 31);
+        } else {
+          return sortedData;
+        }
+        break;
+        
+      case 'custom':
+        if (customStartDate && customEndDate) {
+          startDate = new Date(customStartDate);
+          endDate = new Date(customEndDate);
+        } else {
+          return sortedData;
+        }
+        break;
+        
+      default:
+        return sortedData;
+    }
+    
+    return sortedData.filter(row => {
+      const rowDate = new Date(row.date);
+      return rowDate >= startDate && rowDate <= endDate;
+    });
+  };
+
   useEffect(() => {
     // Load data from JSON file
     const loadData = async () => {
@@ -117,10 +188,12 @@ export default function DataDashboard() {
         const jsonData = await response.json();
         
         const fullData = [];
+        const years = new Set();
         
         // Load ALL countries from the data dynamically
         Object.entries(jsonData.monthlyData).forEach(([dateStr, values]) => {
           const [year, month] = dateStr.split('-').map(Number);
+          years.add(year);
           
           // Load all countries that have data
           Object.entries(values).forEach(([country, value]) => {
@@ -137,6 +210,9 @@ export default function DataDashboard() {
         });
         
         setData(fullData);
+        setAvailableYears([...years].sort((a, b) => b - a)); // Descending order
+        setSelectedYear(Math.max(...years)); // Set to latest year
+        
         const uniqueCategories = [...new Set(fullData.map(row => row.flokkur))];
         setCategories(uniqueCategories);
         setSelectedCategory('Útlendingar alls');
@@ -154,21 +230,34 @@ export default function DataDashboard() {
 
   useEffect(() => {
     if (data.length > 0 && selectedCategories.length > 0) {
-      const filtered = data
+      // For sections ABOVE filters (Executive Summary, KPIs, Top 10, Continent)
+      // Always use full data for calculations, but display focuses on last 6 months
+      const sortedData = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+      
+      const filtered = sortedData
         .filter(row => selectedCategories.includes(row.flokkur))
         .sort((a, b) => new Date(a.date) - new Date(b.date));
       setFilteredData(filtered);
       
+      // Generate KPIs and insights using FULL dataset (needs 24+ months for YoY/TTM)
       if (selectedCategories.includes('Farþegar alls')) {
-        const foreignPassengers = data.filter(row => row.flokkur === 'Útlendingar alls');
-        generateInsightsAndKPIs(data, foreignPassengers, selectedCategories);
+        const foreignPassengers = sortedData.filter(row => row.flokkur === 'Útlendingar alls');
+        generateInsightsAndKPIs(sortedData, foreignPassengers, selectedCategories);
       } else if (selectedCategories.includes('Útlendingar alls')) {
-        generateInsightsAndKPIs(data, filtered, selectedCategories);
+        generateInsightsAndKPIs(sortedData, filtered, selectedCategories);
       } else {
-        generateInsightsAndKPIs(data, filtered, selectedCategories);
+        generateInsightsAndKPIs(sortedData, filtered, selectedCategories);
       }
+      
+      // For sections BELOW filters (charts, detailed tables)
+      // Apply user's date range filter
+      const dateFiltered = getFilteredDataByDateRange(data);
+      const userFiltered = dateFiltered
+        .filter(row => selectedCategories.includes(row.flokkur))
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+      setUserFilteredData(userFiltered);
     }
-  }, [selectedCategories, data]);
+  }, [selectedCategories, data, dateRangePreset, selectedYear, customStartDate, customEndDate]);
 
   const generateInsightsAndKPIs = async (allData, filteredData, selectedCats = selectedCategories) => {
     setLoading(true);
@@ -586,7 +675,7 @@ export default function DataDashboard() {
   const exportToExcel = () => {
     // Create CSV content from filtered data
     const headers = ['Date', 'Category', 'Passengers'];
-    const rows = filteredData.map(row => [
+    const rows = userFilteredData.map(row => [
       new Date(row.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }),
       getCountryName(row.flokkur),
       row.fjöldi
@@ -658,12 +747,12 @@ export default function DataDashboard() {
   const prepareChartData = () => {
     if (selectedCategories.length === 0) return [];
     
-    const last24Dates = [...new Set(filteredData.slice(-24).map(d => d.date))].sort();
+    const last24Dates = [...new Set(userFilteredData.slice(-24).map(d => d.date))].sort();
     
     return last24Dates.map(date => {
       const row = { date };
       selectedCategories.forEach(cat => {
-        const dataPoint = filteredData.find(d => d.date === date && d.flokkur === cat);
+        const dataPoint = userFilteredData.find(d => d.date === date && d.flokkur === cat);
         row[cat] = dataPoint ? dataPoint.fjöldi : null;
       });
       return row;
@@ -824,258 +913,6 @@ export default function DataDashboard() {
 
       <div className="max-w-7xl mx-auto px-6 pb-6 space-y-4">
 
-
-        {kpis && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            {/* Card 1: Monthly Passengers */}
-            <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
-              style={{ 
-                animationDelay: '0ms',
-                borderLeft: `4px solid #3B82F6`,
-                willChange: 'box-shadow'
-              }}
-            >
-              
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
-              <div className="relative">
-                {/* Buttons - Top Right (show on hover) */}
-                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                  <button 
-                    onClick={() => generateEmbedCode('kpi', 'Monthly Passengers')}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
-                    title="Get embed code"
-                  >
-                    <Code className="w-3.5 h-3.5 text-neutral-500" />
-                  </button>
-                  <button 
-                    onClick={() => shareKPI('Monthly Passengers', `${kpis.currentMonth} passengers in ${kpis.currentMonthName}\n${kpis.yoyChange > 0 ? '+' : ''}${kpis.yoyChange.toFixed(1)}% YoY vs ${kpis.lastYearMonthName}`)}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
-                    title="Share on Twitter"
-                  >
-                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
-                  </button>
-                </div>
-                
-                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Monthly Passengers</p>
-                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.currentMonthName}</p>
-                
-                <div className="mb-2 h-12 flex items-center">
-                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                    {kpis.currentMonth}
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[10px] text-neutral-500">vs {kpis.lastYearMonth}</span>
-                  <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${
-                    kpis.yoyChange >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
-                    kpis.yoyChange <= -0.5 ? 'bg-red-50 border border-red-200' : 
-                    'bg-neutral-100 border border-neutral-200'
-                  }`}>
-                    {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
-                     kpis.yoyChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
-                     <Minus className="w-3.5 h-3.5 text-neutral-500" />}
-                    <span className={`text-xs font-semibold ${
-                      kpis.yoyChange >= 0.5 ? 'text-emerald-700' : 
-                      kpis.yoyChange <= -0.5 ? 'text-red-700' : 
-                      'text-neutral-600'
-                    }`}>
-                      {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}% YoY
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Clean Footer */}
-                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Card 2: TTM Passengers */}
-            <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
-              style={{ 
-                animationDelay: '100ms',
-                borderLeft: `4px solid #3B82F6`,
-                willChange: 'box-shadow'
-              }}
-            >
-              
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
-              <div className="relative">
-                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                  <button 
-                    onClick={() => generateEmbedCode('kpi', 'TTM - Foreign Passengers')}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
-                    title="Get embed code"
-                  >
-                    <Code className="w-3.5 h-3.5 text-neutral-500" />
-                  </button>
-                  <button 
-                    onClick={() => shareKPI('TTM - Foreign Passengers', `${kpis.ttmTotal} passengers (${kpis.ttmPeriod})\n${kpis.ttmChange > 0 ? '+' : ''}${kpis.ttmChange.toFixed(1)}% vs prior TTM`)}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
-                    title="Share on Twitter"
-                  >
-                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
-                  </button>
-                </div>
-                
-                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">TTM Passengers</p>
-                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
-                
-                <div className="mb-2 h-12 flex items-center">
-                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                    {kpis.ttmTotal}
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[10px] text-neutral-500">vs {kpis.lastTtmTotal}</span>
-                  <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${
-                    kpis.ttmChange >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
-                    kpis.ttmChange <= -0.5 ? 'bg-red-50 border border-red-200' : 
-                    'bg-neutral-100 border border-neutral-200'
-                  }`}>
-                    {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
-                     kpis.ttmChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
-                     <Minus className="w-3.5 h-3.5 text-neutral-500" />}
-                    <span className={`text-xs font-semibold ${
-                      kpis.ttmChange >= 0.5 ? 'text-emerald-700' : 
-                      kpis.ttmChange <= -0.5 ? 'text-red-700' : 
-                      'text-neutral-600'
-                    }`}>
-                      {kpis.ttmChange > 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}% YoY
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3: Largest Gain */}
-            <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
-              style={{ 
-                animationDelay: '200ms',
-                borderLeft: `4px solid #3B82F6`,
-                willChange: 'box-shadow'
-              }}
-            >
-              
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
-              <div className="relative">
-                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                  <button 
-                    onClick={() => generateEmbedCode('kpi', 'TTM - Largest Gain')}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
-                    title="Get embed code"
-                  >
-                    <Code className="w-3.5 h-3.5 text-neutral-500" />
-                  </button>
-                  <button 
-                    onClick={() => shareKPI('TTM - Largest Gain', `${getCountryName(kpis.topGrower?.name)}\n${kpis.topGrower?.current.toLocaleString()} vs ${kpis.topGrower?.prior.toLocaleString()} prior TTM\n+${kpis.topGrower?.change} (+${kpis.topGrower?.percent.toFixed(1)}%)`)}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
-                    title="Share on Twitter"
-                  >
-                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
-                  </button>
-                </div>
-                
-                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Largest Gain</p>
-                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
-                
-                <div className="mb-2 h-12 flex items-center">
-                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                    {kpis.topGrower && getCountryName(kpis.topGrower.name)}
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[10px] text-neutral-500">+{kpis.topGrower?.change}</span>
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
-                    <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-xs font-semibold text-emerald-700">
-                      +{kpis.topGrower?.percent.toFixed(1)}% YoY
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 4: Largest Decline */}
-            <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
-              style={{ 
-                animationDelay: '300ms',
-                borderLeft: `4px solid #3B82F6`,
-                willChange: 'box-shadow'
-              }}
-            >
-              
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
-              <div className="relative">
-                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                  <button 
-                    onClick={() => generateEmbedCode('kpi', 'TTM - Largest Decline')}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
-                    title="Get embed code"
-                  >
-                    <Code className="w-3.5 h-3.5 text-neutral-500" />
-                  </button>
-                  <button 
-                    onClick={() => shareKPI('TTM - Largest Decline', `${getCountryName(kpis.topDecliner?.name)}\n${kpis.topDecliner?.current.toLocaleString()} vs ${kpis.topDecliner?.prior.toLocaleString()} prior TTM\n-${kpis.topDecliner?.change} (${kpis.topDecliner?.percent.toFixed(1)}%)`)}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
-                    title="Share on Twitter"
-                  >
-                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
-                  </button>
-                </div>
-                
-                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Largest Decline</p>
-                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
-                
-                <div className="mb-2 h-12 flex items-center">
-                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                    {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[10px] text-neutral-500">-{kpis.topDecliner?.change}</span>
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 border border-red-200">
-                    <TrendingDown className="w-3.5 h-3.5 text-red-600" />
-                    <span className="text-xs font-semibold text-red-700">
-                      {kpis.topDecliner?.percent.toFixed(1)}% YoY
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
-                </div>
-              </div>
-            </div>
-            
-          </div>
-        )}
         {/* Executive Summary - Key Insights with Visual Support */}
         {kpis && (
           <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md">
@@ -1117,10 +954,14 @@ export default function DataDashboard() {
                     <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
                       {kpis.currentMonthName} recorded <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
                       {kpis.yoyChange >= 0 ? ' up ' : ' down '}
-                      <span className={`font-semibold ${kpis.yoyChange >= 0 ? 'text-sage-600' : 'text-terracotta-600'}`}>
+                      <span className={`font-semibold ${kpis.yoyChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                         {Math.abs(kpis.yoyChange).toFixed(1)}% YoY
                       </span>
-                      {kpis.yoyChange < 0 ? '. However, TTM trend remains positive at +' + kpis.ttmChange.toFixed(1) + '%.' : '.'}
+                      {kpis.yoyChange < 0 && kpis.ttmChange >= 0 
+                        ? '. However, TTM trend remains positive at +' + kpis.ttmChange.toFixed(1) + '%.' 
+                        : kpis.yoyChange < 0 && kpis.ttmChange < 0 
+                        ? '. TTM trend is also negative at ' + kpis.ttmChange.toFixed(1) + '%.'
+                        : '.'}
                     </p>
                   </div>
                 </div>
@@ -1132,7 +973,7 @@ export default function DataDashboard() {
                       <p className="text-[9px] text-neutral-500">Current Month: 
                         <span className={`font-semibold ml-1 ${
                           kpis.yoyChange >= 0 
-                            ? 'text-sage-600' : 'text-terracotta-600'
+                            ? 'text-emerald-600' : 'text-red-600'
                         }`}>
                           {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}%
                         </span>
@@ -1553,6 +1394,258 @@ export default function DataDashboard() {
           </div>
         )}
 
+
+        {kpis && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Card 1: Monthly Passengers */}
+            <div 
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              style={{ 
+                animationDelay: '0ms',
+                borderLeft: `4px solid #3B82F6`,
+                willChange: 'box-shadow'
+              }}
+            >
+              
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              
+              <div className="relative">
+                {/* Buttons - Top Right (show on hover) */}
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                  <button 
+                    onClick={() => generateEmbedCode('kpi', 'Monthly Passengers')}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Get embed code"
+                  >
+                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                  <button 
+                    onClick={() => shareKPI('Monthly Passengers', `${kpis.currentMonth} passengers in ${kpis.currentMonthName}\n${kpis.yoyChange > 0 ? '+' : ''}${kpis.yoyChange.toFixed(1)}% YoY vs ${kpis.lastYearMonthName}`)}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Share on Twitter"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                </div>
+                
+                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Monthly Passengers</p>
+                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.currentMonthName}</p>
+                
+                <div className="mb-2 h-12 flex items-center">
+                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                    {kpis.currentMonth}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-[10px] text-neutral-500">vs {kpis.lastYearMonth}</span>
+                  <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${
+                    kpis.yoyChange >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
+                    kpis.yoyChange <= -0.5 ? 'bg-red-50 border border-red-200' : 
+                    'bg-neutral-100 border border-neutral-200'
+                  }`}>
+                    {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
+                     kpis.yoyChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
+                     <Minus className="w-3.5 h-3.5 text-neutral-500" />}
+                    <span className={`text-xs font-semibold ${
+                      kpis.yoyChange >= 0.5 ? 'text-emerald-700' : 
+                      kpis.yoyChange <= -0.5 ? 'text-red-700' : 
+                      'text-neutral-600'
+                    }`}>
+                      {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}% YoY
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Clean Footer */}
+                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
+                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Card 2: TTM Passengers */}
+            <div 
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              style={{ 
+                animationDelay: '100ms',
+                borderLeft: `4px solid #3B82F6`,
+                willChange: 'box-shadow'
+              }}
+            >
+              
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              
+              <div className="relative">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                  <button 
+                    onClick={() => generateEmbedCode('kpi', 'TTM - Foreign Passengers')}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Get embed code"
+                  >
+                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                  <button 
+                    onClick={() => shareKPI('TTM - Foreign Passengers', `${kpis.ttmTotal} passengers (${kpis.ttmPeriod})\n${kpis.ttmChange > 0 ? '+' : ''}${kpis.ttmChange.toFixed(1)}% vs prior TTM`)}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Share on Twitter"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                </div>
+                
+                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">TTM Passengers</p>
+                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
+                
+                <div className="mb-2 h-12 flex items-center">
+                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                    {kpis.ttmTotal}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-[10px] text-neutral-500">vs {kpis.lastTtmTotal}</span>
+                  <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${
+                    kpis.ttmChange >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
+                    kpis.ttmChange <= -0.5 ? 'bg-red-50 border border-red-200' : 
+                    'bg-neutral-100 border border-neutral-200'
+                  }`}>
+                    {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
+                     kpis.ttmChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
+                     <Minus className="w-3.5 h-3.5 text-neutral-500" />}
+                    <span className={`text-xs font-semibold ${
+                      kpis.ttmChange >= 0.5 ? 'text-emerald-700' : 
+                      kpis.ttmChange <= -0.5 ? 'text-red-700' : 
+                      'text-neutral-600'
+                    }`}>
+                      {kpis.ttmChange > 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}% YoY
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
+                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Largest Gain */}
+            <div 
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              style={{ 
+                animationDelay: '200ms',
+                borderLeft: `4px solid #3B82F6`,
+                willChange: 'box-shadow'
+              }}
+            >
+              
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              
+              <div className="relative">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                  <button 
+                    onClick={() => generateEmbedCode('kpi', 'TTM - Largest Gain')}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Get embed code"
+                  >
+                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                  <button 
+                    onClick={() => shareKPI('TTM - Largest Gain', `${getCountryName(kpis.topGrower?.name)}\n${kpis.topGrower?.current.toLocaleString()} vs ${kpis.topGrower?.prior.toLocaleString()} prior TTM\n+${kpis.topGrower?.change} (+${kpis.topGrower?.percent.toFixed(1)}%)`)}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Share on Twitter"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                </div>
+                
+                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Largest Gain</p>
+                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
+                
+                <div className="mb-2 h-12 flex items-center">
+                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                    {kpis.topGrower && getCountryName(kpis.topGrower.name)}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-[10px] text-neutral-500">+{kpis.topGrower?.change}</span>
+                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
+                    <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-xs font-semibold text-emerald-700">
+                      +{kpis.topGrower?.percent.toFixed(1)}% YoY
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
+                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: Largest Decline */}
+            <div 
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              style={{ 
+                animationDelay: '300ms',
+                borderLeft: `4px solid #3B82F6`,
+                willChange: 'box-shadow'
+              }}
+            >
+              
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              
+              <div className="relative">
+                <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                  <button 
+                    onClick={() => generateEmbedCode('kpi', 'TTM - Largest Decline')}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Get embed code"
+                  >
+                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                  <button 
+                    onClick={() => shareKPI('TTM - Largest Decline', `${getCountryName(kpis.topDecliner?.name)}\n${kpis.topDecliner?.current.toLocaleString()} vs ${kpis.topDecliner?.prior.toLocaleString()} prior TTM\n-${kpis.topDecliner?.change} (${kpis.topDecliner?.percent.toFixed(1)}%)`)}
+                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    title="Share on Twitter"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                  </button>
+                </div>
+                
+                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Largest Decline</p>
+                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
+                
+                <div className="mb-2 h-12 flex items-center">
+                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                    {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-[10px] text-neutral-500">-{kpis.topDecliner?.change}</span>
+                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 border border-red-200">
+                    <TrendingDown className="w-3.5 h-3.5 text-red-600" />
+                    <span className="text-xs font-semibold text-red-700">
+                      {kpis.topDecliner?.percent.toFixed(1)}% YoY
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
+                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        )}
         {/* Top 10 Markets - Completely Static, Never Affected by Filters */}
         {kpis && kpis.top10 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -1806,94 +1899,266 @@ export default function DataDashboard() {
           </div>
         )}
 
-        {/* Enhanced Filter Section with Visual State */}
-        <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
+        {/* ========================================= */}
+        {/* COMBINED FILTERS SECTION                */}
+        {/* Date Range + Nationality                */}
+        {/* These filters ONLY affect data below    */}
+        {/* ========================================= */}
+        
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 p-5 shadow-md">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <h3 className="text-base font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                Filter by Nationality
-              </h3>
-              <div className="flex items-center gap-2">
-                <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                  selectedCategories.length === 2 
-                    ? 'bg-sage-100 text-sage-700' 
-                    : 'bg-neutral-100 text-neutral-600'
-                }`}>
-                  {selectedCategories.length}/2 selected
-                </div>
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  Customize Your Analysis
+                </h3>
+                <p className="text-xs text-neutral-600 mt-0.5">
+                  These filters affect charts and detailed data below
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={exportToExcel}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all border border-neutral-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-700 bg-white hover:bg-neutral-50 rounded-lg transition-all border border-neutral-300 shadow-sm"
                 title="Export filtered data as CSV"
               >
                 <FileDown className="w-3.5 h-3.5" />
                 Export CSV
               </button>
+            </div>
+          </div>
+
+          {/* Date Range Selector */}
+          <div className="bg-white rounded-lg border border-blue-200 p-4 mb-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-semibold text-neutral-800">Time Period</span>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Preset Buttons */}
+              <button
+                onClick={() => setDateRangePreset('last6months')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  dateRangePreset === 'last6months'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                }`}
+              >
+                Last 6 Months
+              </button>
+              
+              <button
+                onClick={() => setDateRangePreset('last12months')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  dateRangePreset === 'last12months'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                }`}
+              >
+                Last 12 Months
+              </button>
+              
+              <button
+                onClick={() => setDateRangePreset('ytd')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  dateRangePreset === 'ytd'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                }`}
+              >
+                Year to Date
+              </button>
+              
+              <button
+                onClick={() => setDateRangePreset('last2years')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  dateRangePreset === 'last2years'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                }`}
+              >
+                Last 2 Years
+              </button>
+              
+              {/* Divider */}
+              <div className="h-6 w-px bg-neutral-300 mx-1"></div>
+              
+              {/* Specific Year */}
+              <button
+                onClick={() => setDateRangePreset('specificYear')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  dateRangePreset === 'specificYear'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                }`}
+              >
+                Specific Year
+              </button>
+              
+              {dateRangePreset === 'specificYear' && (
+                <select
+                  value={selectedYear || ''}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 bg-white text-neutral-700 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              )}
+              
+              {/* Custom Range */}
+              <button
+                onClick={() => {
+                  setDateRangePreset('custom');
+                  setShowCustomDatePicker(!showCustomDatePicker);
+                }}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  dateRangePreset === 'custom'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                }`}
+              >
+                Custom Range
+              </button>
+            </div>
+            
+            {/* Custom Date Picker */}
+            {showCustomDatePicker && dateRangePreset === 'custom' && (
+              <div className="mt-3 pt-3 border-t border-neutral-200 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-medium text-neutral-700">From:</label>
+                  <input
+                    type="month"
+                    value={customStartDate || ''}
+                    onChange={(e) => setCustomStartDate(e.target.value + '-01')}
+                    className="px-2 py-1 text-xs rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-medium text-neutral-700">To:</label>
+                  <input
+                    type="month"
+                    value={customEndDate || ''}
+                    onChange={(e) => setCustomEndDate(e.target.value + '-01')}
+                    className="px-2 py-1 text-xs rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                {customStartDate && customEndDate && (
+                  <span className="text-xs text-emerald-600 font-semibold">
+                    ✓ Range selected
+                  </span>
+                )}
+              </div>
+            )}
+            
+            {/* Active Range Display */}
+            {userFilteredData.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-neutral-200 flex items-center gap-2 text-xs text-neutral-600">
+                <span className="font-medium">Viewing:</span>
+                <span className="font-semibold text-blue-700">
+                  {new Date(userFilteredData[0]?.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  {' → '}
+                  {new Date(userFilteredData[userFilteredData.length - 1]?.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                </span>
+                <span className="text-neutral-400">•</span>
+                <span className="font-semibold text-blue-700">
+                  {[...new Set(userFilteredData.map(d => `${d.year}-${d.month}`))].length} months
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Nationality Filter */}
+          <div className="bg-white rounded-lg border border-blue-200 p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-semibold text-neutral-800">Nationality Filter</span>
+                <div className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  selectedCategories.length === 2 
+                    ? 'bg-emerald-100 text-emerald-700' 
+                    : 'bg-neutral-100 text-neutral-600'
+                }`}>
+                  {selectedCategories.length}/2 selected
+                </div>
+              </div>
+              
               {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && !selectedCategories.includes('Útlendingar alls') && (
                 <button
                   onClick={() => setSelectedCategories(['Útlendingar alls'])}
-                  className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all"
+                  className="px-3 py-1 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all"
                 >
-                  Reset filters
+                  Reset
                 </button>
               )}
             </div>
-          </div>
 
-          {/* Active Filters Display */}
-          {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && !selectedCategories.includes('Útlendingar alls') && (
-            <div className="mb-4 flex items-center gap-2">
-              <span className="text-xs font-medium text-neutral-500">Active filters:</span>
-              {selectedCategories.map(cat => (
-                <div 
-                  key={cat}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full"
-                >
-                  <span className="text-xs font-medium text-blue-700">{getCountryName(cat)}</span>
-                  <button
-                    onClick={() => handleCategoryToggle(cat)}
-                    className="hover:bg-blue-100 rounded-full p-0.5 transition-colors"
+            {/* Active Filters Display */}
+            {selectedCategories.length > 0 && !selectedCategories.includes('Farþegar alls') && !selectedCategories.includes('Útlendingar alls') && (
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-xs font-medium text-neutral-500">Active:</span>
+                {selectedCategories.map(cat => (
+                  <div 
+                    key={cat}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-full"
                   >
-                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <span className="text-xs font-medium text-blue-700">{getCountryName(cat)}</span>
+                    <button
+                      onClick={() => handleCategoryToggle(cat)}
+                      className="hover:bg-blue-100 rounded-full p-0.5 transition-colors"
+                    >
+                      <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Filter Buttons */}
+            <div className="flex gap-2 flex-wrap">
+              {categories.map(cat => {
+                const isSelected = selectedCategories.includes(cat);
+                const isDisabled = !isSelected && selectedCategories.length >= 2;
+                
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => handleCategoryToggle(cat)}
+                    disabled={isDisabled}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      isSelected
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : isDisabled
+                        ? 'bg-neutral-50 text-neutral-400 border border-neutral-200 cursor-not-allowed opacity-50'
+                        : 'bg-white text-neutral-600 border border-neutral-200 hover:border-blue-400 hover:shadow-sm'
+                    }`}
+                  >
+                    {getCountryName(cat)}
                   </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          )}
 
-          {/* Filter Buttons */}
-          <div className="flex gap-2 flex-wrap">
-            {categories.map(cat => {
-              const isSelected = selectedCategories.includes(cat);
-              const isDisabled = !isSelected && selectedCategories.length >= 2;
-              
-              return (
-                <button
-                  key={cat}
-                  onClick={() => handleCategoryToggle(cat)}
-                  disabled={isDisabled}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    isSelected
-                      ? 'bg-neutral-900 text-white shadow-sm'
-                      : isDisabled
-                      ? 'bg-neutral-50 text-neutral-400 border border-neutral-200 cursor-not-allowed opacity-50'
-                      : 'bg-white text-neutral-600 border border-neutral-200 hover:border-neutral-400 hover:shadow-sm'
-                  }`}
-                >
-                  {getCountryName(cat)}
-                </button>
-              );
-            })}
+            <p className="text-xs text-neutral-500 mt-3 flex items-center gap-1.5">
+              <span>💡</span>
+              <span>Select up to 2 nationalities to compare in the charts below</span>
+            </p>
           </div>
-
-          <p className="text-xs text-neutral-400 mt-3">
-            💡 Select up to 2 nationalities to compare their passenger trends in the charts below
-          </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -2223,7 +2488,7 @@ export default function DataDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
-                {filteredData.slice(-12).reverse().map((row, i) => (
+                {userFilteredData.slice(-12).reverse().map((row, i) => (
                   <tr key={i} className="hover:bg-neutral-50 transition-colors">
                     <td className="px-4 py-2 text-xs text-neutral-700">
                       {new Date(row.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
