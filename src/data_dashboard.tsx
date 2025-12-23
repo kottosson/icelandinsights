@@ -33,6 +33,15 @@ const styles = `
     }
   }
   
+  @keyframes pulse-strong {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.1;
+    }
+  }
+  
   @keyframes skeleton-loading {
     0%, 100% {
       opacity: 0.5;
@@ -53,6 +62,10 @@ const styles = `
   
   .pulse-subtle {
     animation: pulse-subtle 2s ease-in-out infinite;
+  }
+  
+  .pulse-strong {
+    animation: pulse-strong 2s ease-in-out infinite;
   }
   
   .skeleton {
@@ -1041,12 +1054,12 @@ export default function DataDashboard() {
           <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md animate-fade-in-up" style={{ animationDelay: '0ms' }}>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-amber-500 pulse-subtle"></div>
+                <div className="w-2 h-2 rounded-full bg-red-500 pulse-strong"></div>
                 <h2 className="text-2xl font-bold text-neutral-800" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.03em' }}>
                   Executive Summary
                 </h2>
               </div>
-              <span className="text-[9px] text-neutral-500 uppercase tracking-wider font-medium">Last 6 months trend</span>
+              <span className="text-[9px] text-neutral-500 uppercase tracking-wider font-medium">Monthly & Trailing Twelve Month Performance</span>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1072,7 +1085,7 @@ export default function DataDashboard() {
                 </div>
                 
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
+                  <div className="flex-1 min-h-[80px]">
                     <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Current Month Performance</h3>
                     <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
                       {kpis.currentMonthName} recorded <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
@@ -1092,7 +1105,7 @@ export default function DataDashboard() {
                 {kpis.overallSparkline && (
                   <div className="mt-3">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-[10px] font-medium text-neutral-600">YoY % Growth (Last 6 Months)</p>
+                      <p className="text-[10px] font-medium text-neutral-600">YoY % Change (Last 6 Months)</p>
                       <p className="text-[9px] text-neutral-500">Current Month: 
                         <span className={`font-semibold ml-1 ${
                           kpis.yoyChange >= 0 
@@ -1241,8 +1254,8 @@ export default function DataDashboard() {
                   </div>
                   
                   <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h3 className="text-[13px] font-bold text-sage-700 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Leading Growth Market</h3>
+                    <div className="flex-1 min-h-[80px]">
+                      <h3 className="text-[13px] font-bold text-sage-700 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Leading Growth Market - Trailing Twelve Months</h3>
                       <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topGrower.name)}</span> leads with 
                         <span className="font-semibold text-sage-600"> +{kpis.topGrower.change} passengers</span>
@@ -1254,7 +1267,7 @@ export default function DataDashboard() {
                   {kpis.topGrowerSparkline && (
                     <div className="mt-3">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-medium text-sage-700">YoY % Growth (Last 6 Months)</p>
+                        <p className="text-[10px] font-medium text-sage-700">YoY % Change (Last 6 Months)</p>
                         <p className="text-[9px] text-neutral-600">TTM YoY: 
                           <span className="font-semibold ml-1 text-sage-600">
                             +{kpis.topGrower.percent.toFixed(1)}%
@@ -1374,14 +1387,14 @@ export default function DataDashboard() {
                   {/* Buttons - Top Right (show on hover) */}
                   <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button 
-                      onClick={() => generateEmbedCode('insight', 'Market Requiring Attention')}
+                      onClick={() => generateEmbedCode('insight', 'Market Under Pressure')}
                       className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
                       title="Get embed code"
                     >
                       <Code className="w-3.5 h-3.5 text-neutral-500" />
                     </button>
                     <button 
-                      onClick={() => shareKPI('Market Requiring Attention', `${getCountryName(kpis.topDecliner.name)} declined by -${kpis.topDecliner.change} passengers, a ${kpis.topDecliner.percent.toFixed(1)}% decrease`)}
+                      onClick={() => shareKPI('Market Under Pressure', `${getCountryName(kpis.topDecliner.name)} declined by -${kpis.topDecliner.change} passengers, a ${kpis.topDecliner.percent.toFixed(1)}% decrease`)}
                       className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
                       title="Share on Twitter"
                     >
@@ -1390,8 +1403,8 @@ export default function DataDashboard() {
                   </div>
                   
                   <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h3 className="text-[13px] font-bold text-terracotta-600 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Market Requiring Attention</h3>
+                    <div className="flex-1 min-h-[80px]">
+                      <h3 className="text-[13px] font-bold text-terracotta-600 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Market Under Pressure - Trailing Twelve Months</h3>
                       <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
                         <span className="font-semibold">{getCountryName(kpis.topDecliner.name)}</span> declined by 
                         <span className="font-semibold text-terracotta-600"> -{kpis.topDecliner.change} passengers</span>
@@ -1404,10 +1417,7 @@ export default function DataDashboard() {
                     <div className="mt-3">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-[10px] font-medium text-terracotta-600">YoY % Change (Last 6 Months)</p>
-                        <p className="text-[9px] text-neutral-600">TTM YoY: 
-                          <span className="font-semibold ml-1 text-terracotta-600">
-                            {kpis.topDecliner.percent.toFixed(1)}%
-                          </span>
+                        <p className="text-[9px] text-neutral-600">TTM YoY: <span className="font-semibold ml-1 text-terracotta-600">{kpis.topDecliner.percent.toFixed(1)}%</span>
                         </p>
                       </div>
                       <div className="bg-terracotta-50 rounded-lg p-3">
