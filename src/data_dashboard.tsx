@@ -33,6 +33,15 @@ const styles = `
     }
   }
   
+  @keyframes skeleton-loading {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  
   .animate-fade-in-up {
     animation: fadeInUp 0.6s ease-out forwards;
     opacity: 0;
@@ -44,6 +53,21 @@ const styles = `
   
   .pulse-subtle {
     animation: pulse-subtle 2s ease-in-out infinite;
+  }
+  
+  .skeleton {
+    background: #e5e7eb;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: 4px;
+  }
+  
+  .skeleton-text {
+    height: 1em;
+    margin-bottom: 0.5em;
+  }
+  
+  .skeleton-circle {
+    border-radius: 50%;
   }
 `;
 
@@ -57,6 +81,7 @@ export default function DataDashboard() {
   const [insights, setInsights] = useState([]);
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true); // NEW: Track initial page load
   const [sortConfig, setSortConfig] = useState({ key: 'ratio', direction: 'desc' }); // Default sort by % Total descending
 
   // Date range selector state (for user filters only)
@@ -71,7 +96,7 @@ export default function DataDashboard() {
   const countryInfo = {
     // Totals
     'Farþegar alls': { name: 'All Passengers', continent: 'Total', color: '#1C1C1E' },
-    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#6B7C8C' },
+    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#14B8A6' },
     'Ísland': { name: 'Iceland', continent: 'Europe', color: '#003897' },
     
     // North America
@@ -217,9 +242,15 @@ export default function DataDashboard() {
         setCategories(uniqueCategories);
         setSelectedCategory('Útlendingar alls');
         
+        // Small delay to ensure smooth transition from skeleton
+        setTimeout(() => {
+          setInitialLoading(false);
+        }, 300);
+        
         // No longer calculating static Top 10 here - will be dynamic
       } catch (error) {
         console.error('Error loading data:', error);
+        setInitialLoading(false); // Stop loading even on error
       }
     };
     
@@ -913,9 +944,101 @@ export default function DataDashboard() {
 
       <div className="max-w-7xl mx-auto px-6 pb-6 space-y-4">
 
+        {initialLoading ? (
+          // SKELETON LOADING SCREENS
+          <>
+            {/* Executive Summary Skeleton */}
+            <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-neutral-300"></div>
+                  <div className="skeleton h-8 w-64"></div>
+                </div>
+                <div className="skeleton h-3 w-32"></div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="bg-white rounded-lg p-4 border-2 border-neutral-200 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
+                    <div className="skeleton h-4 w-40 mb-3"></div>
+                    <div className="skeleton h-32 w-full mb-3"></div>
+                    <div className="skeleton h-3 w-full mb-2"></div>
+                    <div className="skeleton h-3 w-3/4"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* KPI Boxes Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ borderLeft: '4px solid #E5E7EB', animationDelay: `${i * 100}ms` }}>
+                  <div className="skeleton h-3 w-32 mb-2"></div>
+                  <div className="skeleton h-2 w-20 mb-4"></div>
+                  <div className="skeleton h-10 w-full mb-3"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="skeleton h-3 w-16"></div>
+                    <div className="skeleton h-6 w-24 rounded-full"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Top 10 Skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+                <div className="skeleton h-5 w-48 mb-4"></div>
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: `${500 + i * 50}ms` }}>
+                      <div className="skeleton h-4 w-32"></div>
+                      <div className="skeleton h-4 w-24"></div>
+                      <div className="skeleton h-4 w-16"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+                <div className="skeleton h-5 w-40 mb-4"></div>
+                <div className="space-y-3">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="animate-fade-in-up" style={{ animationDelay: `${600 + i * 50}ms` }}>
+                      <div className="skeleton h-4 w-full mb-1"></div>
+                      <div className="skeleton h-3 w-2/3"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Filters Skeleton */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 p-5 shadow-md animate-fade-in-up" style={{ animationDelay: '800ms' }}>
+              <div className="skeleton h-6 w-56 mb-4"></div>
+              <div className="bg-white rounded-lg border border-blue-200 p-4 mb-4">
+                <div className="skeleton h-4 w-32 mb-3"></div>
+                <div className="flex gap-2 flex-wrap">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="skeleton h-8 w-32 rounded-lg"></div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-white rounded-lg border border-blue-200 p-4">
+                <div className="skeleton h-4 w-40 mb-3"></div>
+                <div className="flex gap-2 flex-wrap">
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <div key={i} className="skeleton h-8 w-24 rounded-lg"></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          // ACTUAL CONTENT
+          <>
         {/* Executive Summary - Key Insights with Visual Support */}
         {kpis && (
-          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md">
+          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md animate-fade-in-up" style={{ animationDelay: '0ms' }}>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-amber-500 pulse-subtle"></div>
@@ -929,7 +1052,7 @@ export default function DataDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
               {/* Insight 1: Current Month Performance */}
-              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '400ms', willChange: 'box-shadow' }}>
+              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '0ms', willChange: 'box-shadow' }}>
                 {/* Buttons - Top Right (show on hover) */}
                 <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <button 
@@ -1096,7 +1219,7 @@ export default function DataDashboard() {
               {kpis.topGrower && (
                 <div className="rounded-lg p-4 border-2 border-sage-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{
                   background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)',
-                  animationDelay: '500ms',
+                  animationDelay: '100ms',
                   willChange: 'box-shadow'
                 }}>
                   {/* Buttons - Top Right (show on hover) */}
@@ -1245,7 +1368,7 @@ export default function DataDashboard() {
               {kpis.topDecliner && (
                 <div className="rounded-lg p-4 border-2 border-terracotta-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{
                   background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)',
-                  animationDelay: '600ms',
+                  animationDelay: '200ms',
                   willChange: 'box-shadow'
                 }}>
                   {/* Buttons - Top Right (show on hover) */}
@@ -1649,7 +1772,7 @@ export default function DataDashboard() {
         {/* Top 10 Markets - Completely Static, Never Affected by Filters */}
         {kpis && kpis.top10 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+            <div className="lg:col-span-2 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Top 10 Markets (TTM)
               </h3>
@@ -1750,9 +1873,10 @@ export default function DataDashboard() {
                         setSelectedCategories([item.nat]);
                       }
                     }}
-                    className={`grid grid-cols-6 gap-2 py-1 px-2 rounded cursor-pointer hover:bg-neutral-100 transition-all ${
+                    className={`grid grid-cols-6 gap-2 py-1 px-2 rounded cursor-pointer hover:bg-neutral-100 transition-all animate-fade-in-up ${
                       isSelected ? 'ring-2 ring-blue-400 bg-blue-50' : ''
                     }`}
+                    style={{ animationDelay: `${i * 50}ms` }}
                     style={{
                       backgroundColor: isSelected ? '#EFF6FF' : (i % 2 === 0 ? '#ffffff' : '#F8FAFB')
                     }}
@@ -1861,7 +1985,7 @@ export default function DataDashboard() {
             </div>
             
             {kpis && (
-            <div className="lg:col-span-1 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+            <div className="lg:col-span-1 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ animationDelay: '200ms' }}>
               <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 By Continent (TTM)
               </h3>
@@ -1873,7 +1997,7 @@ export default function DataDashboard() {
               </div>
               <div className="space-y-3">
                 {kpis.continents.map((continent, i) => (
-                  <div key={i} className="pb-3 border-b border-neutral-100 last:border-0">
+                  <div key={i} className="pb-3 border-b border-neutral-100 last:border-0 animate-fade-in-up" style={{ animationDelay: `${i * 50}ms` }}>
                     <div className="grid grid-cols-3 gap-2 items-baseline">
                       <span className="text-xs font-semibold text-neutral-900">{continent.continent}</span>
                       <span className="text-xs text-neutral-700 font-mono text-right">
@@ -2503,6 +2627,9 @@ export default function DataDashboard() {
             </table>
           </div>
         </div>
+        </>
+        )}
+        {/* End loading conditional */}
 
       </div>
     </div>
