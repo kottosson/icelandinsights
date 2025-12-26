@@ -1084,21 +1084,21 @@ export default function DataDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-6">
                 {/* Left Column - Stats */}
                 <div className="space-y-5">
-                  {/* Current Performance Card - Redesigned */}
-                  <div className="border border-neutral-200 rounded-lg overflow-hidden">
-                    {/* Date Stamp Header */}
-                    <div className="bg-neutral-50 px-5 py-3 border-b border-neutral-200">
-                      <span className="text-sm font-bold text-neutral-900 tracking-tight">
+                  {/* Current Performance Card - Polished Design */}
+                  <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
+                    {/* Date Header */}
+                    <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-200">
+                      <div className="text-sm font-bold text-neutral-900">
                         {(() => {
                           const currentDate = new Date(kpis.currentMonthName);
                           const month = currentDate.toLocaleString('en-US', { month: 'long' });
                           return month;
                         })()} 2025
-                      </span>
+                      </div>
                     </div>
                     
-                    <div className="p-5">
-                      {/* Season & Status Row */}
+                    <div className="p-6">
+                      {/* Season & Status */}
                       {(() => {
                         const currentDate = new Date(kpis.currentMonthName);
                         const month = currentDate.getMonth();
@@ -1167,19 +1167,20 @@ export default function DataDashboard() {
                         
                         return (
                           <>
-                            <div className="flex items-center justify-between mb-6">
-                              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border ${pillBg} ${pillText} ${pillBorder}`}>
-                                <span className="text-xs font-semibold tracking-wide">{season}</span>
+                            {/* Season Pill and Status */}
+                            <div className="flex items-center justify-between mb-8">
+                              <div className={`inline-flex items-center px-3 py-1.5 rounded-full border ${pillBg} ${pillText} ${pillBorder}`}>
+                                <span className="text-xs font-semibold tracking-wide uppercase">{season}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <div className={`w-1.5 h-1.5 rounded-full ${statusDot}`}></div>
+                                <div className={`w-2 h-2 rounded-full ${statusDot}`}></div>
                                 <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
                               </div>
                             </div>
                             
-                            {/* Big Number */}
-                            <div className="mb-6">
-                              <div className="text-5xl font-bold text-neutral-900 tabular-nums tracking-tight leading-none mb-2">
+                            {/* Main Number */}
+                            <div className="mb-8">
+                              <div className="text-5xl font-bold text-neutral-900 tabular-nums tracking-tight mb-2">
                                 {kpis.currentMonth.replace(/,/g, ',')}
                               </div>
                               <div className="text-sm text-neutral-600">foreign passengers</div>
@@ -1189,7 +1190,7 @@ export default function DataDashboard() {
                             <div className="pt-5 border-t border-neutral-200">
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-neutral-500 font-medium">Expected range</span>
-                                <span className="text-base font-bold text-neutral-900 tabular-nums">
+                                <span className="text-lg font-bold text-neutral-900 tabular-nums">
                                   {expectedMin}k - {expectedMax}k
                                 </span>
                               </div>
