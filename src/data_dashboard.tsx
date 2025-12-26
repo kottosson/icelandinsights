@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Cell } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Add custom animations
@@ -1079,16 +1079,6 @@ export default function DataDashboard() {
                   </svg>
                   <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Seasonal Performance</h3>
                 </div>
-                {/* Date Stamp - Prominent */}
-                <div className="px-3.5 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
-                  <span className="text-base font-bold text-neutral-900 tracking-tight">
-                    {(() => {
-                      const currentDate = new Date(kpis.currentMonthName);
-                      const month = currentDate.toLocaleString('en-US', { month: 'long' });
-                      return month;
-                    })()} 2025
-                  </span>
-                </div>
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-6">
@@ -1096,6 +1086,19 @@ export default function DataDashboard() {
                 <div className="space-y-5">
                   {/* Current Performance Card */}
                   <div className="border border-neutral-200 rounded-lg p-5">
+                    {/* Date Stamp */}
+                    <div className="flex justify-end mb-3">
+                      <div className="px-3 py-1.5 bg-neutral-100 rounded-lg border border-neutral-200">
+                        <span className="text-sm font-bold text-neutral-900 tracking-tight">
+                          {(() => {
+                            const currentDate = new Date(kpis.currentMonthName);
+                            const month = currentDate.toLocaleString('en-US', { month: 'long' });
+                            return month;
+                          })()} 2025
+                        </span>
+                      </div>
+                    </div>
+                    
                     {/* Season Pill with Status */}
                     {(() => {
                       const currentDate = new Date(kpis.currentMonthName);
@@ -1217,7 +1220,7 @@ export default function DataDashboard() {
                             <div className="text-4xl font-bold text-neutral-900 tabular-nums tracking-tight leading-none">
                               {kpis.currentMonth.replace(/,/g, ',')}
                             </div>
-                            <div className="text-xs text-neutral-500 mt-1.5">passengers</div>
+                            <div className="text-xs text-neutral-500 mt-1.5">foreign passengers</div>
                           </div>
                           
                           {/* Expected Range */}
@@ -1236,7 +1239,7 @@ export default function DataDashboard() {
                   
                   {/* Typical Volume Card */}
                   <div className="border border-neutral-200 rounded-lg p-5">
-                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-4">TYPICAL MONTHLY VOLUME</div>
+                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">TYPICAL MONTHLY VOLUME</div>
                     
                     <div className="space-y-4">
                       {(() => {
@@ -1331,10 +1334,10 @@ export default function DataDashboard() {
                 
                 {/* Right Column - Chart */}
                 <div className="border border-neutral-200 rounded-lg p-5 bg-white">
-                  <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
+                  <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
                   
                   <ResponsiveContainer width="100%" height={260}>
-                    <LineChart 
+                    <ComposedChart 
                       data={(() => {
                         const currentDate = new Date(kpis.currentMonthName);
                         const currentMonth = currentDate.getMonth();
@@ -1367,8 +1370,7 @@ export default function DataDashboard() {
                         return monthLabels.map((label, i) => ({
                           month: label,
                           historical: historicalAvg[i],
-                          current: i <= currentMonth ? ytd2025ByMonth[i] : null,
-                          currentDot: i === currentMonth ? ytd2025ByMonth[i] : null
+                          current: i <= currentMonth ? ytd2025ByMonth[i] : null
                         }));
                       })()}
                       margin={{ top: 10, right: 10, left: -20, bottom: 10 }}
@@ -1407,6 +1409,7 @@ export default function DataDashboard() {
                           return months[labels.indexOf(label)];
                         }}
                       />
+                      {/* Historical Average Line (dashed) */}
                       <Line 
                         type="monotone"
                         dataKey="historical"
@@ -1416,39 +1419,45 @@ export default function DataDashboard() {
                         dot={false}
                         name="Historical"
                       />
-                      <Line 
-                        type="monotone"
+                      {/* 2025 Bars (color-coded by season) */}
+                      <Bar 
                         dataKey="current"
-                        stroke="#404040"
-                        strokeWidth={2.5}
-                        dot={false}
                         name="2025"
-                        connectNulls={false}
-                      />
-                      <Line 
-                        type="monotone"
-                        dataKey="currentDot"
-                        stroke="transparent"
-                        strokeWidth={0}
-                        dot={{ fill: '#ef4444', stroke: '#fff', strokeWidth: 2, r: 6 }}
-                        name="Current"
-                      />
-                    </LineChart>
+                        radius={[4, 4, 0, 0]}
+                      >
+                        {(() => {
+                          const monthLabels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+                          return monthLabels.map((label, index) => {
+                            // Color based on season buckets
+                            // High (Jun-Aug): emerald-500
+                            // Shoulder (Sep-Oct): amber-500
+                            // Low (Nov-May): neutral-400
+                            let fill = '#a3a3a3'; // Low season (neutral-400)
+                            if (index >= 5 && index <= 7) {
+                              fill = '#10b981'; // High season (emerald-500)
+                            } else if (index >= 8 && index <= 9) {
+                              fill = '#f59e0b'; // Shoulder (amber-500)
+                            }
+                            return <Cell key={`cell-${index}`} fill={fill} />;
+                          });
+                        })()}
+                      </Bar>
+                    </ComposedChart>
                   </ResponsiveContainer>
                   
                   {/* Legend */}
-                  <div className="flex items-center justify-center gap-6 mt-3">
+                  <div className="flex items-center justify-center gap-5 mt-3 pt-3 border-t border-neutral-200">
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-[2px] border-t-2 border-dashed border-neutral-400"></div>
-                      <span className="text-xs text-neutral-600">Historical</span>
+                      <div className="w-4 h-[2px] border-t-2 border-dashed border-neutral-400"></div>
+                      <span className="text-[10px] text-neutral-600">Historical</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-[2px] bg-neutral-700"></div>
-                      <span className="text-xs text-neutral-600">2025</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                      <span className="text-xs text-neutral-600">Current</span>
+                      <div className="flex gap-1">
+                        <div className="w-2 h-3 rounded-sm bg-emerald-500"></div>
+                        <div className="w-2 h-3 rounded-sm bg-amber-500"></div>
+                        <div className="w-2 h-3 rounded-sm bg-neutral-400"></div>
+                      </div>
+                      <span className="text-[10px] text-neutral-600">2025</span>
                     </div>
                   </div>
                 </div>
