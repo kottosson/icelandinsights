@@ -104,12 +104,13 @@ export default function DataDashboard() {
   const [customStartDate, setCustomStartDate] = useState(null);
   const [customEndDate, setCustomEndDate] = useState(null);
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+  const [showAdditional12Months, setShowAdditional12Months] = useState(false);
 
   // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
     // Totals
     'Farþegar alls': { name: 'All Passengers', continent: 'Total', color: '#1C1C1E' },
-    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#14B8A6' },
+    'Útlendingar alls': { name: 'Foreign Passengers', continent: 'Total', color: '#6B7C8C' },
     'Ísland': { name: 'Iceland', continent: 'Europe', color: '#003897' },
     
     // North America
@@ -364,6 +365,11 @@ export default function DataDashboard() {
       continentTotals[continent] = (continentTotals[continent] || 0) + total;
     });
     
+    // Calculate total foreign passengers from all continents (excludes "Total" continent)
+    const foreignTotalFromContinents = Object.entries(continentTotals)
+      .filter(([continent]) => continent !== 'Total')
+      .reduce((sum, [_, total]) => sum + total, 0);
+    
     // Calculate prior TTM for continents
     Object.keys(continentTotals).forEach(continent => {
       const continentCountries = Object.keys(nationalityTotals).filter(nat => getContinent(nat) === continent);
@@ -382,12 +388,14 @@ export default function DataDashboard() {
     });
     
     const continentData = Object.entries(continentTotals)
+      .filter(([continent]) => continent !== 'Total') // Exclude "Total" continent from display
       .map(([continent, total]) => ({
         continent,
         total,
         prior: continentPriorTotals[continent] || 0,
         change: total - (continentPriorTotals[continent] || 0),
-        yoy: continentPriorTotals[continent] > 0 ? ((total - continentPriorTotals[continent]) / continentPriorTotals[continent] * 100) : 0
+        yoy: continentPriorTotals[continent] > 0 ? ((total - continentPriorTotals[continent]) / continentPriorTotals[continent] * 100) : 0,
+        percentOfForeign: foreignTotalFromContinents > 0 ? (total / foreignTotalFromContinents * 100) : 0
       }))
       .sort((a, b) => b.total - a.total);
     
@@ -1792,7 +1800,7 @@ export default function DataDashboard() {
               </div>
               
               {/* Sortable column headers */}
-              <div className="grid grid-cols-6 gap-3 mb-2 pb-2 px-3 border-b-2 border-neutral-200">
+              <div className="grid grid-cols-6 gap-1.5 md:gap-3 mb-2 pb-2 px-2 md:px-3 border-b-2 border-neutral-200">
                 <p className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold col-span-2">Nationality</p>
                 
                 <button 
@@ -1883,7 +1891,7 @@ export default function DataDashboard() {
                         setSelectedCategories([item.nat]);
                       }
                     }}
-                    className={`grid grid-cols-6 gap-3 py-2.5 px-3 rounded-lg cursor-pointer hover:shadow-sm transition-all animate-fade-in-up ${
+                    className={`grid grid-cols-6 gap-1.5 md:gap-3 py-2.5 px-2 md:px-3 rounded-lg cursor-pointer hover:shadow-sm transition-all animate-fade-in-up ${
                       isSelected ? 'ring-2 ring-blue-400' : ''
                     }`}
                     style={{
@@ -1891,20 +1899,20 @@ export default function DataDashboard() {
                       backgroundColor: isSelected ? '#EFF6FF' : (i % 2 === 0 ? '#FFFFFF' : '#F9FAFB')
                     }}
                   >
-                    <div className="flex items-center gap-2.5 col-span-2">
-                      <span className="text-[11px] font-medium text-neutral-400 w-4 text-center tabular-nums">{i + 1}</span>
-                      <span className={`text-xs ${isSelected ? 'font-semibold text-blue-700' : 'font-medium text-neutral-800'}`}>
+                    <div className="flex items-center gap-1.5 md:gap-2.5 col-span-2">
+                      <span className="text-[10px] md:text-[11px] font-medium text-neutral-400 w-3 md:w-4 text-center tabular-nums">{i + 1}</span>
+                      <span className={`text-[11px] md:text-xs ${isSelected ? 'font-semibold text-blue-700' : 'font-medium text-neutral-800'} truncate`}>
                         {getCountryName(item.nat)}
                       </span>
                     </div>
-                    <span className="text-xs text-neutral-700 font-mono text-right tabular-nums">{item.total.toLocaleString()}</span>
-                    <span className={`text-xs font-semibold text-right tabular-nums ${
+                    <span className="text-[11px] md:text-xs text-neutral-700 font-mono text-right tabular-nums">{item.total.toLocaleString()}</span>
+                    <span className={`text-[11px] md:text-xs font-semibold text-right tabular-nums ${
                       item.absoluteChange >= 0 ? 'text-sage-600' : 'text-terracotta-600'
                     }`}>
                       {item.absoluteChange >= 0 ? '+' : ''}{item.absoluteChange.toLocaleString()}
                     </span>
-                    <span className="text-xs text-neutral-600 font-mono text-right tabular-nums">{item.ratio.toFixed(1)}%</span>
-                    <span className={`text-xs font-semibold text-right tabular-nums ${
+                    <span className="text-[11px] md:text-xs text-neutral-600 font-mono text-right tabular-nums">{item.ratio.toFixed(1)}%</span>
+                    <span className={`text-[11px] md:text-xs font-semibold text-right tabular-nums ${
                       item.yoy >= 0.5 ? 'text-sage-600' : 
                       item.yoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-400'
                     }`}>
@@ -2000,33 +2008,52 @@ export default function DataDashboard() {
                 By Continent (TTM)
               </h3>
               <p className="text-xs text-neutral-500 mb-3">{kpis.ttmPeriod}</p>
-              <div className="grid grid-cols-3 gap-2 mb-2 pb-1.5 border-b border-neutral-200">
-                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium">Region</p>
-                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">Passengers</p>
-                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right">YoY %</p>
-              </div>
+              
               <div className="space-y-3">
-                {kpis.continents.map((continent, i) => (
-                  <div key={i} className="pb-3 border-b border-neutral-100 last:border-0 animate-fade-in-up" style={{ animationDelay: `${i * 50}ms` }}>
-                    <div className="grid grid-cols-3 gap-2 items-baseline">
-                      <span className="text-xs font-semibold text-neutral-900">{continent.continent}</span>
-                      <span className="text-xs text-neutral-700 font-mono text-right">
-                        {continent.total.toLocaleString()}
-                      </span>
-                      <span className={`text-xs font-semibold text-right ${
-                        continent.yoy >= 0.5 ? 'text-sage-600' : 
-                        continent.yoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-400'
-                      }`}>
-                        {continent.yoy > 0 ? '+' : ''}{continent.yoy.toFixed(1)}%
-                      </span>
+                {kpis.continents.map((continent, i) => {
+                  return (
+                    <div key={i} className="pb-3 border-b border-neutral-100 last:border-0 animate-fade-in-up" style={{ animationDelay: `${i * 50}ms` }}>
+                      {/* Continent name */}
+                      <div className="mb-1.5">
+                        <span className="text-xs font-semibold text-neutral-900">{continent.continent}</span>
+                      </div>
+                      
+                      {/* Bar and YoY pill side by side */}
+                      <div className="flex items-center gap-2 mb-1.5">
+                        {/* Horizontal bar - takes most space */}
+                        <div className="flex-1 bg-neutral-100 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="bg-gradient-to-r from-blue-500 to-blue-400 h-2 rounded-full transition-all duration-500" 
+                            style={{ width: `${continent.percentOfForeign}%` }}
+                          />
+                        </div>
+                        {/* YoY pill inline beside bar */}
+                        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
+                          continent.yoy >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
+                          continent.yoy <= -0.5 ? 'bg-red-50 border border-red-200' : 
+                          'bg-neutral-100 border border-neutral-200'
+                        }`}>
+                          {continent.yoy >= 0.5 ? <TrendingUp className="w-3 h-3 text-emerald-600" /> : 
+                           continent.yoy <= -0.5 ? <TrendingDown className="w-3 h-3 text-red-600" /> :
+                           <Minus className="w-3 h-3 text-neutral-500" />}
+                          <span className={`text-[10px] font-semibold whitespace-nowrap ${
+                            continent.yoy >= 0.5 ? 'text-emerald-700' : 
+                            continent.yoy <= -0.5 ? 'text-red-700' : 
+                            'text-neutral-600'
+                          }`}>
+                            {continent.yoy > 0 ? '+' : ''}{continent.yoy.toFixed(1)}% YoY
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Footer row with absolute number and percentage */}
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-[11px] text-neutral-700 font-mono">{continent.total.toLocaleString()}</span>
+                        <span className="text-[11px] text-neutral-500 font-medium">{continent.percentOfForeign.toFixed(1)}% of foreign</span>
+                      </div>
                     </div>
-                    <div className={`text-[10px] font-mono mt-1 ${
-                      continent.change >= 0 ? 'text-sage-600' : 'text-terracotta-600'
-                    }`}>
-                      {continent.change >= 0 ? '+' : ''}{continent.change.toLocaleString()}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
             )}
@@ -2315,8 +2342,8 @@ export default function DataDashboard() {
                 <p className="text-[9px] text-neutral-400 italic">Click bar to filter</p>
               )}
             </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={chartData} margin={{ top: 20, right: 5, left: -20, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={230}>
+              <BarChart data={chartData} margin={{ top: 20, right: 5, left: -20, bottom: 18 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis 
                   dataKey="date"
@@ -2348,6 +2375,10 @@ export default function DataDashboard() {
                   cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                   labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
                   formatter={(value, name) => [value.toLocaleString(), getCountryName(name)]}
+                />
+                <Legend 
+                  wrapperStyle={{ fontSize: '10px', paddingTop: '8px', paddingBottom: '0px' }}
+                  formatter={(value) => getCountryName(value)}
                 />
                 {selectedCategories.map((cat, idx) => (
                   <Bar 
@@ -2396,8 +2427,8 @@ export default function DataDashboard() {
               </button>
             </div>
             <p className="text-[10px] text-neutral-500 mb-3">Jan - {yoyCurrentMonth} (2023 vs 2024 vs 2025)</p>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={yoyChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={230}>
+              <LineChart data={yoyChartData} margin={{ top: 5, right: 5, left: -20, bottom: 18 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis 
                   dataKey="month"
@@ -2423,6 +2454,9 @@ export default function DataDashboard() {
                   }}
                   cursor={{ stroke: '#e5e5e5', strokeWidth: 1 }}
                   formatter={(value, name) => [value?.toLocaleString() || 'N/A', name]}
+                />
+                <Legend 
+                  wrapperStyle={{ fontSize: '10px', paddingTop: '8px', paddingBottom: '0px' }}
                 />
                 <Line 
                   type="monotone" 
@@ -2479,8 +2513,8 @@ export default function DataDashboard() {
                 </button>
               </div>
               <p className="text-[10px] text-neutral-500 mb-3">2017-2025 YTD</p>
-              <ResponsiveContainer width="100%" height={selectedCategories.length > 1 ? 240 : 200}>
-                <BarChart data={kpis.annualData} margin={{ top: 20, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart data={kpis.annualData} margin={{ top: 20, right: 5, left: -20, bottom: 18 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis 
                     dataKey="label" 
@@ -2507,12 +2541,10 @@ export default function DataDashboard() {
                     cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                     formatter={(value, name) => [value.toLocaleString(), getCountryName(name)]}
                   />
-                  {selectedCategories.length > 1 && (
-                    <Legend 
-                      wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}
-                      formatter={(value) => getCountryName(value)}
-                    />
-                  )}
+                  <Legend 
+                    wrapperStyle={{ fontSize: '10px', paddingTop: '8px', paddingBottom: '0px' }}
+                    formatter={(value) => getCountryName(value)}
+                  />
                   {selectedCategories.map((cat, idx) => (
                     <Bar 
                       key={cat}
@@ -2550,8 +2582,8 @@ export default function DataDashboard() {
                 </button>
               </div>
               <p className="text-[10px] text-neutral-500 mb-3">Jan - {kpis.currentMonthName.split(' ')[0]} (2017-2025)</p>
-              <ResponsiveContainer width="100%" height={selectedCategories.length > 1 ? 240 : 200}>
-                <BarChart data={kpis.ytdComparisonData} margin={{ top: 20, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart data={kpis.ytdComparisonData} margin={{ top: 20, right: 5, left: -20, bottom: 18 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis 
                     dataKey="year" 
@@ -2578,12 +2610,10 @@ export default function DataDashboard() {
                     cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                     formatter={(value, name) => [value.toLocaleString(), getCountryName(name)]}
                   />
-                  {selectedCategories.length > 1 && (
-                    <Legend 
-                      wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}
-                      formatter={(value) => getCountryName(value)}
-                    />
-                  )}
+                  <Legend 
+                    wrapperStyle={{ fontSize: '10px', paddingTop: '8px', paddingBottom: '0px' }}
+                    formatter={(value) => getCountryName(value)}
+                  />
                   {selectedCategories.map((cat, idx) => (
                     <Bar 
                       key={cat}
@@ -2623,14 +2653,28 @@ export default function DataDashboard() {
             <table className="w-full">
               <thead className="bg-neutral-50 border-b border-neutral-200">
                 <tr>
-                  <th className="text-left px-4 py-2 text-[10px] font-medium text-neutral-500 tracking-widest uppercase">Date</th>
-                  <th className="text-left px-4 py-2 text-[10px] font-medium text-neutral-500 tracking-widest uppercase">Category</th>
-                  <th className="text-right px-4 py-2 text-[10px] font-medium text-neutral-500 tracking-widest uppercase">Passengers</th>
+                  <th className="text-left px-4 py-2 text-[11px] font-medium text-neutral-500 tracking-widest uppercase">Date</th>
+                  <th className="text-left px-4 py-2 text-[11px] font-medium text-neutral-500 tracking-widest uppercase">Category</th>
+                  <th className="text-right px-4 py-2 text-[11px] font-medium text-neutral-500 tracking-widest uppercase">Passengers</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
+                {/* Last 12 months */}
                 {userFilteredData.slice(-12).reverse().map((row, i) => (
                   <tr key={i} className="hover:bg-neutral-50 transition-colors">
+                    <td className="px-4 py-2 text-xs text-neutral-700">
+                      {new Date(row.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-neutral-600">{getCountryName(row.flokkur)}</td>
+                    <td className="px-4 py-2 text-xs text-neutral-700 text-right font-mono">
+                      {row.fjöldi?.toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+                
+                {/* Additional 12 months - collapsible */}
+                {showAdditional12Months && userFilteredData.slice(-24, -12).reverse().map((row, i) => (
+                  <tr key={`additional-${i}`} className="hover:bg-neutral-50 transition-colors bg-blue-50/30">
                     <td className="px-4 py-2 text-xs text-neutral-700">
                       {new Date(row.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
                     </td>
@@ -2643,6 +2687,36 @@ export default function DataDashboard() {
               </tbody>
             </table>
           </div>
+          
+          {/* Show Additional 12 Months Button */}
+          {(() => {
+            // Get unique dates from the data
+            const uniqueDates = [...new Set(userFilteredData.map(row => row.date))];
+            return uniqueDates.length > 12;
+          })() && (
+            <div className="px-4 py-3 border-t border-neutral-200 bg-neutral-50">
+              <button
+                onClick={() => setShowAdditional12Months(!showAdditional12Months)}
+                className="w-full px-3 py-2 bg-white border border-neutral-300 text-neutral-700 text-xs font-medium rounded hover:bg-neutral-100 transition-colors flex items-center justify-center gap-2"
+              >
+                {showAdditional12Months ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                    Hide Additional 12 Months
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    Show Additional 12 Months
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
         </>
         )}
