@@ -1131,9 +1131,9 @@ export default function DataDashboard() {
                             return (
                               <>
                                 {/* Y-axis labels */}
-                                <text x="30" y={chartTop + 5} textAnchor="end" className="text-[9px]" fill="#999">+{scale}%</text>
-                                <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[9px]" fill="#666">0%</text>
-                                <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[9px]" fill="#999">-{scale}%</text>
+                                <text x="30" y={chartTop + 5} textAnchor="end" className="text-[10px]" fill="#999">+{scale}%</text>
+                                <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[10px]" fill="#666">0%</text>
+                                <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[10px]" fill="#999">-{scale}%</text>
                                 
                                 {/* Horizontal grid lines */}
                                 <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#e5e5e5" strokeWidth="0.5" />
@@ -1213,7 +1213,7 @@ export default function DataDashboard() {
                                   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                   const x = chartLeft + (i / (kpis.overallSparkline.length - 1)) * (chartRight - chartLeft);
                                   return (
-                                    <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[9px]" fill="#999">
+                                    <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[10px]" fill="#999">
                                       {monthNames[point.month - 1]}
                                     </text>
                                   );
@@ -1289,9 +1289,9 @@ export default function DataDashboard() {
                               return (
                                 <>
                                   {/* Y-axis labels */}
-                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-[9px]" fill="#5D7A63">+{scale}%</text>
-                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[9px]" fill="#666">0%</text>
-                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[9px]" fill="#999">-{scale}%</text>
+                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-[10px]" fill="#5D7A63">+{scale}%</text>
+                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[10px]" fill="#666">0%</text>
+                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[10px]" fill="#999">-{scale}%</text>
                                   
                                   {/* Grid lines */}
                                   <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#D4E2D8" strokeWidth="0.5" />
@@ -1361,7 +1361,7 @@ export default function DataDashboard() {
                                     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                     const x = chartLeft + (i / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
                                     return (
-                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[9px]" fill="#999">
+                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[10px]" fill="#999">
                                         {monthNames[point.month - 1]}
                                       </text>
                                     );
@@ -1435,9 +1435,9 @@ export default function DataDashboard() {
                               return (
                                 <>
                                   {/* Y-axis labels */}
-                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-[9px]" fill="#999">+{scale}%</text>
-                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[9px]" fill="#666">0%</text>
-                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[9px]" fill="#B8847D">-{scale}%</text>
+                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-[10px]" fill="#999">+{scale}%</text>
+                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[10px]" fill="#666">0%</text>
+                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[10px]" fill="#B8847D">-{scale}%</text>
                                   
                                   {/* Grid lines */}
                                   <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#E8D7D4" strokeWidth="0.5" />
@@ -1507,7 +1507,7 @@ export default function DataDashboard() {
                                     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                     const x = chartLeft + (i / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
                                     return (
-                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[9px]" fill="#999">
+                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[10px]" fill="#999">
                                         {monthNames[point.month - 1]}
                                       </text>
                                     );
@@ -1594,7 +1594,7 @@ export default function DataDashboard() {
                 {/* Clean Footer */}
                 <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
                   <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
                 </div>
               </div>
             </div>
@@ -1660,7 +1660,7 @@ export default function DataDashboard() {
                 
                 <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
                   <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
                 </div>
               </div>
             </div>
@@ -1716,7 +1716,7 @@ export default function DataDashboard() {
                 
                 <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
                   <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
                 </div>
               </div>
             </div>
@@ -1772,7 +1772,7 @@ export default function DataDashboard() {
                 
                 <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
                   <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[8px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
                 </div>
               </div>
             </div>
@@ -1792,8 +1792,8 @@ export default function DataDashboard() {
               </div>
               
               {/* Sortable column headers */}
-              <div className="grid grid-cols-6 gap-2 mb-2 pb-1.5 border-b border-neutral-200">
-                <p className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium col-span-2">Nationality</p>
+              <div className="grid grid-cols-6 gap-3 mb-2 pb-2 px-3 border-b-2 border-neutral-200">
+                <p className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold col-span-2">Nationality</p>
                 
                 <button 
                   onClick={() => {
@@ -1802,7 +1802,7 @@ export default function DataDashboard() {
                       direction: sortConfig.key === 'total' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
                     });
                   }}
-                  className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right hover:text-neutral-700 flex items-center justify-end gap-1 transition-colors"
+                  className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
                 >
                   Passengers
                   {sortConfig.key === 'total' ? (
@@ -1817,7 +1817,7 @@ export default function DataDashboard() {
                       direction: sortConfig.key === 'absoluteChange' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
                     });
                   }}
-                  className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right hover:text-neutral-700 flex items-center justify-end gap-1 transition-colors"
+                  className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
                 >
                   Abs Change
                   {sortConfig.key === 'absoluteChange' ? (
@@ -1832,7 +1832,7 @@ export default function DataDashboard() {
                       direction: sortConfig.key === 'ratio' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
                     });
                   }}
-                  className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right hover:text-neutral-700 flex items-center justify-end gap-1 transition-colors"
+                  className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
                 >
                   % Total
                   {sortConfig.key === 'ratio' ? (
@@ -1847,7 +1847,7 @@ export default function DataDashboard() {
                       direction: sortConfig.key === 'yoy' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
                     });
                   }}
-                  className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium text-right hover:text-neutral-700 flex items-center justify-end gap-1 transition-colors"
+                  className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
                 >
                   YoY %
                   {sortConfig.key === 'yoy' ? (
@@ -1856,7 +1856,7 @@ export default function DataDashboard() {
                 </button>
               </div>
               
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {(() => {
                   // Sort the top10 array based on sortConfig
                   const sorted = [...kpis.top10].sort((a, b) => {
@@ -1883,28 +1883,28 @@ export default function DataDashboard() {
                         setSelectedCategories([item.nat]);
                       }
                     }}
-                    className={`grid grid-cols-6 gap-2 py-1 px-2 rounded cursor-pointer hover:bg-neutral-100 transition-all animate-fade-in-up ${
-                      isSelected ? 'ring-2 ring-blue-400 bg-blue-50' : ''
+                    className={`grid grid-cols-6 gap-3 py-2.5 px-3 rounded-lg cursor-pointer hover:shadow-sm transition-all animate-fade-in-up ${
+                      isSelected ? 'ring-2 ring-blue-400' : ''
                     }`}
-                    style={{ animationDelay: `${i * 50}ms` }}
                     style={{
-                      backgroundColor: isSelected ? '#EFF6FF' : (i % 2 === 0 ? '#ffffff' : '#F8FAFB')
+                      animationDelay: `${i * 50}ms`,
+                      backgroundColor: isSelected ? '#EFF6FF' : (i % 2 === 0 ? '#FFFFFF' : '#F9FAFB')
                     }}
                   >
-                    <div className="flex items-center gap-2 col-span-2">
-                      <span className="text-[9px] text-neutral-400 w-3">{i + 1}</span>
-                      <span className={`text-[11px] ${isSelected ? 'font-semibold text-blue-700' : 'text-neutral-700'}`}>
+                    <div className="flex items-center gap-2.5 col-span-2">
+                      <span className="text-[11px] font-medium text-neutral-400 w-4 text-center tabular-nums">{i + 1}</span>
+                      <span className={`text-xs ${isSelected ? 'font-semibold text-blue-700' : 'font-medium text-neutral-800'}`}>
                         {getCountryName(item.nat)}
                       </span>
                     </div>
-                    <span className="text-[11px] text-neutral-500 font-mono text-right">{item.total.toLocaleString()}</span>
-                    <span className={`text-[11px] font-medium text-right ${
+                    <span className="text-xs text-neutral-700 font-mono text-right tabular-nums">{item.total.toLocaleString()}</span>
+                    <span className={`text-xs font-semibold text-right tabular-nums ${
                       item.absoluteChange >= 0 ? 'text-sage-600' : 'text-terracotta-600'
                     }`}>
                       {item.absoluteChange >= 0 ? '+' : ''}{item.absoluteChange.toLocaleString()}
                     </span>
-                    <span className="text-[11px] text-neutral-500 font-mono text-right">{item.ratio.toFixed(1)}%</span>
-                    <span className={`text-[11px] font-medium text-right ${
+                    <span className="text-xs text-neutral-600 font-mono text-right tabular-nums">{item.ratio.toFixed(1)}%</span>
+                    <span className={`text-xs font-semibold text-right tabular-nums ${
                       item.yoy >= 0.5 ? 'text-sage-600' : 
                       item.yoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-400'
                     }`}>
@@ -2316,12 +2316,12 @@ export default function DataDashboard() {
               )}
             </div>
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <BarChart data={chartData} margin={{ top: 20, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis 
                   dataKey="date"
                   stroke="#8e8e93" 
-                  fontSize={9}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(date) => {
@@ -2332,7 +2332,7 @@ export default function DataDashboard() {
                 />
                 <YAxis 
                   stroke="#8e8e93" 
-                  fontSize={9}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(0)}k` : val}
@@ -2357,6 +2357,13 @@ export default function DataDashboard() {
                     radius={[4, 4, 0, 0]}
                     name={getCountryName(cat)}
                     cursor="pointer"
+                    maxBarSize={selectedCategories.length > 1 ? 35 : 50}
+                    label={selectedCategories.length === 1 ? { 
+                      position: 'top', 
+                      formatter: (value) => value > 0 ? `${(value/1000).toFixed(0)}k` : '',
+                      fontSize: 9,
+                      fill: '#737373'
+                    } : undefined}
                     onClick={() => {
                       // Don't filter on "All Passengers" or "Foreign Passengers"
                       if (cat === 'Farþegar alls' || cat === 'Útlendingar alls') return;
@@ -2395,13 +2402,13 @@ export default function DataDashboard() {
                 <XAxis 
                   dataKey="month"
                   stroke="#8e8e93"
-                  fontSize={9}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis 
                   stroke="#8e8e93"
-                  fontSize={9}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(0)}k` : val}
@@ -2473,18 +2480,18 @@ export default function DataDashboard() {
               </div>
               <p className="text-[10px] text-neutral-500 mb-3">2017-2025 YTD</p>
               <ResponsiveContainer width="100%" height={selectedCategories.length > 1 ? 240 : 200}>
-                <BarChart data={kpis.annualData} margin={{ top: 5, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
+                <BarChart data={kpis.annualData} margin={{ top: 20, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis 
                     dataKey="label" 
                     stroke="#8e8e93" 
-                    fontSize={9}
+                    fontSize={10}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis 
                     stroke="#8e8e93" 
-                    fontSize={9}
+                    fontSize={10}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(val) => val >= 1000000 ? `${(val/1000000).toFixed(1)}M` : val >= 1000 ? `${(val/1000).toFixed(0)}k` : val}
@@ -2544,18 +2551,18 @@ export default function DataDashboard() {
               </div>
               <p className="text-[10px] text-neutral-500 mb-3">Jan - {kpis.currentMonthName.split(' ')[0]} (2017-2025)</p>
               <ResponsiveContainer width="100%" height={selectedCategories.length > 1 ? 240 : 200}>
-                <BarChart data={kpis.ytdComparisonData} margin={{ top: 5, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
+                <BarChart data={kpis.ytdComparisonData} margin={{ top: 20, right: 5, left: -20, bottom: selectedCategories.length > 1 ? 25 : 5 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                   <XAxis 
                     dataKey="year" 
                     stroke="#8e8e93" 
-                    fontSize={9}
+                    fontSize={10}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis 
                     stroke="#8e8e93" 
-                    fontSize={9}
+                    fontSize={10}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(val) => val >= 1000000 ? `${(val/1000000).toFixed(1)}M` : val >= 1000 ? `${(val/1000).toFixed(0)}k` : val}
