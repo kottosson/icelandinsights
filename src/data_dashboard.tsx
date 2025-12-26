@@ -1063,11 +1063,10 @@ export default function DataDashboard() {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-red-500 pulse-strong"></div>
-                <h2 className="text-2xl font-bold text-neutral-800" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.03em' }}>
+                <h2 className="text-2xl font-bold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.03em' }}>
                   Executive Summary
                 </h2>
               </div>
-              <span className="text-[9px] text-neutral-500 uppercase tracking-wider font-medium">Monthly & Trailing Twelve Month Performance</span>
             </div>
             
             {/* Seasonal Context Box - Refined Design */}
@@ -1075,63 +1074,35 @@ export default function DataDashboard() {
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2.5">
-                  <svg className="w-4 h-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                   <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Seasonal Performance</h3>
                 </div>
-                <span className="text-xs text-neutral-500 font-medium">
-                  {(() => {
-                    const currentDate = new Date(kpis.currentMonthName);
-                    const month = currentDate.toLocaleString('en-US', { month: 'long' });
-                    return month;
-                  })()} 2025
-                </span>
+                {/* Date Stamp - Prominent */}
+                <div className="px-3.5 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
+                  <span className="text-base font-bold text-neutral-900 tracking-tight">
+                    {(() => {
+                      const currentDate = new Date(kpis.currentMonthName);
+                      const month = currentDate.toLocaleString('en-US', { month: 'long' });
+                      return month;
+                    })()} 2025
+                  </span>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-6">
                 {/* Left Column - Stats */}
                 <div className="space-y-5">
                   {/* Current Performance Card */}
-                  <div className="border border-neutral-200 rounded-lg p-5 bg-neutral-50/30">
-                    {/* Season Badge */}
-                    <div className="mb-4">
-                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-2">SEASON</div>
-                      {(() => {
-                        const currentDate = new Date(kpis.currentMonthName);
-                        const month = currentDate.getMonth(); // 0-11
-                        
-                        let season = 'LOW SEASON';
-                        let dotColor = 'bg-neutral-400';
-                        
-                        // High: Jun-Aug (months 5-7)
-                        if (month >= 5 && month <= 7) {
-                          season = 'HIGH SEASON';
-                          dotColor = 'bg-emerald-500';
-                        } 
-                        // Shoulder: Apr-May (3-4), Sep-Oct (8-9)
-                        else if ((month >= 3 && month <= 4) || (month >= 8 && month <= 9)) {
-                          season = 'SHOULDER';
-                          dotColor = 'bg-amber-500';
-                        }
-                        // Low: Nov-Mar (10-11, 0-2)
-                        
-                        return (
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
-                            <span className="text-xs font-medium text-neutral-700">{season}</span>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                    
-                    {/* Current Value */}
+                  <div className="border border-neutral-200 rounded-lg p-5">
+                    {/* Season Pill with Status */}
                     {(() => {
                       const currentDate = new Date(kpis.currentMonthName);
-                      const month = currentDate.getMonth();
+                      const month = currentDate.getMonth(); // 0-11
                       const currentValue = parseInt(kpis.currentMonth.replace(/,/g, ''));
                       
-                      // Calculate historical data
+                      // Calculate status
                       const historicalByMonth = Array(12).fill(0).map(() => []);
                       
                       filteredData.filter(row => row.flokkur === 'Útlendingar alls').forEach(row => {
@@ -1175,31 +1146,88 @@ export default function DataDashboard() {
                         statusDot = 'bg-amber-500';
                       }
                       
+                      let season = 'LOW SEASON';
+                      let pillBg = 'bg-neutral-100';
+                      let pillText = 'text-neutral-700';
+                      let pillBorder = 'border-neutral-300';
+                      
+                      if (month >= 5 && month <= 7) {
+                        season = 'HIGH SEASON';
+                        pillBg = 'bg-emerald-50';
+                        pillText = 'text-emerald-700';
+                        pillBorder = 'border-emerald-300';
+                      } else if (month >= 8 && month <= 9) {
+                        season = 'SHOULDER';
+                        pillBg = 'bg-amber-50';
+                        pillText = 'text-amber-700';
+                        pillBorder = 'border-amber-300';
+                      }
+                      
+                      return (
+                        <div className="flex items-center justify-between mb-5">
+                          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border ${pillBg} ${pillText} ${pillBorder}`}>
+                            <span className="text-xs font-semibold tracking-wide">{season}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className={`w-1.5 h-1.5 rounded-full ${statusDot}`}></div>
+                            <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    
+                    {/* Current Value */}
+                    {(() => {
+                      const currentDate = new Date(kpis.currentMonthName);
+                      const month = currentDate.getMonth();
+                      const currentValue = parseInt(kpis.currentMonth.replace(/,/g, ''));
+                      
+                      const historicalByMonth = Array(12).fill(0).map(() => []);
+                      
+                      filteredData.filter(row => row.flokkur === 'Útlendingar alls').forEach(row => {
+                        const rowDate = new Date(row.date);
+                        const rowYear = rowDate.getFullYear();
+                        const rowMonth = rowDate.getMonth();
+                        
+                        if (rowYear >= 2017 && rowYear <= 2024 && rowYear !== 2020 && rowYear !== 2021 && rowYear !== 2022) {
+                          const value = row.fjöldi;
+                          if (!isNaN(value) && value > 0) {
+                            historicalByMonth[rowMonth].push(value);
+                          }
+                        }
+                      });
+                      
+                      const currentMonthData = historicalByMonth[month];
+                      const avg = currentMonthData.length > 0 
+                        ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
+                        : 0;
+                      
+                      const variance = currentMonthData.length > 0
+                        ? currentMonthData.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / currentMonthData.length
+                        : 0;
+                      const stdDev = Math.sqrt(variance);
+                      
+                      const expectedMin = Math.round((avg - stdDev) / 1000);
+                      const expectedMax = Math.round((avg + stdDev) / 1000);
+                      
                       return (
                         <>
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">CURRENT</div>
-                            <div className="flex items-center gap-1.5">
-                              <div className={`w-1.5 h-1.5 rounded-full ${statusDot}`}></div>
-                              <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="mb-4">
-                            <div className="text-4xl font-bold text-neutral-900 tabular-nums tracking-tight">
+                          {/* Big Number */}
+                          <div className="mb-5">
+                            <div className="text-4xl font-bold text-neutral-900 tabular-nums tracking-tight leading-none">
                               {kpis.currentMonth.replace(/,/g, ',')}
                             </div>
-                            <div className="text-xs text-neutral-500 mt-1">passengers</div>
+                            <div className="text-xs text-neutral-500 mt-1.5">passengers</div>
                           </div>
                           
+                          {/* Expected Range */}
                           <div className="pt-4 border-t border-neutral-200">
-                            <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-baseline justify-between">
                               <span className="text-xs text-neutral-500">Expected range</span>
                               <span className="text-sm font-semibold text-neutral-700 tabular-nums">
                                 {expectedMin}k - {expectedMax}k
                               </span>
                             </div>
-                            <div className="text-[10px] text-neutral-400 mt-1">Based on 2017-2019, 2023-2024 avg</div>
                           </div>
                         </>
                       );
@@ -1227,13 +1255,13 @@ export default function DataDashboard() {
                           }
                         });
                         
-                        // Season definitions:
-                        // High: Jun-Aug (5-7)
-                        // Shoulder: Apr-May (3-4), Sep-Oct (8-9)
-                        // Low: Nov-Mar (10-11, 0-2)
+                        // Season definitions (statistically-based):
+                        // High: Jun-Aug (5-7) - 36% of annual
+                        // Shoulder: Sep-Oct (8-9) - 19% of annual
+                        // Low: Nov-May (10-11, 0-4) - 45% of annual
                         const highSeasonMonths = [5, 6, 7]; // Jun, Jul, Aug
-                        const shoulderMonths = [3, 4, 8, 9]; // Apr, May, Sep, Oct
-                        const lowSeasonMonths = [0, 1, 2, 10, 11]; // Jan, Feb, Mar, Nov, Dec
+                        const shoulderMonths = [8, 9]; // Sep, Oct
+                        const lowSeasonMonths = [0, 1, 2, 3, 4, 10, 11]; // Nov-May
                         
                         const calcAvg = (months) => {
                           const allValues = months.flatMap(m => historicalByMonth[m]);
@@ -1261,9 +1289,9 @@ export default function DataDashboard() {
                           <>
                             {/* High */}
                             <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 w-24 flex-shrink-0">
+                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
                                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                                <span className="text-xs text-neutral-700 font-medium">High</span>
+                                <span className="text-xs text-neutral-700 font-medium">High (Jun-Aug)</span>
                               </div>
                               <div className="flex-1 bg-neutral-100 rounded-sm h-6 overflow-hidden">
                                 <div className="bg-emerald-500 h-6" style={{ width: '100%' }}></div>
@@ -1273,9 +1301,9 @@ export default function DataDashboard() {
                             
                             {/* Shoulder */}
                             <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 w-24 flex-shrink-0">
+                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
                                 <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                                <span className="text-xs text-neutral-700 font-medium">Shoulder</span>
+                                <span className="text-xs text-neutral-700 font-medium">Shoulder (Sep-Oct)</span>
                               </div>
                               <div className="flex-1 bg-neutral-100 rounded-sm h-6 overflow-hidden">
                                 <div className="bg-amber-500 h-6" style={{ width: `${highAvg > 0 ? (shoulderAvg / highAvg) * 100 : 0}%` }}></div>
@@ -1285,9 +1313,9 @@ export default function DataDashboard() {
                             
                             {/* Low */}
                             <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 w-24 flex-shrink-0">
+                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
                                 <div className="w-2.5 h-2.5 rounded-full bg-neutral-400"></div>
-                                <span className="text-xs text-neutral-700 font-medium">Low</span>
+                                <span className="text-xs text-neutral-700 font-medium">Low (Nov-May)</span>
                               </div>
                               <div className="flex-1 bg-neutral-100 rounded-sm h-6 overflow-hidden">
                                 <div className="bg-neutral-400 h-6" style={{ width: `${highAvg > 0 ? (lowAvg / highAvg) * 100 : 0}%` }}></div>
@@ -1297,25 +1325,6 @@ export default function DataDashboard() {
                           </>
                         );
                       })()}
-                    </div>
-                    
-                    {/* Season months legend */}
-                    <div className="mt-5 pt-4 border-t border-neutral-200">
-                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-2.5">SEASON MONTHS</div>
-                      <div className="flex items-center justify-between text-xs text-neutral-600">
-                        <span className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                          Jun-Aug
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                          Apr-May, Sep-Oct
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-neutral-400"></div>
-                          Nov-Mar
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>
