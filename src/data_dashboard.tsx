@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Cell } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Add custom animations
@@ -1301,7 +1301,7 @@ export default function DataDashboard() {
                   <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
                   
                   <ResponsiveContainer width="100%" height={260}>
-                    <ComposedChart 
+                    <BarChart 
                       data={(() => {
                         const currentDate = new Date(kpis.currentMonthName);
                         const currentMonth = currentDate.getMonth();
@@ -1368,12 +1368,8 @@ export default function DataDashboard() {
                           if (value === null) return ['N/A', name];
                           return [`${(value/1000).toFixed(0)}k`, name];
                         }}
-                        labelFormatter={(label) => {
-                          // Label is already the full month name from our data
-                          return label;
-                        }}
                       />
-                      {/* 2025 Bars FIRST (so they render behind the line) */}
+                      {/* 2025 Bars */}
                       <Bar 
                         dataKey="current"
                         name="2025 YTD"
@@ -1382,17 +1378,17 @@ export default function DataDashboard() {
                         {(() => {
                           const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                           return monthLabels.map((label, index) => {
-                            let fill = '#a3a3a3'; // Low season (neutral-400)
+                            let fill = '#a3a3a3';
                             if (index >= 5 && index <= 7) {
-                              fill = '#10b981'; // High season (emerald-500)
+                              fill = '#10b981';
                             } else if (index >= 8 && index <= 9) {
-                              fill = '#f59e0b'; // Shoulder (amber-500)
+                              fill = '#f59e0b';
                             }
                             return <Cell key={`cell-${index}`} fill={fill} />;
                           });
                         })()}
                       </Bar>
-                      {/* Historical Average Line SECOND (renders on top with distinct color) */}
+                      {/* Historical Line - render after bars so it's on top */}
                       <Line 
                         type="monotone"
                         dataKey="historical"
@@ -1402,7 +1398,7 @@ export default function DataDashboard() {
                         dot={false}
                         name="Historical Avg"
                       />
-                    </ComposedChart>
+                    </BarChart>
                   </ResponsiveContainer>
                   
                   {/* Legend */}
