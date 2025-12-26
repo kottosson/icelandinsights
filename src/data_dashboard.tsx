@@ -1070,6 +1070,382 @@ export default function DataDashboard() {
               <span className="text-[9px] text-neutral-500 uppercase tracking-wider font-medium">Monthly & Trailing Twelve Month Performance</span>
             </div>
             
+            {/* Seasonal Context Box - Refined Design */}
+            <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 mb-5 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2.5">
+                  <svg className="w-4 h-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Seasonal Performance</h3>
+                </div>
+                <span className="text-xs text-neutral-500 font-medium">
+                  {(() => {
+                    const currentDate = new Date(kpis.currentMonthName);
+                    const month = currentDate.toLocaleString('en-US', { month: 'long' });
+                    return month;
+                  })()} 2025
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-6">
+                {/* Left Column - Stats */}
+                <div className="space-y-5">
+                  {/* Current Performance Card */}
+                  <div className="border border-neutral-200 rounded-lg p-5 bg-neutral-50/30">
+                    {/* Season Badge */}
+                    <div className="mb-4">
+                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-2">SEASON</div>
+                      {(() => {
+                        const currentDate = new Date(kpis.currentMonthName);
+                        const month = currentDate.getMonth(); // 0-11
+                        
+                        let season = 'LOW SEASON';
+                        let dotColor = 'bg-neutral-400';
+                        
+                        // High: Jun-Aug (months 5-7)
+                        if (month >= 5 && month <= 7) {
+                          season = 'HIGH SEASON';
+                          dotColor = 'bg-emerald-500';
+                        } 
+                        // Shoulder: Apr-May (3-4), Sep-Oct (8-9)
+                        else if ((month >= 3 && month <= 4) || (month >= 8 && month <= 9)) {
+                          season = 'SHOULDER';
+                          dotColor = 'bg-amber-500';
+                        }
+                        // Low: Nov-Mar (10-11, 0-2)
+                        
+                        return (
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
+                            <span className="text-xs font-medium text-neutral-700">{season}</span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    
+                    {/* Current Value */}
+                    {(() => {
+                      const currentDate = new Date(kpis.currentMonthName);
+                      const month = currentDate.getMonth();
+                      const currentValue = parseInt(kpis.currentMonth.replace(/,/g, ''));
+                      
+                      // Calculate historical data
+                      const historicalByMonth = Array(12).fill(0).map(() => []);
+                      
+                      filteredData.filter(row => row.flokkur === 'Útlendingar alls').forEach(row => {
+                        const rowDate = new Date(row.date);
+                        const rowYear = rowDate.getFullYear();
+                        const rowMonth = rowDate.getMonth();
+                        
+                        if (rowYear >= 2017 && rowYear <= 2024 && rowYear !== 2020 && rowYear !== 2021 && rowYear !== 2022) {
+                          const value = row.fjöldi;
+                          if (!isNaN(value) && value > 0) {
+                            historicalByMonth[rowMonth].push(value);
+                          }
+                        }
+                      });
+                      
+                      const currentMonthData = historicalByMonth[month];
+                      const avg = currentMonthData.length > 0 
+                        ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
+                        : 0;
+                      
+                      const variance = currentMonthData.length > 0
+                        ? currentMonthData.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / currentMonthData.length
+                        : 0;
+                      const stdDev = Math.sqrt(variance);
+                      
+                      const expectedMin = Math.round((avg - stdDev) / 1000);
+                      const expectedMax = Math.round((avg + stdDev) / 1000);
+                      
+                      const actualK = currentValue / 1000;
+                      let status = 'Normal';
+                      let statusColor = 'text-emerald-600';
+                      let statusDot = 'bg-emerald-500';
+                      
+                      if (actualK < (avg - 1.5 * stdDev) / 1000 || actualK > (avg + 1.5 * stdDev) / 1000) {
+                        status = 'Unusual';
+                        statusColor = 'text-red-600';
+                        statusDot = 'bg-red-500';
+                      } else if (actualK < expectedMin || actualK > expectedMax) {
+                        status = 'Watch';
+                        statusColor = 'text-amber-600';
+                        statusDot = 'bg-amber-500';
+                      }
+                      
+                      return (
+                        <>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">CURRENT</div>
+                            <div className="flex items-center gap-1.5">
+                              <div className={`w-1.5 h-1.5 rounded-full ${statusDot}`}></div>
+                              <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-4">
+                            <div className="text-4xl font-bold text-neutral-900 tabular-nums tracking-tight">
+                              {kpis.currentMonth.replace(/,/g, ',')}
+                            </div>
+                            <div className="text-xs text-neutral-500 mt-1">passengers</div>
+                          </div>
+                          
+                          <div className="pt-4 border-t border-neutral-200">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs text-neutral-500">Expected range</span>
+                              <span className="text-sm font-semibold text-neutral-700 tabular-nums">
+                                {expectedMin}k - {expectedMax}k
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-neutral-400 mt-1">Based on 2017-2019, 2023-2024 avg</div>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                  
+                  {/* Typical Volume Card */}
+                  <div className="border border-neutral-200 rounded-lg p-5">
+                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-4">TYPICAL MONTHLY VOLUME</div>
+                    
+                    <div className="space-y-4">
+                      {(() => {
+                        const historicalByMonth = Array(12).fill(0).map(() => []);
+                        
+                        filteredData.filter(row => row.flokkur === 'Útlendingar alls').forEach(row => {
+                          const rowDate = new Date(row.date);
+                          const rowYear = rowDate.getFullYear();
+                          const rowMonth = rowDate.getMonth();
+                          
+                          if (rowYear >= 2017 && rowYear <= 2024 && rowYear !== 2020 && rowYear !== 2021 && rowYear !== 2022) {
+                            const value = row.fjöldi;
+                            if (!isNaN(value) && value > 0) {
+                              historicalByMonth[rowMonth].push(value);
+                            }
+                          }
+                        });
+                        
+                        // Season definitions:
+                        // High: Jun-Aug (5-7)
+                        // Shoulder: Apr-May (3-4), Sep-Oct (8-9)
+                        // Low: Nov-Mar (10-11, 0-2)
+                        const highSeasonMonths = [5, 6, 7]; // Jun, Jul, Aug
+                        const shoulderMonths = [3, 4, 8, 9]; // Apr, May, Sep, Oct
+                        const lowSeasonMonths = [0, 1, 2, 10, 11]; // Jan, Feb, Mar, Nov, Dec
+                        
+                        const calcAvg = (months) => {
+                          const allValues = months.flatMap(m => historicalByMonth[m]);
+                          return allValues.length > 0 
+                            ? allValues.reduce((a, b) => a + b, 0) / allValues.length 
+                            : 0;
+                        };
+                        
+                        const highAvg = calcAvg(highSeasonMonths);
+                        const shoulderAvg = calcAvg(shoulderMonths);
+                        const lowAvg = calcAvg(lowSeasonMonths);
+                        
+                        const highValues = highSeasonMonths.flatMap(m => historicalByMonth[m]);
+                        const shoulderValues = shoulderMonths.flatMap(m => historicalByMonth[m]);
+                        const lowValues = lowSeasonMonths.flatMap(m => historicalByMonth[m]);
+                        
+                        const highMin = highValues.length > 0 ? Math.round(Math.min(...highValues) / 1000) : 0;
+                        const highMax = highValues.length > 0 ? Math.round(Math.max(...highValues) / 1000) : 0;
+                        const shoulderMin = shoulderValues.length > 0 ? Math.round(Math.min(...shoulderValues) / 1000) : 0;
+                        const shoulderMax = shoulderValues.length > 0 ? Math.round(Math.max(...shoulderValues) / 1000) : 0;
+                        const lowMin = lowValues.length > 0 ? Math.round(Math.min(...lowValues) / 1000) : 0;
+                        const lowMax = lowValues.length > 0 ? Math.round(Math.max(...lowValues) / 1000) : 0;
+                        
+                        return (
+                          <>
+                            {/* High */}
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 w-24 flex-shrink-0">
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                <span className="text-xs text-neutral-700 font-medium">High</span>
+                              </div>
+                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 overflow-hidden">
+                                <div className="bg-emerald-500 h-6" style={{ width: '100%' }}></div>
+                              </div>
+                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{highMin}-{highMax}k</span>
+                            </div>
+                            
+                            {/* Shoulder */}
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 w-24 flex-shrink-0">
+                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                                <span className="text-xs text-neutral-700 font-medium">Shoulder</span>
+                              </div>
+                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 overflow-hidden">
+                                <div className="bg-amber-500 h-6" style={{ width: `${highAvg > 0 ? (shoulderAvg / highAvg) * 100 : 0}%` }}></div>
+                              </div>
+                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{shoulderMin}-{shoulderMax}k</span>
+                            </div>
+                            
+                            {/* Low */}
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 w-24 flex-shrink-0">
+                                <div className="w-2.5 h-2.5 rounded-full bg-neutral-400"></div>
+                                <span className="text-xs text-neutral-700 font-medium">Low</span>
+                              </div>
+                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 overflow-hidden">
+                                <div className="bg-neutral-400 h-6" style={{ width: `${highAvg > 0 ? (lowAvg / highAvg) * 100 : 0}%` }}></div>
+                              </div>
+                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{lowMin}-{lowMax}k</span>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                    
+                    {/* Season months legend */}
+                    <div className="mt-5 pt-4 border-t border-neutral-200">
+                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-2.5">SEASON MONTHS</div>
+                      <div className="flex items-center justify-between text-xs text-neutral-600">
+                        <span className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                          Jun-Aug
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                          Apr-May, Sep-Oct
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-neutral-400"></div>
+                          Nov-Mar
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Right Column - Chart */}
+                <div className="border border-neutral-200 rounded-lg p-5 bg-white">
+                  <div className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
+                  
+                  <ResponsiveContainer width="100%" height={260}>
+                    <LineChart 
+                      data={(() => {
+                        const currentDate = new Date(kpis.currentMonthName);
+                        const currentMonth = currentDate.getMonth();
+                        
+                        const historicalByMonth = Array(12).fill(0).map(() => []);
+                        const ytd2025ByMonth = Array(12).fill(null);
+                        
+                        filteredData.filter(row => row.flokkur === 'Útlendingar alls').forEach(row => {
+                          const rowDate = new Date(row.date);
+                          const rowYear = rowDate.getFullYear();
+                          const rowMonth = rowDate.getMonth();
+                          const value = row.fjöldi;
+                          
+                          if (!isNaN(value) && value > 0) {
+                            if (rowYear >= 2017 && rowYear <= 2024 && rowYear !== 2020 && rowYear !== 2021 && rowYear !== 2022) {
+                              historicalByMonth[rowMonth].push(value);
+                            }
+                            if (rowYear === 2025) {
+                              ytd2025ByMonth[rowMonth] = value;
+                            }
+                          }
+                        });
+                        
+                        const historicalAvg = historicalByMonth.map(values => 
+                          values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null
+                        );
+                        
+                        const monthLabels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+                        
+                        return monthLabels.map((label, i) => ({
+                          month: label,
+                          historical: historicalAvg[i],
+                          current: i <= currentMonth ? ytd2025ByMonth[i] : null,
+                          currentDot: i === currentMonth ? ytd2025ByMonth[i] : null
+                        }));
+                      })()}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 10 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
+                      <XAxis 
+                        dataKey="month"
+                        stroke="#a3a3a3"
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={{ stroke: '#d4d4d4' }}
+                      />
+                      <YAxis 
+                        stroke="#a3a3a3"
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={{ stroke: '#d4d4d4' }}
+                        tickFormatter={(val) => `${(val/1000).toFixed(0)}k`}
+                      />
+                      <Tooltip
+                        contentStyle={{ 
+                          backgroundColor: '#fff', 
+                          border: '1px solid #e5e5e5',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          padding: '8px 12px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                        }}
+                        formatter={(value) => {
+                          if (value === null) return ['N/A', ''];
+                          return [`${(value/1000).toFixed(0)}k`, ''];
+                        }}
+                        labelFormatter={(label) => {
+                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                          const labels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+                          return months[labels.indexOf(label)];
+                        }}
+                      />
+                      <Line 
+                        type="monotone"
+                        dataKey="historical"
+                        stroke="#a3a3a3"
+                        strokeWidth={2}
+                        strokeDasharray="5 5"
+                        dot={false}
+                        name="Historical"
+                      />
+                      <Line 
+                        type="monotone"
+                        dataKey="current"
+                        stroke="#404040"
+                        strokeWidth={2.5}
+                        dot={false}
+                        name="2025"
+                        connectNulls={false}
+                      />
+                      <Line 
+                        type="monotone"
+                        dataKey="currentDot"
+                        stroke="transparent"
+                        strokeWidth={0}
+                        dot={{ fill: '#ef4444', stroke: '#fff', strokeWidth: 2, r: 6 }}
+                        name="Current"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                  
+                  {/* Legend */}
+                  <div className="flex items-center justify-center gap-6 mt-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-[2px] border-t-2 border-dashed border-neutral-400"></div>
+                      <span className="text-xs text-neutral-600">Historical</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-[2px] bg-neutral-700"></div>
+                      <span className="text-xs text-neutral-600">2025</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                      <span className="text-xs text-neutral-600">Current</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
               {/* Insight 1: Current Month Performance */}
