@@ -1119,7 +1119,8 @@ export default function DataDashboard() {
               </div>
             </div>
             
-            {/* Seasonal Context Box - Optimized for Mobile */}
+            {/* Seasonal Context Box - Desktop Only for now */}
+            {!isMobile && seasonalData && (
             <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 mb-5 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
@@ -1131,7 +1132,6 @@ export default function DataDashboard() {
                 </div>
               </div>
               
-              {seasonalData && (
               <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[480px_1fr]'}`}>
                 {/* Left Column - Stats */}
                 <div className="space-y-5">
@@ -1422,8 +1422,9 @@ export default function DataDashboard() {
                 </div>
                 )}
                 </div>
-              )}
             </div>
+            )}
+            {/* End seasonal box - desktop only */}
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
