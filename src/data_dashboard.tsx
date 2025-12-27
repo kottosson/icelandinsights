@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -218,6 +218,51 @@ export default function DataDashboard() {
       return rowDate >= startDate && rowDate <= endDate;
     });
   };
+
+  // Calculate seasonal data ONCE using useMemo (performance fix for iPhone)
+  const seasonalData = useMemo(() => {
+    if (!kpis || !filteredData || filteredData.length === 0) {
+      return null;
+    }
+
+    const currentDate = new Date(kpis.currentMonthName);
+    const currentMonth = currentDate.getMonth();
+    const currentValue = parseInt(kpis.currentMonth.replace(/,/g, ''));
+    
+    const historicalByMonth = Array(12).fill(0).map(() => []);
+    const ytd2025ByMonth = Array(12).fill(null);
+    
+    // Filter once, use multiple times
+    const foreignPassengers = filteredData.filter(row => row.flokkur === 'Útlendingar alls');
+    
+    foreignPassengers.forEach(row => {
+      const rowDate = new Date(row.date);
+      const rowYear = rowDate.getFullYear();
+      const rowMonth = rowDate.getMonth();
+      const value = row.fjöldi;
+      
+      if (!isNaN(value) && value > 0) {
+        if (rowYear >= 2017 && rowYear <= 2024 && rowYear !== 2020 && rowYear !== 2021 && rowYear !== 2022) {
+          historicalByMonth[rowMonth].push(value);
+        }
+        if (rowYear === 2025) {
+          ytd2025ByMonth[rowMonth] = value;
+        }
+      }
+    });
+    
+    const historicalAvg = historicalByMonth.map(values => 
+      values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null
+    );
+    
+    return {
+      currentMonth,
+      currentValue,
+      historicalByMonth,
+      historicalAvg,
+      ytd2025ByMonth
+    };
+  }, [filteredData, kpis]);
 
   useEffect(() => {
     // Load data from JSON file
@@ -1069,7 +1114,7 @@ export default function DataDashboard() {
               </div>
             </div>
             
-            {/* Seasonal Context Box - Refined Design */}
+            {/* Seasonal Context Box - Optimized for Mobile */}
             <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 mb-5 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
@@ -1081,6 +1126,7 @@ export default function DataDashboard() {
                 </div>
               </div>
               
+              {seasonalData && (
               <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-6">
                 {/* Left Column - Stats */}
                 <div className="space-y-5">
@@ -1100,26 +1146,9 @@ export default function DataDashboard() {
                     <div className="p-6">
                       {/* Season & Status */}
                       {(() => {
-                        const currentDate = new Date(kpis.currentMonthName);
-                        const month = currentDate.getMonth();
-                        const currentValue = parseInt(kpis.currentMonth.replace(/,/g, ''));
+                        const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
                         
-                        // Calculate status
-                        const historicalByMonth = Array(12).fill(0).map(() => []);
-                        
-                        filteredData.filter(row => row.flokkur === 'Útlendingar alls').forEach(row => {
-                          const rowDate = new Date(row.date);
-                          const rowYear = rowDate.getFullYear();
-                          const rowMonth = rowDate.getMonth();
-                          
-                          if (rowYear >= 2017 && rowYear <= 2024 && rowYear !== 2020 && rowYear !== 2021 && rowYear !== 2022) {
-                            const value = row.fjöldi;
-                            if (!isNaN(value) && value > 0) {
-                              historicalByMonth[rowMonth].push(value);
-                            }
-                          }
-                        });
-                        
+                        // Calculate status from cached data
                         const currentMonthData = historicalByMonth[month];
                         const avg = currentMonthData.length > 0 
                           ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
@@ -1207,20 +1236,8 @@ export default function DataDashboard() {
                     
                     <div className="space-y-4">
                       {(() => {
-                        const historicalByMonth = Array(12).fill(0).map(() => []);
-                        
-                        filteredData.filter(row => row.flokkur === 'Útlendingar alls').forEach(row => {
-                          const rowDate = new Date(row.date);
-                          const rowYear = rowDate.getFullYear();
-                          const rowMonth = rowDate.getMonth();
-                          
-                          if (rowYear >= 2017 && rowYear <= 2024 && rowYear !== 2020 && rowYear !== 2021 && rowYear !== 2022) {
-                            const value = row.fjöldi;
-                            if (!isNaN(value) && value > 0) {
-                              historicalByMonth[rowMonth].push(value);
-                            }
-                          }
-                        });
+                        // Use cached data instead of recalculating
+                        const { historicalByMonth } = seasonalData;
                         
                         // Season definitions (statistically-based):
                         // High: Jun-Aug (5-7) - 36% of annual
@@ -1303,31 +1320,8 @@ export default function DataDashboard() {
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart 
                       data={(() => {
-                        const currentDate = new Date(kpis.currentMonthName);
-                        const currentMonth = currentDate.getMonth();
-                        
-                        const historicalByMonth = Array(12).fill(0).map(() => []);
-                        const ytd2025ByMonth = Array(12).fill(null);
-                        
-                        filteredData.filter(row => row.flokkur === 'Útlendingar alls').forEach(row => {
-                          const rowDate = new Date(row.date);
-                          const rowYear = rowDate.getFullYear();
-                          const rowMonth = rowDate.getMonth();
-                          const value = row.fjöldi;
-                          
-                          if (!isNaN(value) && value > 0) {
-                            if (rowYear >= 2017 && rowYear <= 2024 && rowYear !== 2020 && rowYear !== 2021 && rowYear !== 2022) {
-                              historicalByMonth[rowMonth].push(value);
-                            }
-                            if (rowYear === 2025) {
-                              ytd2025ByMonth[rowMonth] = value;
-                            }
-                          }
-                        });
-                        
-                        const historicalAvg = historicalByMonth.map(values => 
-                          values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null
-                        );
+                        // Use cached data instead of recalculating
+                        const { currentMonth, historicalAvg, ytd2025ByMonth } = seasonalData;
                         
                         const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                         
@@ -1420,7 +1414,8 @@ export default function DataDashboard() {
                     </div>
                   </div>
                 </div>
-              </div>
+                </div>
+              )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
