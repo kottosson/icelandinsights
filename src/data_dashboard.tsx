@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, ComposedChart } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Add custom animations
@@ -1132,8 +1132,8 @@ export default function DataDashboard() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 gap-6">
-                {/* Current Month Card */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* LEFT COLUMN - Current Month Stats */}
                 <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
                   <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-200">
                     <div className="text-sm font-bold text-neutral-900">
@@ -1251,87 +1251,13 @@ export default function DataDashboard() {
                   </div>
                 </div>
 
-                {/* Volume Bars */}
-                <div className="border border-neutral-200 rounded-lg p-5">
-                  <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">TYPICAL MONTHLY VOLUME</div>
-                  <div className="space-y-4">
-                    {(() => {
-                      const { historicalByMonth } = seasonalData;
-                      const highSeasonMonths = [5, 6, 7];
-                      const shoulderMonths = [8, 9];
-                      const lowSeasonMonths = [0, 1, 2, 3, 4, 10, 11];
-                      
-                      const calcAvg = (months) => {
-                        const allValues = months.flatMap(m => historicalByMonth[m]);
-                        return allValues.length > 0 
-                          ? allValues.reduce((a, b) => a + b, 0) / allValues.length 
-                          : 0;
-                      };
-                      
-                      const highAvg = calcAvg(highSeasonMonths);
-                      const shoulderAvg = calcAvg(shoulderMonths);
-                      const lowAvg = calcAvg(lowSeasonMonths);
-                      const maxAvg = Math.max(highAvg, shoulderAvg, lowAvg);
-                      
-                      const calcRange = (months) => {
-                        const allValues = months.flatMap(m => historicalByMonth[m]);
-                        if (allValues.length === 0) return { min: 0, max: 0 };
-                        return {
-                          min: Math.round(Math.min(...allValues) / 1000),
-                          max: Math.round(Math.max(...allValues) / 1000)
-                        };
-                      };
-                      
-                      const highRange = calcRange(highSeasonMonths);
-                      const shoulderRange = calcRange(shoulderMonths);
-                      const lowRange = calcRange(lowSeasonMonths);
-                      
-                      return (
-                        <>
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 w-36 flex-shrink-0">
-                              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                              <span className="text-xs font-medium text-neutral-700">High Season</span>
-                            </div>
-                            <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
-                              <div className="bg-emerald-500 h-6" style={{ width: `${(highAvg / maxAvg) * 100}%` }}></div>
-                            </div>
-                            <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{highRange.min}-{highRange.max}k</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 w-36 flex-shrink-0">
-                              <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                              <span className="text-xs font-medium text-neutral-700">Shoulder</span>
-                            </div>
-                            <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
-                              <div className="bg-amber-500 h-6" style={{ width: `${(shoulderAvg / maxAvg) * 100}%` }}></div>
-                            </div>
-                            <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{shoulderRange.min}-{shoulderRange.max}k</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 w-36 flex-shrink-0">
-                              <div className="w-2.5 h-2.5 rounded-full bg-neutral-400"></div>
-                              <span className="text-xs font-medium text-neutral-700">Low Season</span>
-                            </div>
-                            <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
-                              <div className="bg-neutral-400 h-6" style={{ width: `${(lowAvg / maxAvg) * 100}%` }}></div>
-                            </div>
-                            <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{lowRange.min}-{lowRange.max}k</span>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-                
-                {/* Chart - Desktop Only */}
-                {!isMobile && (
-                <div className="border border-neutral-200 rounded-lg p-5 bg-white">
-                  <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart 
+                {/* RIGHT COLUMN - Chart and Volume */}
+                <div className="space-y-6">
+                  {/* Chart */}
+                  <div className="border border-neutral-200 rounded-lg p-5 bg-white">
+                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
+                    <ResponsiveContainer width="100%" height={260}>
+                    <ComposedChart 
                       data={(() => {
                         const { currentMonth, historicalAvg, ytd2025ByMonth } = seasonalData;
                         const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1371,10 +1297,12 @@ export default function DataDashboard() {
                           return [`${(value/1000).toFixed(0)}k`, name];
                         }}
                       />
+                      {/* 2025 bars - render first (background) */}
                       <Bar 
                         dataKey="current"
                         name="2025 YTD"
                         radius={[4, 4, 0, 0]}
+                        fillOpacity={0.9}
                       >
                         {(() => {
                           const { currentMonth } = seasonalData;
@@ -1387,21 +1315,24 @@ export default function DataDashboard() {
                           });
                         })()}
                       </Bar>
+                      {/* Historical average line - render second (on top) */}
                       <Line 
                         dataKey="historical"
                         name="Historical Average"
-                        stroke="#3b82f6"
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
+                        stroke="#dc2626"
+                        strokeWidth={4}
+                        strokeDasharray="8 4"
                         dot={false}
+                        activeDot={{ r: 5, fill: '#dc2626' }}
+                        connectNulls={true}
                         type="monotone"
                       />
-                    </BarChart>
+                    </ComposedChart>
                   </ResponsiveContainer>
                   <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-neutral-200">
                     <div className="flex flex-col items-center gap-1">
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-[2px] border-t-2 border-dashed" style={{ borderColor: '#3b82f6' }}></div>
+                        <div className="w-6 h-[3px] border-t-[3px] border-dashed" style={{ borderColor: '#dc2626' }}></div>
                       </div>
                       <span className="text-[10px] text-neutral-600 font-medium">Historical Average</span>
                       <span className="text-[9px] text-neutral-400">(2017-2019, 2023-2024, excl. 2020-2022)</span>
@@ -1416,7 +1347,82 @@ export default function DataDashboard() {
                     </div>
                   </div>
                 </div>
-                )}
+                
+                  {/* Volume Bars */}
+                  <div className="border border-neutral-200 rounded-lg p-5">
+                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">TYPICAL MONTHLY VOLUME</div>
+                    <div className="space-y-4">
+                      {(() => {
+                        const { historicalByMonth } = seasonalData;
+                        const highSeasonMonths = [5, 6, 7];
+                        const shoulderMonths = [8, 9];
+                        const lowSeasonMonths = [0, 1, 2, 3, 4, 10, 11];
+                        
+                        const calcAvg = (months) => {
+                          const allValues = months.flatMap(m => historicalByMonth[m]);
+                          return allValues.length > 0 
+                            ? allValues.reduce((a, b) => a + b, 0) / allValues.length 
+                            : 0;
+                        };
+                        
+                        const highAvg = calcAvg(highSeasonMonths);
+                        const shoulderAvg = calcAvg(shoulderMonths);
+                        const lowAvg = calcAvg(lowSeasonMonths);
+                        const maxAvg = Math.max(highAvg, shoulderAvg, lowAvg);
+                        
+                        const calcRange = (months) => {
+                          const allValues = months.flatMap(m => historicalByMonth[m]);
+                          if (allValues.length === 0) return { min: 0, max: 0 };
+                          return {
+                            min: Math.round(Math.min(...allValues) / 1000),
+                            max: Math.round(Math.max(...allValues) / 1000)
+                          };
+                        };
+                        
+                        const highRange = calcRange(highSeasonMonths);
+                        const shoulderRange = calcRange(shoulderMonths);
+                        const lowRange = calcRange(lowSeasonMonths);
+                        
+                        return (
+                          <>
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                <span className="text-xs font-medium text-neutral-700">High Season</span>
+                              </div>
+                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
+                                <div className="bg-emerald-500 h-6" style={{ width: `${(highAvg / maxAvg) * 100}%` }}></div>
+                              </div>
+                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{highRange.min}-{highRange.max}k</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
+                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                                <span className="text-xs font-medium text-neutral-700">Shoulder</span>
+                              </div>
+                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
+                                <div className="bg-amber-500 h-6" style={{ width: `${(shoulderAvg / maxAvg) * 100}%` }}></div>
+                              </div>
+                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{shoulderRange.min}-{shoulderRange.max}k</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
+                                <div className="w-2.5 h-2.5 rounded-full bg-neutral-400"></div>
+                                <span className="text-xs font-medium text-neutral-700">Low Season</span>
+                              </div>
+                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
+                                <div className="bg-neutral-400 h-6" style={{ width: `${(lowAvg / maxAvg) * 100}%` }}></div>
+                              </div>
+                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{lowRange.min}-{lowRange.max}k</span>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             )}
