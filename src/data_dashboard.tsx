@@ -1119,8 +1119,8 @@ export default function DataDashboard() {
               </div>
             </div>
             
-            {/* Seasonal Context Box - Desktop Only for now */}
-            {!isMobile && seasonalData && (
+            {/* Seasonal Context Box - Mobile Optimized */}
+            {seasonalData && (
             <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 mb-5 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
@@ -1132,205 +1132,209 @@ export default function DataDashboard() {
                 </div>
               </div>
               
-              <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[480px_1fr]'}`}>
-                {/* Left Column - Stats */}
-                <div className="space-y-5">
-                  {/* Current Performance Card - Polished Design */}
-                  <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
-                    {/* Date Header */}
-                    <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-200">
-                      <div className="text-sm font-bold text-neutral-900">
-                        {(() => {
-                          const currentDate = new Date(kpis.currentMonthName);
-                          const month = currentDate.toLocaleString('en-US', { month: 'long' });
-                          return month;
-                        })()} 2025
-                      </div>
-                    </div>
-                    
-                    <div className="p-6">
-                      {/* Season & Status */}
+              <div className="grid grid-cols-1 gap-6">
+                {/* Current Month Card */}
+                <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
+                  <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-200">
+                    <div className="text-sm font-bold text-neutral-900">
                       {(() => {
-                        const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
-                        
-                        // Calculate status from cached data
-                        const currentMonthData = historicalByMonth[month];
-                        const avg = currentMonthData.length > 0 
-                          ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
-                          : 0;
-                        
-                        const variance = currentMonthData.length > 0
-                          ? currentMonthData.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / currentMonthData.length
-                          : 0;
-                        const stdDev = Math.sqrt(variance);
-                        
-                        const expectedMin = Math.round((avg - stdDev) / 1000);
-                        const expectedMax = Math.round((avg + stdDev) / 1000);
-                        
-                        const actualK = currentValue / 1000;
-                        let status = 'Normal';
-                        let statusColor = 'text-emerald-600';
-                        let statusDot = 'bg-emerald-500';
-                        
-                        if (actualK < (avg - 1.5 * stdDev) / 1000 || actualK > (avg + 1.5 * stdDev) / 1000) {
-                          status = 'Unusual';
-                          statusColor = 'text-red-600';
-                          statusDot = 'bg-red-500';
-                        } else if (actualK < expectedMin || actualK > expectedMax) {
-                          status = 'Watch';
-                          statusColor = 'text-amber-600';
-                          statusDot = 'bg-amber-500';
-                        }
-                        
-                        let season = 'LOW SEASON';
-                        let pillBg = 'bg-neutral-100';
-                        let pillText = 'text-neutral-700';
-                        let pillBorder = 'border-neutral-300';
-                        
-                        if (month >= 5 && month <= 7) {
-                          season = 'HIGH SEASON';
-                          pillBg = 'bg-emerald-50';
-                          pillText = 'text-emerald-700';
-                          pillBorder = 'border-emerald-300';
-                        } else if (month >= 8 && month <= 9) {
-                          season = 'SHOULDER';
-                          pillBg = 'bg-amber-50';
-                          pillText = 'text-amber-700';
-                          pillBorder = 'border-amber-300';
-                        }
-                        
-                        return (
-                          <>
-                            {/* Season Pill and Status */}
-                            <div className="flex items-center justify-between mb-8">
-                              <div className={`inline-flex items-center px-3 py-1.5 rounded-full border ${pillBg} ${pillText} ${pillBorder}`}>
-                                <span className="text-xs font-semibold tracking-wide uppercase">{season}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <div className={`w-2 h-2 rounded-full ${statusDot}`}></div>
-                                <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
-                              </div>
-                            </div>
-                            
-                            {/* Main Number */}
-                            <div className="mb-8">
-                              <div className="text-5xl font-bold text-neutral-900 tabular-nums tracking-tight mb-2">
-                                {kpis.currentMonth.replace(/,/g, ',')}
-                              </div>
-                              <div className="text-sm text-neutral-600">foreign passengers</div>
-                            </div>
-                            
-                            {/* Expected Range */}
-                            <div className="pt-5 border-t border-neutral-200">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-neutral-500 font-medium">Expected range</span>
-                                <span className="text-lg font-bold text-neutral-900 tabular-nums">
-                                  {expectedMin}k - {expectedMax}k
-                                </span>
-                              </div>
-                            </div>
-                          </>
-                        );
-                      })()}
+                        const currentDate = new Date(kpis.currentMonthName);
+                        const month = currentDate.toLocaleString('en-US', { month: 'long' });
+                        return month;
+                      })()} 2025
                     </div>
                   </div>
                   
-                  {/* Typical Volume Card */}
-                  <div className="border border-neutral-200 rounded-lg p-5">
-                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">TYPICAL MONTHLY VOLUME</div>
-                    
-                    <div className="space-y-4">
-                      {(() => {
-                        // Use cached data instead of recalculating
-                        const { historicalByMonth } = seasonalData;
-                        
-                        // Season definitions (statistically-based):
-                        // High: Jun-Aug (5-7) - 36% of annual
-                        // Shoulder: Sep-Oct (8-9) - 19% of annual
-                        // Low: Nov-May (10-11, 0-4) - 45% of annual
-                        const highSeasonMonths = [5, 6, 7]; // Jun, Jul, Aug
-                        const shoulderMonths = [8, 9]; // Sep, Oct
-                        const lowSeasonMonths = [0, 1, 2, 3, 4, 10, 11]; // Nov-May
-                        
-                        const calcAvg = (months) => {
-                          const allValues = months.flatMap(m => historicalByMonth[m]);
-                          return allValues.length > 0 
-                            ? allValues.reduce((a, b) => a + b, 0) / allValues.length 
-                            : 0;
+                  <div className="p-6">
+                    {(() => {
+                      const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
+                      const currentMonthData = historicalByMonth[month];
+                      const avg = currentMonthData.length > 0 
+                        ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
+                        : 0;
+                      const variance = currentMonthData.length > 0
+                        ? currentMonthData.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / currentMonthData.length
+                        : 0;
+                      const stdDev = Math.sqrt(variance);
+                      const expectedMin = Math.round((avg - stdDev) / 1000);
+                      const expectedMax = Math.round((avg + stdDev) / 1000);
+                      const actualK = currentValue / 1000;
+                      
+                      let status = 'Normal';
+                      let statusColor = 'text-emerald-600';
+                      let statusDot = 'bg-emerald-500';
+                      if (actualK < (avg - 1.5 * stdDev) / 1000 || actualK > (avg + 1.5 * stdDev) / 1000) {
+                        status = 'Unusual';
+                        statusColor = 'text-red-600';
+                        statusDot = 'bg-red-500';
+                      } else if (actualK < expectedMin || actualK > expectedMax) {
+                        status = 'Watch';
+                        statusColor = 'text-amber-600';
+                        statusDot = 'bg-amber-500';
+                      }
+                      
+                      let season = 'LOW SEASON';
+                      let pillBg = 'bg-neutral-100';
+                      let pillText = 'text-neutral-700';
+                      let pillBorder = 'border-neutral-300';
+                      if (month >= 5 && month <= 7) {
+                        season = 'HIGH SEASON';
+                        pillBg = 'bg-emerald-50';
+                        pillText = 'text-emerald-700';
+                        pillBorder = 'border-emerald-300';
+                      } else if (month >= 8 && month <= 9) {
+                        season = 'SHOULDER';
+                        pillBg = 'bg-amber-50';
+                        pillText = 'text-amber-700';
+                        pillBorder = 'border-amber-300';
+                      }
+                      
+                      return (
+                        <>
+                          <div className="flex items-center justify-between mb-8">
+                            <div className={`inline-flex items-center px-3 py-1.5 rounded-full border ${pillBg} ${pillText} ${pillBorder}`}>
+                              <span className="text-xs font-semibold tracking-wide uppercase">{season}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <div className={`w-2 h-2 rounded-full ${statusDot}`}></div>
+                              <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-8">
+                            <div className="text-5xl font-bold text-neutral-900 tabular-nums tracking-tight mb-2">
+                              {kpis.currentMonth.replace(/,/g, ',')}
+                            </div>
+                            <div className="text-sm text-neutral-600">foreign passengers</div>
+                          </div>
+                          
+                          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="text-xs font-semibold text-blue-900 uppercase tracking-wider mb-2">
+                              Historical Average (2017-2019, 2023-2024)
+                            </div>
+                            <div className="text-2xl font-bold text-blue-900 tabular-nums">
+                              {Math.round(avg / 1000)}k
+                            </div>
+                            <div className="text-xs text-blue-700 mt-1">
+                              passengers per month
+                            </div>
+                          </div>
+                          
+                          <div className="mb-6 p-4 bg-neutral-50 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-neutral-600">vs Historical</span>
+                              {(() => {
+                                const diff = currentValue - avg;
+                                const diffPercent = ((diff / avg) * 100).toFixed(1);
+                                const isUp = diff > 0;
+                                return (
+                                  <div className={`flex items-center gap-1 ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
+                                    {isUp ? '↑' : '↓'}
+                                    <span className="text-sm font-bold">{Math.abs(diffPercent)}%</span>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                          
+                          <div className="pt-5 border-t border-neutral-200">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-neutral-500 font-medium">Expected range</span>
+                              <span className="text-lg font-bold text-neutral-900 tabular-nums">
+                                {expectedMin}k - {expectedMax}k
+                              </span>
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Volume Bars */}
+                <div className="border border-neutral-200 rounded-lg p-5">
+                  <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">TYPICAL MONTHLY VOLUME</div>
+                  <div className="space-y-4">
+                    {(() => {
+                      const { historicalByMonth } = seasonalData;
+                      const highSeasonMonths = [5, 6, 7];
+                      const shoulderMonths = [8, 9];
+                      const lowSeasonMonths = [0, 1, 2, 3, 4, 10, 11];
+                      
+                      const calcAvg = (months) => {
+                        const allValues = months.flatMap(m => historicalByMonth[m]);
+                        return allValues.length > 0 
+                          ? allValues.reduce((a, b) => a + b, 0) / allValues.length 
+                          : 0;
+                      };
+                      
+                      const highAvg = calcAvg(highSeasonMonths);
+                      const shoulderAvg = calcAvg(shoulderMonths);
+                      const lowAvg = calcAvg(lowSeasonMonths);
+                      const maxAvg = Math.max(highAvg, shoulderAvg, lowAvg);
+                      
+                      const calcRange = (months) => {
+                        const allValues = months.flatMap(m => historicalByMonth[m]);
+                        if (allValues.length === 0) return { min: 0, max: 0 };
+                        return {
+                          min: Math.round(Math.min(...allValues) / 1000),
+                          max: Math.round(Math.max(...allValues) / 1000)
                         };
-                        
-                        const highAvg = calcAvg(highSeasonMonths);
-                        const shoulderAvg = calcAvg(shoulderMonths);
-                        const lowAvg = calcAvg(lowSeasonMonths);
-                        
-                        const highValues = highSeasonMonths.flatMap(m => historicalByMonth[m]);
-                        const shoulderValues = shoulderMonths.flatMap(m => historicalByMonth[m]);
-                        const lowValues = lowSeasonMonths.flatMap(m => historicalByMonth[m]);
-                        
-                        const highMin = highValues.length > 0 ? Math.round(Math.min(...highValues) / 1000) : 0;
-                        const highMax = highValues.length > 0 ? Math.round(Math.max(...highValues) / 1000) : 0;
-                        const shoulderMin = shoulderValues.length > 0 ? Math.round(Math.min(...shoulderValues) / 1000) : 0;
-                        const shoulderMax = shoulderValues.length > 0 ? Math.round(Math.max(...shoulderValues) / 1000) : 0;
-                        const lowMin = lowValues.length > 0 ? Math.round(Math.min(...lowValues) / 1000) : 0;
-                        const lowMax = lowValues.length > 0 ? Math.round(Math.max(...lowValues) / 1000) : 0;
-                        
-                        return (
-                          <>
-                            {/* High */}
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                                <span className="text-xs text-neutral-700 font-medium">High (Jun-Aug)</span>
-                              </div>
-                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 overflow-hidden">
-                                <div className="bg-emerald-500 h-6" style={{ width: '100%' }}></div>
-                              </div>
-                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{highMin}-{highMax}k</span>
+                      };
+                      
+                      const highRange = calcRange(highSeasonMonths);
+                      const shoulderRange = calcRange(shoulderMonths);
+                      const lowRange = calcRange(lowSeasonMonths);
+                      
+                      return (
+                        <>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 w-36 flex-shrink-0">
+                              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                              <span className="text-xs font-medium text-neutral-700">High Season</span>
                             </div>
-                            
-                            {/* Shoulder */}
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
-                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                                <span className="text-xs text-neutral-700 font-medium">Shoulder (Sep-Oct)</span>
-                              </div>
-                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 overflow-hidden">
-                                <div className="bg-amber-500 h-6" style={{ width: `${highAvg > 0 ? (shoulderAvg / highAvg) * 100 : 0}%` }}></div>
-                              </div>
-                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{shoulderMin}-{shoulderMax}k</span>
+                            <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
+                              <div className="bg-emerald-500 h-6" style={{ width: `${(highAvg / maxAvg) * 100}%` }}></div>
                             </div>
-                            
-                            {/* Low */}
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
-                                <div className="w-2.5 h-2.5 rounded-full bg-neutral-400"></div>
-                                <span className="text-xs text-neutral-700 font-medium">Low (Nov-May)</span>
-                              </div>
-                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 overflow-hidden">
-                                <div className="bg-neutral-400 h-6" style={{ width: `${highAvg > 0 ? (lowAvg / highAvg) * 100 : 0}%` }}></div>
-                              </div>
-                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{lowMin}-{lowMax}k</span>
+                            <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{highRange.min}-{highRange.max}k</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 w-36 flex-shrink-0">
+                              <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                              <span className="text-xs font-medium text-neutral-700">Shoulder</span>
                             </div>
-                          </>
-                        );
-                      })()}
-                    </div>
+                            <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
+                              <div className="bg-amber-500 h-6" style={{ width: `${(shoulderAvg / maxAvg) * 100}%` }}></div>
+                            </div>
+                            <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{shoulderRange.min}-{shoulderRange.max}k</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 w-36 flex-shrink-0">
+                              <div className="w-2.5 h-2.5 rounded-full bg-neutral-400"></div>
+                              <span className="text-xs font-medium text-neutral-700">Low Season</span>
+                            </div>
+                            <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
+                              <div className="bg-neutral-400 h-6" style={{ width: `${(lowAvg / maxAvg) * 100}%` }}></div>
+                            </div>
+                            <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{lowRange.min}-{lowRange.max}k</span>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
                 
-                {/* Right Column - Chart (Desktop Only) */}
+                {/* Chart - Desktop Only */}
                 {!isMobile && (
                 <div className="border border-neutral-200 rounded-lg p-5 bg-white">
                   <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
-                  
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart 
                       data={(() => {
-                        // Use cached data instead of recalculating
                         const { currentMonth, historicalAvg, ytd2025ByMonth } = seasonalData;
-                        
                         const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                        
                         return monthLabels.map((label, i) => ({
                           month: label,
                           monthIndex: i,
@@ -1343,19 +1347,17 @@ export default function DataDashboard() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
                       <XAxis 
                         dataKey="month"
-                        stroke="#a3a3a3"
-                        fontSize={11}
+                        tick={{ fontSize: 10, fill: '#6b7280' }}
+                        axisLine={{ stroke: '#e5e5e5' }}
                         tickLine={false}
-                        axisLine={{ stroke: '#d4d4d4' }}
                       />
                       <YAxis 
-                        stroke="#a3a3a3"
-                        fontSize={11}
+                        tick={{ fontSize: 10, fill: '#6b7280' }}
+                        axisLine={{ stroke: '#e5e5e5' }}
                         tickLine={false}
-                        axisLine={{ stroke: '#d4d4d4' }}
-                        tickFormatter={(val) => `${(val/1000).toFixed(0)}k`}
+                        tickFormatter={(value) => `${(value/1000).toFixed(0)}k`}
                       />
-                      <Tooltip
+                      <Tooltip 
                         contentStyle={{ 
                           backgroundColor: '#fff', 
                           border: '1px solid #e5e5e5',
@@ -1369,45 +1371,39 @@ export default function DataDashboard() {
                           return [`${(value/1000).toFixed(0)}k`, name];
                         }}
                       />
-                      {/* 2025 Bars */}
                       <Bar 
                         dataKey="current"
                         name="2025 YTD"
                         radius={[4, 4, 0, 0]}
                       >
                         {(() => {
+                          const { currentMonth } = seasonalData;
                           const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                           return monthLabels.map((label, index) => {
                             let fill = '#a3a3a3';
-                            if (index >= 5 && index <= 7) {
-                              fill = '#10b981';
-                            } else if (index >= 8 && index <= 9) {
-                              fill = '#f59e0b';
-                            }
+                            if (index >= 5 && index <= 7) fill = '#10b981';
+                            else if (index >= 8 && index <= 9) fill = '#f59e0b';
                             return <Cell key={`cell-${index}`} fill={fill} />;
                           });
                         })()}
                       </Bar>
-                      {/* Historical Line - render after bars so it's on top */}
                       <Line 
-                        type="monotone"
                         dataKey="historical"
+                        name="Historical Average"
                         stroke="#3b82f6"
-                        strokeWidth={2.5}
+                        strokeWidth={2}
                         strokeDasharray="5 5"
                         dot={false}
-                        name="Historical Avg"
+                        type="monotone"
                       />
                     </BarChart>
                   </ResponsiveContainer>
-                  
-                  {/* Legend */}
                   <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-neutral-200">
                     <div className="flex flex-col items-center gap-1">
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-[2px] border-t-2 border-dashed" style={{ borderColor: '#3b82f6' }}></div>
-                        <span className="text-[10px] text-neutral-600 font-medium">Historical Average</span>
                       </div>
+                      <span className="text-[10px] text-neutral-600 font-medium">Historical Average</span>
                       <span className="text-[9px] text-neutral-400">(2017-2019, 2023-2024, excl. 2020-2022)</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1421,10 +1417,10 @@ export default function DataDashboard() {
                   </div>
                 </div>
                 )}
-                </div>
+              </div>
             </div>
             )}
-            {/* End seasonal box - desktop only */}
+
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
