@@ -106,6 +106,9 @@ export default function DataDashboard() {
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   const [showAdditional12Months, setShowAdditional12Months] = useState(false);
 
+  // Detect mobile device (iPhone, iPad, Android)
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
     // Totals
@@ -945,6 +948,72 @@ export default function DataDashboard() {
         .bg-slate-50 { background-color: #F8F9FA; }
       `}</style>
       
+      {/* ========================================
+          MOBILE DEBUG TEST - TEMPORARY
+          Remove this entire block after testing
+          ======================================== */}
+      {isMobile && (
+        <div className="p-8">
+          <div className="bg-green-100 border-4 border-green-500 rounded-lg p-6 mb-4">
+            <h1 className="text-3xl font-bold text-green-600 mb-2">✅ iPhone is Working!</h1>
+            <p className="text-lg text-gray-700">If you see this green box, React is rendering on your iPhone.</p>
+          </div>
+          
+          <div className="bg-white rounded-lg p-6 shadow-lg mb-4 border-2 border-gray-300">
+            <h2 className="text-xl font-bold mb-3">📱 Device Info:</h2>
+            <div className="text-sm space-y-2">
+              <p className="break-all"><strong>User Agent:</strong><br/>{navigator.userAgent}</p>
+              <p><strong>Screen:</strong> {window.innerWidth} x {window.innerHeight}px</p>
+              <p><strong>Detected as Mobile:</strong> {isMobile ? '✅ Yes' : '❌ No'}</p>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg p-6 shadow-lg mb-4 border-2 border-gray-300">
+            <h2 className="text-xl font-bold mb-3">📊 Data Status:</h2>
+            <div className="text-sm space-y-2">
+              <p><strong>Data loaded:</strong> {data.length > 0 ? '✅ Yes (' + data.length.toLocaleString() + ' rows)' : '❌ No'}</p>
+              <p><strong>Filtered data:</strong> {filteredData.length > 0 ? '✅ Yes (' + filteredData.length.toLocaleString() + ' rows)' : '❌ No'}</p>
+              <p><strong>KPIs calculated:</strong> {kpis ? '✅ Yes' : '❌ No'}</p>
+              {kpis && <p><strong>Current Month:</strong> {kpis.currentMonth} passengers</p>}
+              <p><strong>SeasonalData cached:</strong> {seasonalData ? '✅ Yes' : '❌ No'}</p>
+            </div>
+          </div>
+          
+          <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 mb-4">
+            <h2 className="text-xl font-bold mb-3 text-blue-900">🧪 Test Results:</h2>
+            <div className="text-sm text-blue-800 space-y-2">
+              <p>✅ React is rendering</p>
+              <p>✅ Component loaded</p>
+              <p>✅ State management working</p>
+              <p>✅ Mobile detection working</p>
+              {data.length > 0 && <p>✅ Data file loaded successfully</p>}
+              {kpis && <p>✅ KPI calculations working</p>}
+              {seasonalData && <p>✅ Seasonal data useMemo working</p>}
+            </div>
+          </div>
+          
+          <div className="bg-red-100 border-4 border-red-500 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-red-900 mb-2">🛑 STOP - Test Page</h2>
+            <p className="text-red-700 font-bold mb-3">The seasonal performance box is HIDDEN on mobile for testing.</p>
+            <div className="text-sm text-red-800 space-y-2">
+              <p><strong>Next Steps:</strong></p>
+              <ol className="list-decimal ml-6 space-y-1">
+                <li>Take a screenshot of this page</li>
+                <li>Note the iOS version from Device Info</li>
+                <li>Check if all items show ✅ checkmarks</li>
+                <li>Tell me which items are ❌</li>
+                <li>Then I'll remove this test code for you</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* ========================================
+          NORMAL DASHBOARD - Hidden on mobile during test
+          ======================================== */}
+      {!isMobile && (
+      <>
       {/* Subtle gradient border - soft charcoal */}
       <div style={{ 
         height: '1px', 
@@ -1127,7 +1196,7 @@ export default function DataDashboard() {
               </div>
               
               {seasonalData && (
-              <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-6">
+              <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[480px_1fr]'}`}>
                 {/* Left Column - Stats */}
                 <div className="space-y-5">
                   {/* Current Performance Card - Polished Design */}
@@ -1313,7 +1382,8 @@ export default function DataDashboard() {
                   </div>
                 </div>
                 
-                {/* Right Column - Chart */}
+                {/* Right Column - Chart (Desktop Only) */}
+                {!isMobile && (
                 <div className="border border-neutral-200 rounded-lg p-5 bg-white">
                   <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
                   
@@ -1414,6 +1484,7 @@ export default function DataDashboard() {
                     </div>
                   </div>
                 </div>
+                )}
                 </div>
               )}
             </div>
@@ -3071,6 +3142,12 @@ export default function DataDashboard() {
         {/* End loading conditional */}
 
       </div>
+      {/* End max-w-7xl container */}
+
+      </>
+      )}
+      {/* End !isMobile wrapper */}
+
     </div>
   );
 }
