@@ -1145,7 +1145,7 @@ export default function DataDashboard() {
                     </div>
                   </div>
                   
-                  <div className="p-6">
+                  <div className="p-5">
                     {(() => {
                       const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
                       const currentMonthData = historicalByMonth[month];
@@ -1191,7 +1191,7 @@ export default function DataDashboard() {
                       
                       return (
                         <>
-                          <div className="flex items-center justify-between mb-8">
+                          <div className="flex items-center justify-between mb-5">
                             <div className={`inline-flex items-center px-3 py-1.5 rounded-full border ${pillBg} ${pillText} ${pillBorder}`}>
                               <span className="text-xs font-semibold tracking-wide uppercase">{season}</span>
                             </div>
@@ -1201,43 +1201,53 @@ export default function DataDashboard() {
                             </div>
                           </div>
                           
-                          <div className="mb-8">
-                            <div className="text-5xl font-bold text-neutral-900 tabular-nums tracking-tight mb-2">
+                          <div className="mb-5">
+                            <div className="text-4xl font-bold text-neutral-900 tabular-nums tracking-tight mb-1">
                               {kpis.currentMonth.replace(/,/g, ',')}
                             </div>
-                            <div className="text-sm text-neutral-600">foreign passengers</div>
+                            <div className="text-xs text-neutral-500">foreign passengers</div>
                           </div>
                           
-                          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <div className="text-xs font-semibold text-blue-900 uppercase tracking-wider mb-2">
-                              Historical Average (2017-2019, 2023-2024)
+                          {/* Stats Grid */}
+                          <div className="grid grid-cols-2 gap-4 mb-4">
+                            {/* Historical Average */}
+                            <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
+                              <div className="text-[10px] text-neutral-500 uppercase tracking-wide font-medium mb-1">
+                                Historical Avg
+                              </div>
+                              <div className="text-2xl font-bold text-neutral-900 tabular-nums">
+                                {Math.round(avg / 1000)}k
+                              </div>
+                              <div className="text-[9px] text-neutral-400 mt-0.5">
+                                2017-19, 23-24
+                              </div>
                             </div>
-                            <div className="text-2xl font-bold text-blue-900 tabular-nums">
-                              {Math.round(avg / 1000)}k
-                            </div>
-                            <div className="text-xs text-blue-700 mt-1">
-                              passengers per month
-                            </div>
-                          </div>
-                          
-                          <div className="mb-6 p-4 bg-neutral-50 rounded-lg">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-neutral-600">vs Historical</span>
+                            
+                            {/* vs Historical */}
+                            <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
+                              <div className="text-[10px] text-neutral-500 uppercase tracking-wide font-medium mb-1">
+                                vs Historical
+                              </div>
                               {(() => {
                                 const diff = currentValue - avg;
                                 const diffPercent = ((diff / avg) * 100).toFixed(1);
                                 const isUp = diff > 0;
                                 return (
-                                  <div className={`flex items-center gap-1 ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
-                                    {isUp ? '↑' : '↓'}
-                                    <span className="text-sm font-bold">{Math.abs(diffPercent)}%</span>
+                                  <div className={`text-2xl font-bold tabular-nums ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
+                                    {isUp ? '+' : ''}{diffPercent}%
                                   </div>
                                 );
                               })()}
+                              <div className="text-[9px] text-neutral-400 mt-0.5">
+                                {(() => {
+                                  const diff = currentValue - avg;
+                                  return diff > 0 ? 'above average' : 'below average';
+                                })()}
+                              </div>
                             </div>
                           </div>
                           
-                          <div className="pt-5 border-t border-neutral-200">
+                          <div className="pt-4 border-t border-neutral-200">
                             <div className="flex items-center justify-between">
                               <span className="text-xs text-neutral-500 font-medium">Expected range</span>
                               <span className="text-lg font-bold text-neutral-900 tabular-nums">
@@ -1253,7 +1263,8 @@ export default function DataDashboard() {
 
                 {/* RIGHT COLUMN - Chart and Volume */}
                 <div className="space-y-6">
-                  {/* Chart */}
+                  {/* Chart - Hidden on Mobile to prevent crashes */}
+                  {!isMobile && (
                   <div className="border border-neutral-200 rounded-lg p-5 bg-white">
                     <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
                     <ResponsiveContainer width="100%" height={260}>
@@ -1347,6 +1358,7 @@ export default function DataDashboard() {
                     </div>
                   </div>
                 </div>
+                )}
                 
                   {/* Volume Bars */}
                   <div className="border border-neutral-200 rounded-lg p-5">
