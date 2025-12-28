@@ -418,19 +418,28 @@ export default function DataDashboard() {
       .filter(([continent]) => continent !== 'Total')
       .reduce((sum, [_, total]) => sum + total, 0);
     
+    // Pre-calculate prior period data once, grouped by nationality
+    const priorPeriodStart = new Date(currentMonth.date);
+    priorPeriodStart.setFullYear(priorPeriodStart.getFullYear() - 2);
+    const priorPeriodEnd = new Date(currentMonth.date);
+    priorPeriodEnd.setFullYear(priorPeriodEnd.getFullYear() - 1);
+    
+    const priorPeriodByNationality = {};
+    allData.forEach(row => {
+      const date = new Date(row.date);
+      if (date > priorPeriodStart && date <= priorPeriodEnd) {
+        if (!priorPeriodByNationality[row.flokkur]) {
+          priorPeriodByNationality[row.flokkur] = 0;
+        }
+        priorPeriodByNationality[row.flokkur] += row.fjöldi;
+      }
+    });
+    
     // Calculate prior TTM for continents
     Object.keys(continentTotals).forEach(continent => {
       const continentCountries = Object.keys(nationalityTotals).filter(nat => getContinent(nat) === continent);
       const priorTotal = continentCountries.reduce((sum, nat) => {
-        const priorData = allData.filter(row => {
-          const date = new Date(row.date);
-          const startCutoff = new Date(currentMonth.date);
-          startCutoff.setFullYear(startCutoff.getFullYear() - 2);
-          const endCutoff = new Date(currentMonth.date);
-          endCutoff.setFullYear(endCutoff.getFullYear() - 1);
-          return date > startCutoff && date <= endCutoff && row.flokkur === nat;
-        });
-        return sum + priorData.reduce((s, r) => s + r.fjöldi, 0);
+        return sum + (priorPeriodByNationality[nat] || 0);
       }, 0);
       continentPriorTotals[continent] = priorTotal;
     });
@@ -484,19 +493,21 @@ export default function DataDashboard() {
     
     const priorForeignTotal = priorLtmData.reduce((sum, r) => sum + r.fjöldi, 0);
     
+    // Pre-group prior period data by nationality (avoid filtering in loop)
+    const priorDataByNationality = {};
+    priorLtmData.forEach(row => {
+      if (!priorDataByNationality[row.flokkur]) {
+        priorDataByNationality[row.flokkur] = [];
+      }
+      priorDataByNationality[row.flokkur].push(row);
+    });
+    
     // Calculate YoY changes
     const nationalityChanges = {};
     
     Object.keys(nationalityTotalsForTop10).forEach(nat => {
       const currentTtmData = ltmDataForTop10.filter(row => row.flokkur === nat);
-      const priorTtmData = foreignDataForTop10.filter(row => {
-        const date = new Date(row.date);
-        const startCutoff = new Date(currentMonthForTop10.date);
-        startCutoff.setFullYear(startCutoff.getFullYear() - 2);
-        const endCutoff = new Date(currentMonthForTop10.date);
-        endCutoff.setFullYear(endCutoff.getFullYear() - 1);
-        return date > startCutoff && date <= endCutoff && row.flokkur === nat;
-      });
+      const priorTtmData = priorDataByNationality[nat] || [];
       
       const currentTotal = currentTtmData.reduce((sum, r) => sum + r.fjöldi, 0);
       const priorTotal = priorTtmData.reduce((sum, r) => sum + r.fjöldi, 0);
@@ -586,26 +597,29 @@ export default function DataDashboard() {
     
     // Top grower 6-month YoY % trend
     const topGrowerSparkline = calculatedTop10.topGrower ? (() => {
+      // Pre-filter data for this country to avoid repeated filters in loop
+      const countryData = allData.filter(row => row.flokkur === calculatedTop10.topGrower.name);
+      
       const sparkline = [];
       for (let i = 0; i < 6; i++) {
         const targetDate = new Date(sixMonthsAgo);
         targetDate.setMonth(targetDate.getMonth() + i);
+        const targetMonth = targetDate.getMonth();
+        const targetYear = targetDate.getFullYear();
         
-        // Current year data
-        const currentYearData = allData.filter(row => {
+        // Current year data - filter pre-filtered array
+        const currentYearData = countryData.filter(row => {
           const rowDate = new Date(row.date);
-          return rowDate.getMonth() === targetDate.getMonth() && 
-                 rowDate.getFullYear() === targetDate.getFullYear() &&
-                 row.flokkur === calculatedTop10.topGrower.name;
+          return rowDate.getMonth() === targetMonth && 
+                 rowDate.getFullYear() === targetYear;
         });
         const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
         
-        // Prior year data
-        const priorYearData = allData.filter(row => {
+        // Prior year data - filter pre-filtered array
+        const priorYearData = countryData.filter(row => {
           const rowDate = new Date(row.date);
-          return rowDate.getMonth() === targetDate.getMonth() && 
-                 rowDate.getFullYear() === targetDate.getFullYear() - 1 &&
-                 row.flokkur === calculatedTop10.topGrower.name;
+          return rowDate.getMonth() === targetMonth && 
+                 rowDate.getFullYear() === targetYear - 1;
         });
         const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
         
@@ -618,26 +632,29 @@ export default function DataDashboard() {
     
     // Top decliner 6-month YoY % trend
     const topDeclinerSparkline = calculatedTop10.topDecliner ? (() => {
+      // Pre-filter data for this country to avoid repeated filters in loop
+      const countryData = allData.filter(row => row.flokkur === calculatedTop10.topDecliner.name);
+      
       const sparkline = [];
       for (let i = 0; i < 6; i++) {
         const targetDate = new Date(sixMonthsAgo);
         targetDate.setMonth(targetDate.getMonth() + i);
+        const targetMonth = targetDate.getMonth();
+        const targetYear = targetDate.getFullYear();
         
-        // Current year data
-        const currentYearData = allData.filter(row => {
+        // Current year data - filter pre-filtered array
+        const currentYearData = countryData.filter(row => {
           const rowDate = new Date(row.date);
-          return rowDate.getMonth() === targetDate.getMonth() && 
-                 rowDate.getFullYear() === targetDate.getFullYear() &&
-                 row.flokkur === calculatedTop10.topDecliner.name;
+          return rowDate.getMonth() === targetMonth && 
+                 rowDate.getFullYear() === targetYear;
         });
         const currentTotal = currentYearData.reduce((sum, r) => sum + r.fjöldi, 0);
         
-        // Prior year data
-        const priorYearData = allData.filter(row => {
+        // Prior year data - filter pre-filtered array
+        const priorYearData = countryData.filter(row => {
           const rowDate = new Date(row.date);
-          return rowDate.getMonth() === targetDate.getMonth() && 
-                 rowDate.getFullYear() === targetDate.getFullYear() - 1 &&
-                 row.flokkur === calculatedTop10.topDecliner.name;
+          return rowDate.getMonth() === targetMonth && 
+                 rowDate.getFullYear() === targetYear - 1;
         });
         const priorTotal = priorYearData.reduce((sum, r) => sum + r.fjöldi, 0);
         
@@ -849,7 +866,12 @@ export default function DataDashboard() {
     
     const last24Dates = [...new Set(userFilteredData.slice(-24).map(d => d.date))].sort();
     
-    return last24Dates.map(date => {
+    // On mobile, show every other month to reduce rendering load
+    const datesToShow = isMobile 
+      ? last24Dates.filter((_, index) => index % 2 === 0)
+      : last24Dates;
+    
+    return datesToShow.map(date => {
       const row = { date };
       selectedCategories.forEach(cat => {
         const dataPoint = userFilteredData.find(d => d.date === date && d.flokkur === cat);
@@ -859,7 +881,7 @@ export default function DataDashboard() {
     });
   };
 
-  const chartData = prepareChartData();
+  const chartData = useMemo(() => prepareChartData(), [userFilteredData, selectedCategories, isMobile]);
   const chartColors = selectedCategories.map(cat => getCountryColor(cat));
 
   // Get date range for monthly charts (last 24 months)
@@ -911,10 +933,13 @@ export default function DataDashboard() {
       yoyData.push(monthData);
     }
     
-    return yoyData;
+    // On mobile, show every other month to reduce rendering load
+    return isMobile 
+      ? yoyData.filter((_, index) => index % 2 === 0)
+      : yoyData;
   };
 
-  const yoyChartData = prepareYoYChartData();
+  const yoyChartData = useMemo(() => prepareYoYChartData(), [data, selectedCategories, isMobile]);
   
   // Get current month name for YoY chart subtitle
   const yoyCurrentMonth = yoyChartData.length > 0 ? yoyChartData[yoyChartData.length - 1].month : 'Oct';
