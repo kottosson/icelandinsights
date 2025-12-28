@@ -1263,7 +1263,7 @@ export default function DataDashboard() {
 
                 {/* RIGHT COLUMN - Chart and Volume */}
                 <div className="space-y-6">
-                  {/* Chart - Hidden on Mobile to prevent crashes */}
+                  {/* Chart - Desktop Only */}
                   {!isMobile && (
                   <div className="border border-neutral-200 rounded-lg p-5 bg-white">
                     <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
