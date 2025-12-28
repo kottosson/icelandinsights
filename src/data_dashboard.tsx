@@ -1059,7 +1059,7 @@ export default function DataDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 pb-6 space-y-4">
+      <div className="max-w-7xl mx-auto px-3 md:px-6 pb-6 space-y-4">
 
         {initialLoading ? (
           // SIMPLIFIED SKELETON - Minimal for mobile performance
@@ -1075,165 +1075,122 @@ export default function DataDashboard() {
           <>
         {/* Executive Summary - Key Insights with Visual Support */}
         {kpis && (
-          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                <h2 className="text-2xl font-bold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.03em' }}>
-                  Executive Summary
-                </h2>
-              </div>
+          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border border-neutral-200 md:border-2 md:border-neutral-300 p-4 md:p-6 shadow-sm md:shadow-md">
+            <div className="flex items-center gap-3 mb-4 md:mb-5">
+              <div className="w-2 h-2 rounded-full bg-red-500"></div>
+              <h2 className="text-xl md:text-2xl font-bold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.03em' }}>
+                Executive Summary
+              </h2>
             </div>
             
             {/* Seasonal Context Box - Mobile Optimized */}
             {seasonalData && (
-            <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 mb-5">
+            <div className="bg-white rounded-lg md:rounded-xl border border-neutral-200 shadow-sm p-4 md:p-6 mb-4 md:mb-5">
               {/* Header */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2.5">
-                  <svg className="w-4 h-4 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Seasonal Performance</h3>
-                </div>
+              <div className="flex items-center gap-2.5 mb-4 md:mb-5">
+                <svg className="w-4 h-4 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Seasonal Performance</h3>
               </div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* LEFT COLUMN - Current Month Stats */}
-                <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
-                  <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-200">
-                    <div className="text-sm font-bold text-neutral-900">
-                      {(() => {
-                        const currentDate = new Date(kpis.currentMonthName);
-                        const month = currentDate.toLocaleString('en-US', { month: 'long' });
-                        return month;
-                      })()} 2025
-                    </div>
-                  </div>
-                  
-                  <div className="p-5">
-                    {(() => {
-                      const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
-                      const currentMonthData = historicalByMonth[month];
-                      const avg = currentMonthData.length > 0 
-                        ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
-                        : 0;
-                      const variance = currentMonthData.length > 0
-                        ? currentMonthData.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / currentMonthData.length
-                        : 0;
-                      const stdDev = Math.sqrt(variance);
-                      const expectedMin = Math.round((avg - stdDev) / 1000);
-                      const expectedMax = Math.round((avg + stdDev) / 1000);
-                      const actualK = currentValue / 1000;
-                      
-                      let status = 'Normal';
-                      let statusColor = 'text-emerald-600';
-                      let statusDot = 'bg-emerald-500';
-                      if (actualK < (avg - 1.5 * stdDev) / 1000 || actualK > (avg + 1.5 * stdDev) / 1000) {
-                        status = 'Unusual';
-                        statusColor = 'text-red-600';
-                        statusDot = 'bg-red-500';
-                      } else if (actualK < expectedMin || actualK > expectedMax) {
-                        status = 'Watch';
-                        statusColor = 'text-amber-600';
-                        statusDot = 'bg-amber-500';
-                      }
-                      
-                      let season = 'LOW SEASON';
-                      let pillBg = 'bg-neutral-100';
-                      let pillText = 'text-neutral-700';
-                      let pillBorder = 'border-neutral-300';
-                      if (month >= 5 && month <= 7) {
-                        season = 'HIGH SEASON';
-                        pillBg = 'bg-emerald-50';
-                        pillText = 'text-emerald-700';
-                        pillBorder = 'border-emerald-300';
-                      } else if (month >= 8 && month <= 9) {
-                        season = 'SHOULDER';
-                        pillBg = 'bg-amber-50';
-                        pillText = 'text-amber-700';
-                        pillBorder = 'border-amber-300';
-                      }
-                      
-                      return (
-                        <>
-                          <div className="flex items-center justify-between mb-5">
-                            <div className={`inline-flex items-center px-3 py-1.5 rounded-full border ${pillBg} ${pillText} ${pillBorder}`}>
-                              <span className="text-xs font-semibold tracking-wide uppercase">{season}</span>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                {/* LEFT COLUMN - Current Month Stats - Flattened for mobile */}
+                <div className="space-y-4">
+                  {(() => {
+                    const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
+                    const currentMonthData = historicalByMonth[month];
+                    const avg = currentMonthData.length > 0 
+                      ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
+                      : 0;
+                    const variance = currentMonthData.length > 0
+                      ? currentMonthData.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / currentMonthData.length
+                      : 0;
+                    const stdDev = Math.sqrt(variance);
+                    const expectedMin = Math.round((avg - stdDev) / 1000);
+                    const expectedMax = Math.round((avg + stdDev) / 1000);
+                    const actualK = currentValue / 1000;
+                    
+                    let status = 'Normal';
+                    let statusColor = 'text-emerald-600';
+                    let statusDot = 'bg-emerald-500';
+                    if (actualK < (avg - 1.5 * stdDev) / 1000 || actualK > (avg + 1.5 * stdDev) / 1000) {
+                      status = 'Unusual';
+                      statusColor = 'text-red-600';
+                      statusDot = 'bg-red-500';
+                    } else if (actualK < expectedMin || actualK > expectedMax) {
+                      status = 'Watch';
+                      statusColor = 'text-amber-600';
+                      statusDot = 'bg-amber-500';
+                    }
+                    
+                    let season = 'LOW';
+                    let pillBg = 'bg-neutral-100';
+                    let pillText = 'text-neutral-600';
+                    if (month >= 5 && month <= 7) {
+                      season = 'HIGH';
+                      pillBg = 'bg-emerald-100';
+                      pillText = 'text-emerald-700';
+                    } else if (month >= 8 && month <= 9) {
+                      season = 'SHOULDER';
+                      pillBg = 'bg-amber-100';
+                      pillText = 'text-amber-700';
+                    }
+                    
+                    const diff = currentValue - avg;
+                    const diffPercent = ((diff / avg) * 100).toFixed(1);
+                    const isUp = diff > 0;
+                    
+                    return (
+                      <>
+                        {/* Main stat row */}
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="text-sm font-semibold text-neutral-900 mb-1">{kpis.currentMonthName}</div>
+                            <div className="text-3xl md:text-4xl font-bold text-neutral-900 tabular-nums tracking-tight">
+                              {kpis.currentMonth}
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <div className={`w-2 h-2 rounded-full ${statusDot}`}></div>
-                              <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
+                            <div className="text-xs text-neutral-500 mt-0.5">foreign passengers</div>
+                          </div>
+                          <div className="text-right">
+                            <div className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold ${pillBg} ${pillText}`}>
+                              {season}
+                            </div>
+                            <div className="flex items-center justify-end gap-1 mt-2">
+                              <div className={`w-1.5 h-1.5 rounded-full ${statusDot}`}></div>
+                              <span className={`text-xs font-medium ${statusColor}`}>{status}</span>
                             </div>
                           </div>
-                          
-                          <div className="mb-5">
-                            <div className="text-4xl font-bold text-neutral-900 tabular-nums tracking-tight mb-1">
-                              {kpis.currentMonth.replace(/,/g, ',')}
-                            </div>
-                            <div className="text-xs text-neutral-500">foreign passengers</div>
-                          </div>
-                          
-                          {/* Stats Grid */}
-                          <div className="grid grid-cols-2 gap-4 mb-4">
-                            {/* Historical Average */}
-                            <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
-                              <div className="text-[10px] text-neutral-500 uppercase tracking-wide font-medium mb-1">
-                                Historical Avg
-                              </div>
-                              <div className="text-2xl font-bold text-neutral-900 tabular-nums">
-                                {Math.round(avg / 1000)}k
-                              </div>
-                              <div className="text-[9px] text-neutral-400 mt-0.5">
-                                2017-19, 23-24
-                              </div>
-                            </div>
-                            
-                            {/* vs Historical */}
-                            <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
-                              <div className="text-[10px] text-neutral-500 uppercase tracking-wide font-medium mb-1">
-                                vs Historical
-                              </div>
-                              {(() => {
-                                const diff = currentValue - avg;
-                                const diffPercent = ((diff / avg) * 100).toFixed(1);
-                                const isUp = diff > 0;
-                                return (
-                                  <div className={`text-2xl font-bold tabular-nums ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
-                                    {isUp ? '+' : ''}{diffPercent}%
-                                  </div>
-                                );
-                              })()}
-                              <div className="text-[9px] text-neutral-400 mt-0.5">
-                                {(() => {
-                                  const diff = currentValue - avg;
-                                  return diff > 0 ? 'above average' : 'below average';
-                                })()}
-                              </div>
+                        </div>
+                        
+                        {/* Comparison row - inline on mobile */}
+                        <div className="flex items-center gap-3 pt-3 border-t border-neutral-100">
+                          <div className="flex-1">
+                            <div className="text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5">vs Historical</div>
+                            <div className={`text-lg font-bold tabular-nums ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
+                              {isUp ? '+' : ''}{diffPercent}%
                             </div>
                           </div>
-                          
-                          <div className="pt-4 border-t border-neutral-200">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-neutral-500 font-medium">Expected range</span>
-                              <span className="text-lg font-bold text-neutral-900 tabular-nums">
-                                {expectedMin}k - {expectedMax}k
-                              </span>
-                            </div>
+                          <div className="flex-1">
+                            <div className="text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5">Hist. Avg</div>
+                            <div className="text-lg font-bold text-neutral-900 tabular-nums">{Math.round(avg / 1000)}k</div>
                           </div>
-                        </>
-                      );
-                    })()}
-                  </div>
+                          <div className="flex-1 text-right">
+                            <div className="text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5">Expected</div>
+                            <div className="text-lg font-bold text-neutral-900 tabular-nums">{expectedMin}k-{expectedMax}k</div>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* RIGHT COLUMN - Chart and Volume */}
                 <div className="space-y-6">
-                  {/* Chart - Desktop Only */}
-                  {!isMobile && (
-                  <div className="border border-neutral-200 rounded-lg p-5 bg-white">
-                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">MONTHLY PATTERN (2017-2025)</div>
-                    <ResponsiveContainer width="100%" height={260}>
+                  {/* Chart - Now shows on mobile too with adjusted height */}
+                  <div className="border border-neutral-200 rounded-lg p-4 md:p-5 bg-white">
+                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-3 md:mb-4">MONTHLY PATTERN (2017-2025)</div>
+                    <ResponsiveContainer width="100%" height={isMobile ? 180 : 260}>
                     <ComposedChart 
                       data={(() => {
                         const { currentMonth, historicalAvg, ytd2025ByMonth } = seasonalData;
@@ -1245,17 +1202,18 @@ export default function DataDashboard() {
                           current: i <= currentMonth ? ytd2025ByMonth[i] : null
                         }));
                       })()}
-                      margin={{ top: 10, right: 10, left: -20, bottom: 10 }}
+                      margin={{ top: 10, right: 5, left: -25, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
                       <XAxis 
                         dataKey="month"
-                        tick={{ fontSize: 10, fill: '#6b7280' }}
+                        tick={{ fontSize: isMobile ? 8 : 10, fill: '#6b7280' }}
                         axisLine={{ stroke: '#e5e5e5' }}
                         tickLine={false}
+                        interval={isMobile ? 1 : 0}
                       />
                       <YAxis 
-                        tick={{ fontSize: 10, fill: '#6b7280' }}
+                        tick={{ fontSize: isMobile ? 8 : 10, fill: '#6b7280' }}
                         axisLine={{ stroke: '#e5e5e5' }}
                         tickLine={false}
                         tickFormatter={(value) => `${(value/1000).toFixed(0)}k`}
@@ -1265,8 +1223,8 @@ export default function DataDashboard() {
                           backgroundColor: '#fff', 
                           border: '1px solid #e5e5e5',
                           borderRadius: '8px',
-                          fontSize: '12px',
-                          padding: '8px 12px',
+                          fontSize: '11px',
+                          padding: '6px 10px',
                           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                         }}
                         formatter={(value, name) => {
@@ -1278,7 +1236,7 @@ export default function DataDashboard() {
                       <Bar 
                         dataKey="current"
                         name="2025 YTD"
-                        radius={[4, 4, 0, 0]}
+                        radius={[3, 3, 0, 0]}
                         fillOpacity={0.9}
                       >
                         {(() => {
@@ -1297,39 +1255,37 @@ export default function DataDashboard() {
                         dataKey="historical"
                         name="Historical Average"
                         stroke="#dc2626"
-                        strokeWidth={4}
+                        strokeWidth={isMobile ? 2.5 : 4}
                         strokeDasharray="8 4"
                         dot={false}
-                        activeDot={{ r: 5, fill: '#dc2626' }}
+                        activeDot={{ r: 4, fill: '#dc2626' }}
                         connectNulls={true}
                         type="monotone"
                       />
                     </ComposedChart>
                   </ResponsiveContainer>
-                  <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-neutral-200">
-                    <div className="flex flex-col items-center gap-1">
+                  <div className="flex items-center justify-center gap-4 md:gap-6 mt-2 md:mt-3 pt-2 md:pt-3 border-t border-neutral-200">
+                    <div className="flex flex-col items-center gap-0.5 md:gap-1">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-[3px] border-t-[3px] border-dashed" style={{ borderColor: '#dc2626' }}></div>
+                        <div className="w-5 md:w-6 h-[2px] md:h-[3px] border-t-[2px] md:border-t-[3px] border-dashed" style={{ borderColor: '#dc2626' }}></div>
                       </div>
-                      <span className="text-[10px] text-neutral-600 font-medium">Historical Average</span>
-                      <span className="text-[9px] text-neutral-400">(2017-2019, 2023-2024, excl. 2020-2022)</span>
+                      <span className="text-[9px] md:text-[10px] text-neutral-600 font-medium">Hist. Avg</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-3 rounded-sm bg-emerald-500"></div>
-                        <div className="w-2 h-3 rounded-sm bg-amber-500"></div>
-                        <div className="w-2 h-3 rounded-sm bg-neutral-400"></div>
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <div className="flex gap-0.5 md:gap-1">
+                        <div className="w-1.5 md:w-2 h-2.5 md:h-3 rounded-sm bg-emerald-500"></div>
+                        <div className="w-1.5 md:w-2 h-2.5 md:h-3 rounded-sm bg-amber-500"></div>
+                        <div className="w-1.5 md:w-2 h-2.5 md:h-3 rounded-sm bg-neutral-400"></div>
                       </div>
-                      <span className="text-[10px] text-neutral-600 font-medium">2025 YTD</span>
+                      <span className="text-[9px] md:text-[10px] text-neutral-600 font-medium">2025</span>
                     </div>
                   </div>
                 </div>
-                )}
                 
-                  {/* Volume Bars */}
-                  <div className="border border-neutral-200 rounded-lg p-5">
-                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-4">TYPICAL MONTHLY VOLUME</div>
-                    <div className="space-y-4">
+                  {/* Volume Bars - Compact for mobile */}
+                  <div className="border border-neutral-200 rounded-lg p-3 md:p-5">
+                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-3 md:mb-4">TYPICAL MONTHLY VOLUME</div>
+                    <div className="space-y-3 md:space-y-4">
                       {(() => {
                         const { historicalByMonth } = seasonalData;
                         const highSeasonMonths = [5, 6, 7];
@@ -1363,37 +1319,37 @@ export default function DataDashboard() {
                         
                         return (
                           <>
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                                <span className="text-xs font-medium text-neutral-700">High Season</span>
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <div className="flex items-center gap-1.5 md:gap-2 w-20 md:w-28 flex-shrink-0">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                <span className="text-[11px] md:text-xs font-medium text-neutral-700">High</span>
                               </div>
-                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
-                                <div className="bg-emerald-500 h-6" style={{ width: `${(highAvg / maxAvg) * 100}%` }}></div>
+                              <div className="flex-1 bg-neutral-100 rounded-sm h-5 md:h-6 relative overflow-hidden">
+                                <div className="bg-emerald-500 h-full" style={{ width: `${(highAvg / maxAvg) * 100}%` }}></div>
                               </div>
-                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{highRange.min}-{highRange.max}k</span>
+                              <span className="text-[11px] md:text-xs font-mono text-neutral-600 w-16 md:w-20 text-right tabular-nums">{highRange.min}–{highRange.max}k</span>
                             </div>
                             
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
-                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                                <span className="text-xs font-medium text-neutral-700">Shoulder</span>
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <div className="flex items-center gap-1.5 md:gap-2 w-20 md:w-28 flex-shrink-0">
+                                <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                                <span className="text-[11px] md:text-xs font-medium text-neutral-700">Shoulder</span>
                               </div>
-                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
-                                <div className="bg-amber-500 h-6" style={{ width: `${(shoulderAvg / maxAvg) * 100}%` }}></div>
+                              <div className="flex-1 bg-neutral-100 rounded-sm h-5 md:h-6 relative overflow-hidden">
+                                <div className="bg-amber-500 h-full" style={{ width: `${(shoulderAvg / maxAvg) * 100}%` }}></div>
                               </div>
-                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{shoulderRange.min}-{shoulderRange.max}k</span>
+                              <span className="text-[11px] md:text-xs font-mono text-neutral-600 w-16 md:w-20 text-right tabular-nums">{shoulderRange.min}–{shoulderRange.max}k</span>
                             </div>
                             
-                            <div className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 w-36 flex-shrink-0">
-                                <div className="w-2.5 h-2.5 rounded-full bg-neutral-400"></div>
-                                <span className="text-xs font-medium text-neutral-700">Low Season</span>
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <div className="flex items-center gap-1.5 md:gap-2 w-20 md:w-28 flex-shrink-0">
+                                <div className="w-2 h-2 rounded-full bg-neutral-400"></div>
+                                <span className="text-[11px] md:text-xs font-medium text-neutral-700">Low</span>
                               </div>
-                              <div className="flex-1 bg-neutral-100 rounded-sm h-6 relative overflow-hidden">
-                                <div className="bg-neutral-400 h-6" style={{ width: `${(lowAvg / maxAvg) * 100}%` }}></div>
+                              <div className="flex-1 bg-neutral-100 rounded-sm h-5 md:h-6 relative overflow-hidden">
+                                <div className="bg-neutral-400 h-full" style={{ width: `${(lowAvg / maxAvg) * 100}%` }}></div>
                               </div>
-                              <span className="text-xs font-mono text-neutral-600 w-20 text-right tabular-nums">{lowRange.min}-{lowRange.max}k</span>
+                              <span className="text-[11px] md:text-xs font-mono text-neutral-600 w-16 md:w-20 text-right tabular-nums">{lowRange.min}–{lowRange.max}k</span>
                             </div>
                           </>
                         );
