@@ -44,10 +44,6 @@ export default function DataDashboard() {
   // Detect mobile device safely (iPhone, iPad, Android)
   const [isMobile, setIsMobile] = useState(false);
   
-  // Lazy loading state for charts (critical for mobile performance)
-  const [chartsVisible, setChartsVisible] = useState(false);
-  const chartsRef = React.useRef(null);
-  
   // Pre-indexed data for O(1) lookups (avoid repeated filtering)
   const [dataIndex, setDataIndex] = useState(null);
 
@@ -246,25 +242,6 @@ export default function DataDashboard() {
       setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
     }
   }, []);
-
-  // Lazy load charts when they come into view (critical for mobile)
-  useEffect(() => {
-    if (!chartsRef.current || chartsVisible) return;
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          // Delay chart rendering slightly to let main content paint first
-          setTimeout(() => setChartsVisible(true), isMobile ? 300 : 100);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '100px', threshold: 0.1 }
-    );
-    
-    observer.observe(chartsRef.current);
-    return () => observer.disconnect();
-  }, [chartsRef.current, isMobile]);
 
   useEffect(() => {
     // Load data from JSON file
@@ -2681,20 +2658,8 @@ export default function DataDashboard() {
           </div>
         </div>
 
-        {/* Charts Section - Lazy loaded on mobile for performance */}
-        <div ref={chartsRef} className="grid md:grid-cols-2 gap-4">
-          {/* Show placeholder while charts load on mobile */}
-          {!chartsVisible && isMobile ? (
-            <>
-              <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm h-[300px] flex items-center justify-center">
-                <div className="text-neutral-400 text-sm">Loading chart...</div>
-              </div>
-              <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm h-[300px] flex items-center justify-center">
-                <div className="text-neutral-400 text-sm">Loading chart...</div>
-              </div>
-            </>
-          ) : (
-          <>
+        {/* Charts Section */}
+        <div className="grid md:grid-cols-2 gap-4">
           <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm" id="monthly-trends-chart">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
@@ -2865,8 +2830,6 @@ export default function DataDashboard() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-          </>
-          )}
         </div>
 
         {/* Annual Overview & YTD Comparison - Grid Layout */}
