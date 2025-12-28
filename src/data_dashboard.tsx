@@ -355,6 +355,9 @@ export default function DataDashboard() {
   const generateInsightsAndKPIs = async (allData, filteredData, selectedCats = selectedCategories) => {
     setLoading(true);
     
+    // Defer heavy calculations slightly to prevent blocking UI
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
     const currentMonth = filteredData[filteredData.length - 1];
     const lastYearSameMonth = filteredData[filteredData.length - 13];
     const yoyChange = lastYearSameMonth ? 
@@ -671,15 +674,26 @@ export default function DataDashboard() {
     // Calculate full year totals for 2017-2024 - support multiple series
     const annualData = [];
     
+    // Pre-group data by year for efficiency
+    const dataByYear = {};
+    data.forEach(row => {
+      const date = new Date(row.date);
+      const year = date.getFullYear();
+      if (!dataByYear[year]) {
+        dataByYear[year] = [];
+      }
+      dataByYear[year].push(row);
+    });
+    
     // Years 2017-2024 (full years)
     for (let year = 2017; year <= 2024; year++) {
       const yearData = { year: year.toString(), label: year.toString() };
+      const yearRows = dataByYear[year] || [];
       
       selectedCats.forEach(cat => {
-        const yearTotal = data.filter(row => {
-          const date = new Date(row.date);
-          return date.getFullYear() === year && row.flokkur === cat;
-        }).reduce((sum, r) => sum + r.fjöldi, 0);
+        const yearTotal = yearRows
+          .filter(row => row.flokkur === cat)
+          .reduce((sum, r) => sum + r.fjöldi, 0);
         
         yearData[cat] = yearTotal;
       });
@@ -689,11 +703,14 @@ export default function DataDashboard() {
     
     // YTD 2025 (Jan to current month inclusive) - support multiple series
     const ytd2025Data = { year: '2025', label: '2025 YTD' };
+    const year2025Rows = dataByYear[2025] || [];
     selectedCats.forEach(cat => {
-      const ytd2025 = data.filter(row => {
-        const date = new Date(row.date);
-        return date.getFullYear() === 2025 && date.getMonth() + 1 <= currentYearMonth && row.flokkur === cat;
-      }).reduce((sum, r) => sum + r.fjöldi, 0);
+      const ytd2025 = year2025Rows
+        .filter(row => {
+          const date = new Date(row.date);
+          return date.getMonth() + 1 <= currentYearMonth && row.flokkur === cat;
+        })
+        .reduce((sum, r) => sum + r.fjöldi, 0);
       
       ytd2025Data[cat] = ytd2025;
     });
@@ -704,12 +721,15 @@ export default function DataDashboard() {
     
     for (let year = 2017; year <= 2025; year++) {
       const ytdData = { year: year.toString(), label: `${year}` };
+      const yearRows = dataByYear[year] || [];
       
       selectedCats.forEach(cat => {
-        const ytdValue = data.filter(row => {
-          const date = new Date(row.date);
-          return date.getFullYear() === year && date.getMonth() + 1 <= currentYearMonth && row.flokkur === cat;
-        }).reduce((sum, r) => sum + r.fjöldi, 0);
+        const ytdValue = yearRows
+          .filter(row => {
+            const date = new Date(row.date);
+            return date.getMonth() + 1 <= currentYearMonth && row.flokkur === cat;
+          })
+          .reduce((sum, r) => sum + r.fjöldi, 0);
         
         ytdData[cat] = ytdValue;
       });
@@ -871,11 +891,19 @@ export default function DataDashboard() {
       ? last24Dates.filter((_, index) => index % 2 === 0)
       : last24Dates;
     
+    // Pre-group data by date for efficiency
+    const dataByDate = {};
+    userFilteredData.forEach(row => {
+      if (!dataByDate[row.date]) {
+        dataByDate[row.date] = {};
+      }
+      dataByDate[row.date][row.flokkur] = row.fjöldi;
+    });
+    
     return datesToShow.map(date => {
       const row = { date };
       selectedCategories.forEach(cat => {
-        const dataPoint = userFilteredData.find(d => d.date === date && d.flokkur === cat);
-        row[cat] = dataPoint ? dataPoint.fjöldi : null;
+        row[cat] = dataByDate[date]?.[cat] || null;
       });
       return row;
     });
@@ -894,41 +922,41 @@ export default function DataDashboard() {
     if (selectedCategories.length === 0 || !data.length) return [];
     
     const currentYear = 2025;
-    const currentMonth = data.length > 0 ? new Date(data[data.length - 1].date).getMonth() + 1 : 10; // e.g., 10 for October
+    const currentMonth = data.length > 0 ? new Date(data[data.length - 1].date).getMonth() + 1 : 10;
     
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const yoyData = [];
+    
+    // Pre-group data by year and month for efficiency
+    const dataByYearMonth = {};
+    data.forEach(row => {
+      const date = new Date(row.date);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const key = `${year}-${month}`;
+      
+      if (!dataByYearMonth[key]) {
+        dataByYearMonth[key] = [];
+      }
+      dataByYearMonth[key].push(row);
+    });
     
     // For each month from January to current month
     for (let month = 1; month <= currentMonth; month++) {
       const monthData = { month: monthNames[month - 1] };
       
-      // Get data for current year (2025)
-      const current = data.filter(row => {
-        const date = new Date(row.date);
-        return date.getFullYear() === currentYear && 
-               date.getMonth() + 1 === month && 
-               selectedCategories.includes(row.flokkur);
-      }).reduce((sum, r) => sum + r.fjöldi, 0);
-      monthData['2025'] = current > 0 ? current : null;
-      
-      // Get data for previous year (2024)
-      const prev1 = data.filter(row => {
-        const date = new Date(row.date);
-        return date.getFullYear() === currentYear - 1 && 
-               date.getMonth() + 1 === month && 
-               selectedCategories.includes(row.flokkur);
-      }).reduce((sum, r) => sum + r.fjöldi, 0);
-      monthData['2024'] = prev1 > 0 ? prev1 : null;
-      
-      // Get data for year before that (2023)
-      const prev2 = data.filter(row => {
-        const date = new Date(row.date);
-        return date.getFullYear() === currentYear - 2 && 
-               date.getMonth() + 1 === month && 
-               selectedCategories.includes(row.flokkur);
-      }).reduce((sum, r) => sum + r.fjöldi, 0);
-      monthData['2023'] = prev2 > 0 ? prev2 : null;
+      // Get data for each year
+      for (let yearOffset = 0; yearOffset <= 2; yearOffset++) {
+        const year = currentYear - yearOffset;
+        const key = `${year}-${month}`;
+        const monthRows = dataByYearMonth[key] || [];
+        
+        const total = monthRows
+          .filter(row => selectedCategories.includes(row.flokkur))
+          .reduce((sum, r) => sum + r.fjöldi, 0);
+        
+        monthData[year.toString()] = total > 0 ? total : null;
+      }
       
       yoyData.push(monthData);
     }
