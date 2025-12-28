@@ -2,75 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, ComposedChart } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
-// Add custom animations
+// Minimal styles - animations removed for mobile performance
 const styles = `
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  @keyframes countUp {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  
-  @keyframes pulse-subtle {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.6;
-    }
-  }
-  
-  @keyframes pulse-strong {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.1;
-    }
-  }
-  
-  @keyframes skeleton-loading {
-    0%, 100% {
-      opacity: 0.5;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-  
-  .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out forwards;
-    opacity: 0;
-  }
-  
-  .animate-count-up {
-    animation: countUp 0.3s ease-out;
-  }
-  
-  .pulse-subtle {
-    animation: pulse-subtle 2s ease-in-out infinite;
-  }
-  
-  .pulse-strong {
-    animation: pulse-strong 2s ease-in-out infinite;
-  }
-  
   .skeleton {
     background: #e5e7eb;
-    animation: skeleton-loading 1.5s ease-in-out infinite;
     border-radius: 4px;
   }
   
@@ -304,10 +239,10 @@ export default function DataDashboard() {
         setCategories(uniqueCategories);
         setSelectedCategory('Útlendingar alls');
         
-        // Small delay to ensure smooth transition from skeleton
+        // Give browser time to render skeleton before heavy calculations
         setTimeout(() => {
           setInitialLoading(false);
-        }, 300);
+        }, 100);
         
         // No longer calculating static Top 10 here - will be dynamic
       } catch (error) {
@@ -355,8 +290,8 @@ export default function DataDashboard() {
   const generateInsightsAndKPIs = async (allData, filteredData, selectedCats = selectedCategories) => {
     setLoading(true);
     
-    // Defer heavy calculations slightly to prevent blocking UI
-    await new Promise(resolve => setTimeout(resolve, 0));
+    // Defer heavy calculations to prevent blocking UI (critical for mobile)
+    await new Promise(resolve => setTimeout(resolve, 50));
     
     const currentMonth = filteredData[filteredData.length - 1];
     const lastYearSameMonth = filteredData[filteredData.length - 13];
@@ -1069,103 +1004,23 @@ export default function DataDashboard() {
       <div className="max-w-7xl mx-auto px-6 pb-6 space-y-4">
 
         {initialLoading ? (
-          // SKELETON LOADING SCREENS
-          <>
-            {/* Executive Summary Skeleton */}
-            <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md animate-fade-in-up" style={{ animationDelay: '0ms' }}>
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-neutral-300"></div>
-                  <div className="skeleton h-8 w-64"></div>
-                </div>
-                <div className="skeleton h-3 w-32"></div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-white rounded-lg p-4 border-2 border-neutral-200 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
-                    <div className="skeleton h-4 w-40 mb-3"></div>
-                    <div className="skeleton h-32 w-full mb-3"></div>
-                    <div className="skeleton h-3 w-full mb-2"></div>
-                    <div className="skeleton h-3 w-3/4"></div>
-                  </div>
-                ))}
-              </div>
+          // SIMPLIFIED SKELETON - Minimal for mobile performance
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="text-4xl mb-4">✈️</div>
+              <div className="text-lg font-semibold text-neutral-900 mb-2">Loading Dashboard...</div>
+              <div className="text-sm text-neutral-500">Preparing your data</div>
             </div>
-
-            {/* KPI Boxes Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ borderLeft: '4px solid #E5E7EB', animationDelay: `${i * 100}ms` }}>
-                  <div className="skeleton h-3 w-32 mb-2"></div>
-                  <div className="skeleton h-2 w-20 mb-4"></div>
-                  <div className="skeleton h-10 w-full mb-3"></div>
-                  <div className="flex items-center gap-2">
-                    <div className="skeleton h-3 w-16"></div>
-                    <div className="skeleton h-6 w-24 rounded-full"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Top 10 Skeleton */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ animationDelay: '500ms' }}>
-                <div className="skeleton h-5 w-48 mb-4"></div>
-                <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: `${500 + i * 50}ms` }}>
-                      <div className="skeleton h-4 w-32"></div>
-                      <div className="skeleton h-4 w-24"></div>
-                      <div className="skeleton h-4 w-16"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ animationDelay: '600ms' }}>
-                <div className="skeleton h-5 w-40 mb-4"></div>
-                <div className="space-y-3">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="animate-fade-in-up" style={{ animationDelay: `${600 + i * 50}ms` }}>
-                      <div className="skeleton h-4 w-full mb-1"></div>
-                      <div className="skeleton h-3 w-2/3"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Filters Skeleton */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 p-5 shadow-md animate-fade-in-up" style={{ animationDelay: '800ms' }}>
-              <div className="skeleton h-6 w-56 mb-4"></div>
-              <div className="bg-white rounded-lg border border-blue-200 p-4 mb-4">
-                <div className="skeleton h-4 w-32 mb-3"></div>
-                <div className="flex gap-2 flex-wrap">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="skeleton h-8 w-32 rounded-lg"></div>
-                  ))}
-                </div>
-              </div>
-              <div className="bg-white rounded-lg border border-blue-200 p-4">
-                <div className="skeleton h-4 w-40 mb-3"></div>
-                <div className="flex gap-2 flex-wrap">
-                  {[1, 2, 3, 4, 5, 6].map(i => (
-                    <div key={i} className="skeleton h-8 w-24 rounded-lg"></div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </>
+          </div>
         ) : (
           // ACTUAL CONTENT
           <>
         {/* Executive Summary - Key Insights with Visual Support */}
         {kpis && (
-          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border-2 border-neutral-300 p-6 shadow-md">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-red-500 pulse-strong"></div>
+                <div className="w-2 h-2 rounded-full bg-red-500"></div>
                 <h2 className="text-2xl font-bold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.03em' }}>
                   Executive Summary
                 </h2>
@@ -1174,7 +1029,7 @@ export default function DataDashboard() {
             
             {/* Seasonal Context Box - Mobile Optimized */}
             {seasonalData && (
-            <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 mb-5 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 mb-5">
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2.5">
@@ -1496,7 +1351,7 @@ export default function DataDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               
               {/* Insight 1: Current Month Performance */}
-              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '0ms', willChange: 'box-shadow' }}>
+              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200 relative group hover:shadow-lg transition-all duration-300">
                 {/* Buttons - Top Right (show on hover) */}
                 <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <button 
@@ -1661,7 +1516,7 @@ export default function DataDashboard() {
 
               {/* Insight 2: Top Growth Market */}
               {kpis.topGrower && (
-                <div className="rounded-lg p-4 border-2 border-sage-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{
+                <div className="rounded-lg p-4 border-2 border-sage-200 relative group hover:shadow-lg transition-all duration-300" style={{
                   background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)',
                   animationDelay: '100ms',
                   willChange: 'box-shadow'
@@ -1810,7 +1665,7 @@ export default function DataDashboard() {
 
               {/* Insight 3: Attention Market */}
               {kpis.topDecliner && (
-                <div className="rounded-lg p-4 border-2 border-terracotta-200 relative group hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{
+                <div className="rounded-lg p-4 border-2 border-terracotta-200 relative group hover:shadow-lg transition-all duration-300" style={{
                   background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)',
                   animationDelay: '200ms',
                   willChange: 'box-shadow'
@@ -1964,7 +1819,7 @@ export default function DataDashboard() {
             
             {/* Card 1: Monthly Passengers */}
             <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative"
               style={{ 
                 animationDelay: '0ms',
                 borderLeft: `4px solid #3B82F6`,
@@ -2032,7 +1887,7 @@ export default function DataDashboard() {
             
             {/* Card 2: TTM Passengers */}
             <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative"
               style={{ 
                 animationDelay: '100ms',
                 borderLeft: `4px solid #3B82F6`,
@@ -2098,7 +1953,7 @@ export default function DataDashboard() {
 
             {/* Card 3: Largest Gain */}
             <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative"
               style={{ 
                 animationDelay: '200ms',
                 borderLeft: `4px solid #3B82F6`,
@@ -2154,7 +2009,7 @@ export default function DataDashboard() {
 
             {/* Card 4: Largest Decline */}
             <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative animate-fade-in-up"
+              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative"
               style={{ 
                 animationDelay: '300ms',
                 borderLeft: `4px solid #3B82F6`,
@@ -2213,7 +2068,7 @@ export default function DataDashboard() {
         {/* Top 10 Markets - Completely Static, Never Affected by Filters */}
         {kpis && kpis.top10 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="lg:col-span-2 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
               <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Top 10 Markets (TTM)
               </h3>
@@ -2314,7 +2169,7 @@ export default function DataDashboard() {
                         setSelectedCategories([item.nat]);
                       }
                     }}
-                    className={`grid grid-cols-6 gap-1.5 md:gap-3 py-2.5 px-2 md:px-3 rounded-lg cursor-pointer hover:shadow-sm transition-all animate-fade-in-up ${
+                    className={`grid grid-cols-6 gap-1.5 md:gap-3 py-2.5 px-2 md:px-3 rounded-lg cursor-pointer hover:shadow-sm transition-all ${
                       isSelected ? 'ring-2 ring-blue-400' : ''
                     }`}
                     style={{
@@ -2426,7 +2281,7 @@ export default function DataDashboard() {
             </div>
             
             {kpis && (
-            <div className="lg:col-span-1 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            <div className="lg:col-span-1 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
               <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 By Continent (TTM)
               </h3>
@@ -2435,7 +2290,7 @@ export default function DataDashboard() {
               <div className="space-y-3">
                 {kpis.continents.map((continent, i) => {
                   return (
-                    <div key={i} className="pb-3 border-b border-neutral-100 last:border-0 animate-fade-in-up" style={{ animationDelay: `${i * 50}ms` }}>
+                    <div key={i} className="pb-3 border-b border-neutral-100 last:border-0" style={{ animationDelay: `${i * 50}ms` }}>
                       {/* Continent name */}
                       <div className="mb-1.5">
                         <span className="text-xs font-semibold text-neutral-900">{continent.continent}</span>
