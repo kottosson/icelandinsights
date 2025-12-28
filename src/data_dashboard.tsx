@@ -41,8 +41,8 @@ export default function DataDashboard() {
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   const [showAdditional12Months, setShowAdditional12Months] = useState(false);
 
-  // Detect mobile device (iPhone, iPad, Android)
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  // Detect mobile device safely (iPhone, iPad, Android)
+  const [isMobile, setIsMobile] = useState(false);
 
   // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
@@ -201,6 +201,13 @@ export default function DataDashboard() {
       ytd2025ByMonth
     };
   }, [filteredData, kpis]);
+
+  // Safely detect mobile device after component mounts
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    }
+  }, []);
 
   useEffect(() => {
     // Load data from JSON file
