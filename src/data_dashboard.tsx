@@ -103,6 +103,28 @@ const styles = `
   .stagger-5 { animation-delay: 0.25s; }
   .stagger-6 { animation-delay: 0.3s; }
   
+  /* Range marker slide animation */
+  @keyframes markerSlide {
+    0% { 
+      left: 50%;
+      opacity: 0;
+      transform: translateX(-50%) scale(0.5);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(-50%) scale(1.2);
+    }
+    100% { 
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+  }
+  
+  .animate-marker {
+    animation: markerSlide 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation-delay: 0.6s;
+  }
+  
   /* Number count-up pulse */
   @keyframes numberPop {
     0% { transform: scale(0.95); opacity: 0.7; }
@@ -1394,17 +1416,29 @@ export default function DataDashboard() {
                     const expectedMax = Math.round((avg + stdDev) / 1000);
                     const actualK = currentValue / 1000;
                     
+                    // Calculate range bounds for visualization
+                    const rangeMin = Math.round((avg - 2 * stdDev) / 1000);
+                    const rangeMax = Math.round((avg + 2 * stdDev) / 1000);
+                    const avgK = Math.round(avg / 1000);
+                    
+                    // Calculate position percentage (0-100) within the range
+                    const rangeSpan = rangeMax - rangeMin;
+                    const position = Math.max(0, Math.min(100, ((actualK - rangeMin) / rangeSpan) * 100));
+                    
                     let status = 'Normal';
                     let statusColor = 'text-emerald-600';
-                    let statusDot = 'bg-emerald-500';
+                    let markerColor = '#10b981'; // emerald-500
+                    let glowColor = 'rgba(16, 185, 129, 0.4)';
                     if (actualK < (avg - 1.5 * stdDev) / 1000 || actualK > (avg + 1.5 * stdDev) / 1000) {
                       status = 'Unusual';
                       statusColor = 'text-red-600';
-                      statusDot = 'bg-red-500';
+                      markerColor = '#ef4444'; // red-500
+                      glowColor = 'rgba(239, 68, 68, 0.5)';
                     } else if (actualK < expectedMin || actualK > expectedMax) {
                       status = 'Watch';
                       statusColor = 'text-amber-600';
-                      statusDot = 'bg-amber-500';
+                      markerColor = '#f59e0b'; // amber-500
+                      glowColor = 'rgba(245, 158, 11, 0.4)';
                     }
                     
                     let season = 'LOW';
@@ -1439,15 +1473,68 @@ export default function DataDashboard() {
                             <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${pillBg} ${pillText}`}>
                               {season}
                             </div>
-                            <div className="flex items-center justify-end gap-1.5 mt-3">
-                              <div className={`w-2 h-2 rounded-full ${statusDot} ${status === 'Unusual' ? 'animate-pulse-subtle' : ''}`}></div>
-                              <span className={`text-xs font-medium ${statusColor}`}>{status}</span>
+                          </div>
+                        </div>
+                        
+                        {/* Visual Confidence Band - Glanceable Anomaly Detection */}
+                        <div className="pt-6 animate-fade-in-up stagger-2">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-neutral-400 uppercase tracking-wide">Position in Range</span>
+                            <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
+                          </div>
+                          <div className="relative h-8 flex items-center">
+                            {/* Background track */}
+                            <div className="absolute inset-x-0 h-2 bg-neutral-100 rounded-full"></div>
+                            
+                            {/* Expected range (middle zone) */}
+                            <div 
+                              className="absolute h-2 bg-neutral-200 rounded-full"
+                              style={{
+                                left: `${((expectedMin - rangeMin) / rangeSpan) * 100}%`,
+                                width: `${((expectedMax - expectedMin) / rangeSpan) * 100}%`
+                              }}
+                            ></div>
+                            
+                            {/* Average marker */}
+                            <div 
+                              className="absolute w-0.5 h-4 bg-neutral-300 rounded-full"
+                              style={{ left: `${((avgK - rangeMin) / rangeSpan) * 100}%`, transform: 'translateX(-50%)' }}
+                            ></div>
+                            
+                            {/* Current value marker */}
+                            <div 
+                              className="absolute flex flex-col items-center"
+                              style={{ 
+                                left: `${position}%`, 
+                                transform: 'translateX(-50%)',
+                                transition: 'left 1s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                              }}
+                            >
+                              {/* Glow effect for unusual */}
+                              {status === 'Unusual' && (
+                                <div 
+                                  className="absolute w-6 h-6 rounded-full animate-pulse-subtle"
+                                  style={{ backgroundColor: glowColor, top: '-6px' }}
+                                ></div>
+                              )}
+                              {/* Marker dot */}
+                              <div 
+                                className="relative w-4 h-4 rounded-full border-2 border-white shadow-md z-10"
+                                style={{ backgroundColor: markerColor }}
+                              ></div>
                             </div>
+                          </div>
+                          
+                          {/* Range labels */}
+                          <div className="flex justify-between mt-1">
+                            <span className="text-xs text-neutral-400 tabular-nums">{rangeMin}k</span>
+                            <span className="text-xs text-neutral-500 tabular-nums">{avgK}k avg</span>
+                            <span className="text-xs text-neutral-400 tabular-nums">{rangeMax}k</span>
                           </div>
                         </div>
                         
                         {/* Comparison stats */}
-                        <div className="flex items-center gap-8 pt-8">
+                        <div className="flex items-center gap-8 pt-6">
                           <div className="animate-fade-in-up stagger-3">
                             <div className="text-xs text-neutral-400 uppercase tracking-wide mb-1">vs Historical</div>
                             <div className={`text-2xl font-semibold tabular-nums animate-number-pop ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -1563,7 +1650,7 @@ export default function DataDashboard() {
                         }}
                         formatter={(value, name) => {
                           if (value === null) return ['N/A', name];
-                          return [`${(value/1000).toFixed(0)}k`, name === 'current' ? '2025' : 'Historical'];
+                          return [`${(value/1000).toFixed(0)}k`, name];
                         }}
                         labelFormatter={(label) => label}
                       />
