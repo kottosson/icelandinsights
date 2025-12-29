@@ -1,9 +1,60 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, ComposedChart } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
-// Minimal styles - animations removed for mobile performance
+// Rich animations for premium feel
 const styles = `
+  /* Premium shimmer effect for loading */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      #f0f0f0 25%,
+      #e0e0e0 37%,
+      #f0f0f0 63%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  
+  .shimmer-dark {
+    background: linear-gradient(
+      90deg,
+      #e5e7eb 25%,
+      #d1d5db 37%,
+      #e5e7eb 63%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  
+  /* Pulse for loading dots */
+  @keyframes loadingPulse {
+    0%, 80%, 100% { 
+      transform: scale(0.6);
+      opacity: 0.4;
+    }
+    40% { 
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .loading-dot {
+    animation: loadingPulse 1.4s ease-in-out infinite;
+  }
+  .loading-dot:nth-child(1) { animation-delay: 0s; }
+  .loading-dot:nth-child(2) { animation-delay: 0.16s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.32s; }
+  
   .skeleton {
     background: #e5e7eb;
     border-radius: 4px;
@@ -17,7 +68,170 @@ const styles = `
   .skeleton-circle {
     border-radius: 50%;
   }
+  
+  /* Card hover lift effect */
+  .card-hover {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Fade in and slide up animation */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+    opacity: 0;
+  }
+  
+  /* Stagger delays for children */
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
+  
+  /* Number count-up pulse */
+  @keyframes numberPop {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  
+  .animate-number-pop {
+    animation: numberPop 0.4s ease-out forwards;
+  }
+  
+  /* Hero number special entrance */
+  @keyframes heroEntrance {
+    0% { 
+      opacity: 0; 
+      transform: translateY(20px) scale(0.9);
+      filter: blur(4px);
+    }
+    100% { 
+      opacity: 1; 
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+  }
+  
+  .animate-hero {
+    animation: heroEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  /* Chart bar grow animation */
+  @keyframes barGrow {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+  
+  .animate-bar {
+    transform-origin: bottom;
+    animation: barGrow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  
+  /* Subtle pulse for status indicators */
+  @keyframes subtlePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  
+  .animate-pulse-subtle {
+    animation: subtlePulse 2s ease-in-out infinite;
+  }
+  
+  /* Scroll reveal - elements start hidden */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Smooth number transitions */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s ease;
+  }
 `;
+
+// Animated counter component - counts up from 0 with easing
+const AnimatedNumber = ({ value, duration = 1200, formatFn = (n) => n.toLocaleString() }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  const [opacity, setOpacity] = useState(0);
+  const startTimeRef = useRef(null);
+  const rafRef = useRef(null);
+  
+  // Parse the numeric value from string like "141,100"
+  const targetValue = useMemo(() => {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const parsed = parseInt(value.replace(/,/g, ''), 10);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  }, [value]);
+  
+  useEffect(() => {
+    if (targetValue === 0) return;
+    
+    // Fade in quickly at start
+    setOpacity(1);
+    
+    // Easing function - fast start, slow end (ease-out cubic)
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+    
+    const animate = (timestamp) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const elapsed = timestamp - startTimeRef.current;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutCubic(progress);
+      
+      setDisplayValue(Math.round(easedProgress * targetValue));
+      
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+    
+    // Small delay before starting count to let fade-in begin
+    const timeout = setTimeout(() => {
+      rafRef.current = requestAnimationFrame(animate);
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeout);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [targetValue, duration]);
+  
+  return (
+    <span style={{ 
+      opacity, 
+      transition: 'opacity 0.3s ease-out',
+      display: 'inline-block'
+    }}>
+      {formatFn(displayValue)}
+    </span>
+  );
+};
 
 export default function DataDashboard() {
   const [data, setData] = useState([]);
@@ -46,6 +260,27 @@ export default function DataDashboard() {
   
   // Pre-indexed data for O(1) lookups (avoid repeated filtering)
   const [dataIndex, setDataIndex] = useState(null);
+  
+  // Scroll reveal effect - progressive reveal on scroll
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+    
+    // Observe all elements with .reveal class
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    
+    return () => observer.disconnect();
+  }, [kpis, initialLoading]); // Re-run when data loads
 
   // Country name translations and continent mapping - ALL 32 countries
   const countryInfo = {
@@ -311,8 +546,6 @@ export default function DataDashboard() {
     
     loadData();
   }, []);
-
-
 
   useEffect(() => {
     if (data.length > 0 && selectedCategories.length > 0) {
@@ -861,8 +1094,6 @@ export default function DataDashboard() {
       window.open(shareUrls[platform], '_blank', 'width=600,height=400');
     }
   };
-
-
   // Prepare data for charts - create merged dataset with all selected categories
   const prepareChartData = () => {
     if (selectedCategories.length === 0) return [];
@@ -980,16 +1211,16 @@ export default function DataDashboard() {
       
       {/* Custom Elegant Neutral Palette */}
       <style>{`
-        .text-sage-600 { color: #6E8B74; }
-        .text-sage-700 { color: #5D7A63; }
-        .bg-sage-50 { background-color: #F5F8F6; }
-        .bg-sage-100 { background-color: #EDF2EF; }
-        .bg-sage-600 { background-color: #6E8B74; }
-        .text-terracotta-600 { color: #C67B5C; }
+        .text-emerald-600 { color: #d4d4d4; }
+        .text-emerald-600 { color: #10b981; }
+        .bg-neutral-50/70 { background-color: #F5F8F6; }
+        .bg-sage-100 { background-color: #f5f5f5; }
+        .bg-sage-600 { background-color: #d4d4d4; }
+        .text-red-500 { color: #C67B5C; }
         .text-rose-600 { color: #DC6B5F; }
-        .bg-terracotta-50 { background-color: #FFF5F2; }
+        .bg-neutral-50/70 { background-color: #FFF5F2; }
         .bg-rose-100 { background-color: #FFE5E0; }
-        .border-sage-200 { border-color: #D4E2D8; }
+        .border-sage-200 { border-color: #e5e5e5; }
         .border-terracotta-200 { border-color: #F4D5C8; }
         .bg-slate-50 { background-color: #F8F9FA; }
       `}</style>
@@ -1059,55 +1290,107 @@ export default function DataDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 md:px-6 pb-6 space-y-4">
+      <div className="max-w-7xl mx-auto px-3 md:px-6 pb-6 space-y-6 md:space-y-8">
 
         {initialLoading ? (
-          // SIMPLIFIED SKELETON - Minimal for mobile performance
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center">
-              <div className="text-4xl mb-4">✈️</div>
-              <div className="text-lg font-semibold text-neutral-900 mb-2">Loading Dashboard...</div>
-              <div className="text-sm text-neutral-500">Preparing your data</div>
+          // PREMIUM SKELETON LOADING
+          <div className="space-y-6 md:space-y-8 animate-fade-in-up">
+            {/* Hero skeleton */}
+            <div className="bg-white rounded-2xl shadow-sm p-5 md:p-8">
+              <div className="h-5 w-40 shimmer rounded mb-8"></div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
+                <div className="space-y-6">
+                  {/* Big number skeleton */}
+                  <div>
+                    <div className="h-3 w-20 shimmer rounded mb-3"></div>
+                    <div className="h-16 md:h-20 w-48 shimmer rounded-lg mb-2"></div>
+                    <div className="h-3 w-28 shimmer rounded"></div>
+                  </div>
+                  {/* Stats row skeleton */}
+                  <div className="flex gap-8 pt-6">
+                    <div>
+                      <div className="h-2 w-16 shimmer rounded mb-2"></div>
+                      <div className="h-6 w-14 shimmer rounded"></div>
+                    </div>
+                    <div>
+                      <div className="h-2 w-12 shimmer rounded mb-2"></div>
+                      <div className="h-6 w-12 shimmer rounded"></div>
+                    </div>
+                    <div>
+                      <div className="h-2 w-14 shimmer rounded mb-2"></div>
+                      <div className="h-6 w-20 shimmer rounded"></div>
+                    </div>
+                  </div>
+                </div>
+                {/* Chart skeleton */}
+                <div className="bg-neutral-50/50 rounded-2xl p-4 md:p-6">
+                  <div className="h-3 w-24 shimmer rounded mb-6"></div>
+                  <div className="h-48 md:h-64 shimmer rounded-xl"></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Insight cards skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-2xl p-5 md:p-6 shadow-sm" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <div className="h-4 w-32 shimmer rounded mb-3"></div>
+                  <div className="h-3 w-full shimmer rounded mb-2"></div>
+                  <div className="h-3 w-3/4 shimmer rounded mb-4"></div>
+                  <div className="h-24 shimmer rounded-xl"></div>
+                </div>
+              ))}
+            </div>
+            
+            {/* KPI cards skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white rounded-2xl p-5 shadow-sm">
+                  <div className="h-3 w-20 shimmer rounded mb-2"></div>
+                  <div className="h-2 w-16 shimmer rounded mb-4"></div>
+                  <div className="h-8 w-28 shimmer rounded mb-3"></div>
+                  <div className="h-6 w-16 shimmer rounded-full"></div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Loading indicator */}
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 loading-dot"></div>
+                  <div className="w-2 h-2 rounded-full bg-blue-500 loading-dot"></div>
+                  <div className="w-2 h-2 rounded-full bg-blue-500 loading-dot"></div>
+                </div>
+                <span className="text-sm text-neutral-500">Loading dashboard</span>
+              </div>
             </div>
           </div>
         ) : (
           // ACTUAL CONTENT
           <>
-        {/* Executive Summary - Key Insights with Visual Support */}
-        {kpis && (
-          <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl border border-neutral-200 md:border-2 md:border-neutral-300 p-4 md:p-6 shadow-sm md:shadow-md">
-            <div className="flex items-center gap-3 mb-4 md:mb-5">
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>
-              <h2 className="text-xl md:text-2xl font-bold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.03em' }}>
-                Executive Summary
-              </h2>
+        {/* Seasonal Performance - Direct on page, no wrapper */}
+        {kpis && seasonalData && (
+          <div className="bg-white rounded-2xl shadow-sm p-5 md:p-8">
+            {/* Header */}
+            <div className="flex items-center gap-2.5 mb-6 md:mb-8">
+              <h2 className="text-lg md:text-xl font-semibold text-neutral-900">Seasonal Performance</h2>
             </div>
             
-            {/* Seasonal Context Box - Mobile Optimized */}
-            {seasonalData && (
-            <div className="bg-white rounded-lg md:rounded-xl border border-neutral-200 shadow-sm p-4 md:p-6 mb-4 md:mb-5">
-              {/* Header */}
-              <div className="flex items-center gap-2.5 mb-4 md:mb-5">
-                <svg className="w-4 h-4 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Seasonal Performance</h3>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                {/* LEFT COLUMN - Current Month Stats - Flattened for mobile */}
-                <div className="space-y-4">
-                  {(() => {
-                    const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
-                    const currentMonthData = historicalByMonth[month];
-                    const avg = currentMonthData.length > 0 
-                      ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
-                      : 0;
-                    const variance = currentMonthData.length > 0
-                      ? currentMonthData.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / currentMonthData.length
-                      : 0;
-                    const stdDev = Math.sqrt(variance);
-                    const expectedMin = Math.round((avg - stdDev) / 1000);
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
+              {/* LEFT COLUMN - Current Month Stats - Flattened for mobile */}
+              <div className="space-y-4">
+                {(() => {
+                  const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
+                  const currentMonthData = historicalByMonth[month];
+                  const avg = currentMonthData.length > 0 
+                    ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
+                    : 0;
+                  const variance = currentMonthData.length > 0
+                    ? currentMonthData.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / currentMonthData.length
+                    : 0;
+                  const stdDev = Math.sqrt(variance);
+                  const expectedMin = Math.round((avg - stdDev) / 1000);
                     const expectedMax = Math.round((avg + stdDev) / 1000);
                     const actualK = currentValue / 1000;
                     
@@ -1125,16 +1408,16 @@ export default function DataDashboard() {
                     }
                     
                     let season = 'LOW';
-                    let pillBg = 'bg-neutral-100';
-                    let pillText = 'text-neutral-600';
+                    let pillBg = 'bg-blue-50';
+                    let pillText = 'text-blue-400';
                     if (month >= 5 && month <= 7) {
                       season = 'HIGH';
-                      pillBg = 'bg-emerald-100';
-                      pillText = 'text-emerald-700';
+                      pillBg = 'bg-blue-100';
+                      pillText = 'text-blue-700';
                     } else if (month >= 8 && month <= 9) {
                       season = 'SHOULDER';
-                      pillBg = 'bg-amber-100';
-                      pillText = 'text-amber-700';
+                      pillBg = 'bg-blue-50';
+                      pillText = 'text-blue-500';
                     }
                     
                     const diff = currentValue - avg;
@@ -1146,38 +1429,89 @@ export default function DataDashboard() {
                         {/* Main stat row */}
                         <div className="flex items-start justify-between">
                           <div>
-                            <div className="text-sm font-semibold text-neutral-900 mb-1">{kpis.currentMonthName}</div>
-                            <div className="text-3xl md:text-4xl font-bold text-neutral-900 tabular-nums tracking-tight">
-                              {kpis.currentMonth}
+                            <div className="text-xs font-medium text-neutral-400 uppercase tracking-wide mb-2 animate-fade-in-up">{kpis.currentMonthName}</div>
+                            <div className="text-5xl md:text-7xl font-bold text-neutral-900 tabular-nums tracking-tighter leading-none">
+                              <AnimatedNumber value={kpis.currentMonth} duration={1400} />
                             </div>
-                            <div className="text-xs text-neutral-500 mt-0.5">foreign passengers</div>
+                            <div className="text-xs text-neutral-400 mt-2 animate-fade-in-up stagger-2">foreign passengers</div>
                           </div>
-                          <div className="text-right">
-                            <div className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold ${pillBg} ${pillText}`}>
+                          <div className="text-right animate-fade-in-up stagger-1">
+                            <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${pillBg} ${pillText}`}>
                               {season}
                             </div>
-                            <div className="flex items-center justify-end gap-1 mt-2">
-                              <div className={`w-1.5 h-1.5 rounded-full ${statusDot}`}></div>
+                            <div className="flex items-center justify-end gap-1.5 mt-3">
+                              <div className={`w-2 h-2 rounded-full ${statusDot} ${status === 'Unusual' ? 'animate-pulse-subtle' : ''}`}></div>
                               <span className={`text-xs font-medium ${statusColor}`}>{status}</span>
                             </div>
                           </div>
                         </div>
                         
-                        {/* Comparison row - inline on mobile */}
-                        <div className="flex items-center gap-3 pt-3 border-t border-neutral-100">
-                          <div className="flex-1">
-                            <div className="text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5">vs Historical</div>
-                            <div className={`text-lg font-bold tabular-nums ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
+                        {/* Comparison stats */}
+                        <div className="flex items-center gap-8 pt-8">
+                          <div className="animate-fade-in-up stagger-3">
+                            <div className="text-xs text-neutral-400 uppercase tracking-wide mb-1">vs Historical</div>
+                            <div className={`text-2xl font-semibold tabular-nums animate-number-pop ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
                               {isUp ? '+' : ''}{diffPercent}%
                             </div>
                           </div>
-                          <div className="flex-1">
-                            <div className="text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5">Hist. Avg</div>
-                            <div className="text-lg font-bold text-neutral-900 tabular-nums">{Math.round(avg / 1000)}k</div>
+                          <div className="animate-fade-in-up stagger-4">
+                            <div className="text-xs text-neutral-400 uppercase tracking-wide mb-1">Hist. Avg</div>
+                            <div className="text-2xl font-semibold text-neutral-900 tabular-nums">{Math.round(avg / 1000)}k</div>
                           </div>
-                          <div className="flex-1 text-right">
-                            <div className="text-[10px] text-neutral-500 uppercase tracking-wide mb-0.5">Expected</div>
-                            <div className="text-lg font-bold text-neutral-900 tabular-nums">{expectedMin}k-{expectedMax}k</div>
+                          <div className="animate-fade-in-up stagger-5">
+                            <div className="text-xs text-neutral-400 uppercase tracking-wide mb-1">Expected</div>
+                            <div className="text-2xl font-semibold text-neutral-900 tabular-nums">{expectedMin}k–{expectedMax}k</div>
+                          </div>
+                        </div>
+                        
+                        {/* Typical Volume Ranges - clean minimal style */}
+                        <div className="pt-6 mt-6 border-t border-neutral-100 animate-fade-in-up stagger-6">
+                          <div className="text-xs text-neutral-400 uppercase tracking-wide mb-4">Typical Range by Season</div>
+                          <div className="space-y-3">
+                            {(() => {
+                              const highSeasonMonths = [5, 6, 7];
+                              const shoulderMonths = [8, 9];
+                              const lowSeasonMonths = [0, 1, 2, 3, 4, 10, 11];
+                              
+                              const calcRange = (months) => {
+                                const allValues = months.flatMap(m => historicalByMonth[m]);
+                                if (allValues.length === 0) return { min: 0, max: 0 };
+                                return {
+                                  min: Math.round(Math.min(...allValues) / 1000),
+                                  max: Math.round(Math.max(...allValues) / 1000)
+                                };
+                              };
+                              
+                              const highRange = calcRange(highSeasonMonths);
+                              const shoulderRange = calcRange(shoulderMonths);
+                              const lowRange = calcRange(lowSeasonMonths);
+                              
+                              return (
+                                <>
+                                  <div className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                                      <span className="text-sm text-neutral-600">High</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-neutral-900 tabular-nums">{highRange.min}k – {highRange.max}k</span>
+                                  </div>
+                                  <div className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
+                                      <span className="text-sm text-neutral-600">Shoulder</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-neutral-900 tabular-nums">{shoulderRange.min}k – {shoulderRange.max}k</span>
+                                  </div>
+                                  <div className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.45s' }}>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2.5 h-2.5 rounded-full bg-blue-200"></div>
+                                      <span className="text-sm text-neutral-600">Low</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-neutral-900 tabular-nums">{lowRange.min}k – {lowRange.max}k</span>
+                                  </div>
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       </>
@@ -1185,12 +1519,12 @@ export default function DataDashboard() {
                   })()}
                 </div>
 
-                {/* RIGHT COLUMN - Chart and Volume */}
-                <div className="space-y-6">
-                  {/* Chart - Now shows on mobile too with adjusted height */}
-                  <div className="border border-neutral-200 rounded-lg p-4 md:p-5 bg-white">
-                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-3 md:mb-4">MONTHLY PATTERN (2017-2025)</div>
-                    <ResponsiveContainer width="100%" height={isMobile ? 180 : 260}>
+                {/* RIGHT COLUMN - Chart */}
+                <div>
+                  {/* Chart - cleaner Apple-style with single color family */}
+                  <div className="bg-neutral-50/50 rounded-2xl p-4 md:p-6">
+                    <div className="text-xs text-neutral-500 uppercase tracking-wide font-medium mb-4 md:mb-5">Monthly Pattern</div>
+                    <ResponsiveContainer width="100%" height={isMobile ? 200 : 280}>
                     <ComposedChart 
                       data={(() => {
                         const { currentMonth, historicalAvg, ytd2025ByMonth } = seasonalData;
@@ -1202,175 +1536,95 @@ export default function DataDashboard() {
                           current: i <= currentMonth ? ytd2025ByMonth[i] : null
                         }));
                       })()}
-                      margin={{ top: 10, right: 5, left: -25, bottom: 5 }}
+                      margin={{ top: 10, right: 5, left: -20, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
                       <XAxis 
                         dataKey="month"
-                        tick={{ fontSize: isMobile ? 8 : 10, fill: '#6b7280' }}
-                        axisLine={{ stroke: '#e5e5e5' }}
+                        tick={{ fontSize: isMobile ? 9 : 11, fill: '#737373' }}
+                        axisLine={false}
                         tickLine={false}
                         interval={isMobile ? 1 : 0}
                       />
                       <YAxis 
-                        tick={{ fontSize: isMobile ? 8 : 10, fill: '#6b7280' }}
-                        axisLine={{ stroke: '#e5e5e5' }}
+                        tick={{ fontSize: isMobile ? 9 : 11, fill: '#737373' }}
+                        axisLine={false}
                         tickLine={false}
                         tickFormatter={(value) => `${(value/1000).toFixed(0)}k`}
                       />
                       <Tooltip 
                         contentStyle={{ 
                           backgroundColor: '#fff', 
-                          border: '1px solid #e5e5e5',
-                          borderRadius: '8px',
-                          fontSize: '11px',
-                          padding: '6px 10px',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                          border: 'none',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          padding: '8px 12px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                         }}
                         formatter={(value, name) => {
                           if (value === null) return ['N/A', name];
-                          return [`${(value/1000).toFixed(0)}k`, name];
+                          return [`${(value/1000).toFixed(0)}k`, name === 'current' ? '2025' : 'Historical'];
                         }}
+                        labelFormatter={(label) => label}
                       />
-                      {/* 2025 bars - render first (background) */}
+                      {/* 2025 bars - blue color family encoding seasonality via intensity */}
                       <Bar 
                         dataKey="current"
-                        name="2025 YTD"
-                        radius={[3, 3, 0, 0]}
-                        fillOpacity={0.9}
+                        name="2025"
+                        radius={[4, 4, 0, 0]}
                       >
                         {(() => {
-                          const { currentMonth } = seasonalData;
                           const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                           return monthLabels.map((label, index) => {
-                            let fill = '#a3a3a3';
-                            if (index >= 5 && index <= 7) fill = '#10b981';
-                            else if (index >= 8 && index <= 9) fill = '#f59e0b';
+                            // Blue color family: intensity = seasonality
+                            let fill = '#bfdbfe'; // Low season - light blue
+                            if (index >= 5 && index <= 7) fill = '#2563eb'; // High season - saturated blue
+                            else if (index >= 8 && index <= 9) fill = '#60a5fa'; // Shoulder - medium blue
                             return <Cell key={`cell-${index}`} fill={fill} />;
                           });
                         })()}
                       </Bar>
-                      {/* Historical average line - render second (on top) */}
+                      {/* Historical average line - neutral gray, not red */}
                       <Line 
                         dataKey="historical"
-                        name="Historical Average"
-                        stroke="#dc2626"
-                        strokeWidth={isMobile ? 2.5 : 4}
-                        strokeDasharray="8 4"
+                        name="Historical"
+                        stroke="#525252"
+                        strokeWidth={2}
+                        strokeDasharray="6 4"
                         dot={false}
-                        activeDot={{ r: 4, fill: '#dc2626' }}
+                        activeDot={{ r: 4, fill: '#525252', stroke: '#fff', strokeWidth: 2 }}
                         connectNulls={true}
                         type="monotone"
                       />
                     </ComposedChart>
                   </ResponsiveContainer>
-                  <div className="flex items-center justify-center gap-4 md:gap-6 mt-2 md:mt-3 pt-2 md:pt-3 border-t border-neutral-200">
-                    <div className="flex flex-col items-center gap-0.5 md:gap-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 md:w-6 h-[2px] md:h-[3px] border-t-[2px] md:border-t-[3px] border-dashed" style={{ borderColor: '#dc2626' }}></div>
-                      </div>
-                      <span className="text-[9px] md:text-[10px] text-neutral-600 font-medium">Hist. Avg</span>
+                  <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-neutral-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-0.5 bg-neutral-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #525252, #525252 3px, transparent 3px, transparent 6px)' }}></div>
+                      <span className="text-xs text-neutral-500">Historical Avg</span>
                     </div>
-                    <div className="flex items-center gap-1.5 md:gap-2">
-                      <div className="flex gap-0.5 md:gap-1">
-                        <div className="w-1.5 md:w-2 h-2.5 md:h-3 rounded-sm bg-emerald-500"></div>
-                        <div className="w-1.5 md:w-2 h-2.5 md:h-3 rounded-sm bg-amber-500"></div>
-                        <div className="w-1.5 md:w-2 h-2.5 md:h-3 rounded-sm bg-neutral-400"></div>
-                      </div>
-                      <span className="text-[9px] md:text-[10px] text-neutral-600 font-medium">2025</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-blue-500"></div>
+                      <span className="text-xs text-neutral-500">2025</span>
                     </div>
                   </div>
                 </div>
-                
-                  {/* Volume Bars - Compact for mobile */}
-                  <div className="border border-neutral-200 rounded-lg p-3 md:p-5">
-                    <div className="text-[10px] text-neutral-800 uppercase tracking-wider font-semibold mb-3 md:mb-4">TYPICAL MONTHLY VOLUME</div>
-                    <div className="space-y-3 md:space-y-4">
-                      {(() => {
-                        const { historicalByMonth } = seasonalData;
-                        const highSeasonMonths = [5, 6, 7];
-                        const shoulderMonths = [8, 9];
-                        const lowSeasonMonths = [0, 1, 2, 3, 4, 10, 11];
-                        
-                        const calcAvg = (months) => {
-                          const allValues = months.flatMap(m => historicalByMonth[m]);
-                          return allValues.length > 0 
-                            ? allValues.reduce((a, b) => a + b, 0) / allValues.length 
-                            : 0;
-                        };
-                        
-                        const highAvg = calcAvg(highSeasonMonths);
-                        const shoulderAvg = calcAvg(shoulderMonths);
-                        const lowAvg = calcAvg(lowSeasonMonths);
-                        const maxAvg = Math.max(highAvg, shoulderAvg, lowAvg);
-                        
-                        const calcRange = (months) => {
-                          const allValues = months.flatMap(m => historicalByMonth[m]);
-                          if (allValues.length === 0) return { min: 0, max: 0 };
-                          return {
-                            min: Math.round(Math.min(...allValues) / 1000),
-                            max: Math.round(Math.max(...allValues) / 1000)
-                          };
-                        };
-                        
-                        const highRange = calcRange(highSeasonMonths);
-                        const shoulderRange = calcRange(shoulderMonths);
-                        const lowRange = calcRange(lowSeasonMonths);
-                        
-                        return (
-                          <>
-                            <div className="flex items-center gap-2 md:gap-3">
-                              <div className="flex items-center gap-1.5 md:gap-2 w-20 md:w-28 flex-shrink-0">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                <span className="text-[11px] md:text-xs font-medium text-neutral-700">High</span>
-                              </div>
-                              <div className="flex-1 bg-neutral-100 rounded-sm h-5 md:h-6 relative overflow-hidden">
-                                <div className="bg-emerald-500 h-full" style={{ width: `${(highAvg / maxAvg) * 100}%` }}></div>
-                              </div>
-                              <span className="text-[11px] md:text-xs font-mono text-neutral-600 w-16 md:w-20 text-right tabular-nums">{highRange.min}–{highRange.max}k</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 md:gap-3">
-                              <div className="flex items-center gap-1.5 md:gap-2 w-20 md:w-28 flex-shrink-0">
-                                <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                                <span className="text-[11px] md:text-xs font-medium text-neutral-700">Shoulder</span>
-                              </div>
-                              <div className="flex-1 bg-neutral-100 rounded-sm h-5 md:h-6 relative overflow-hidden">
-                                <div className="bg-amber-500 h-full" style={{ width: `${(shoulderAvg / maxAvg) * 100}%` }}></div>
-                              </div>
-                              <span className="text-[11px] md:text-xs font-mono text-neutral-600 w-16 md:w-20 text-right tabular-nums">{shoulderRange.min}–{shoulderRange.max}k</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 md:gap-3">
-                              <div className="flex items-center gap-1.5 md:gap-2 w-20 md:w-28 flex-shrink-0">
-                                <div className="w-2 h-2 rounded-full bg-neutral-400"></div>
-                                <span className="text-[11px] md:text-xs font-medium text-neutral-700">Low</span>
-                              </div>
-                              <div className="flex-1 bg-neutral-100 rounded-sm h-5 md:h-6 relative overflow-hidden">
-                                <div className="bg-neutral-400 h-full" style={{ width: `${(lowAvg / maxAvg) * 100}%` }}></div>
-                              </div>
-                              <span className="text-[11px] md:text-xs font-mono text-neutral-600 w-16 md:w-20 text-right tabular-nums">{lowRange.min}–{lowRange.max}k</span>
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
-            )}
+          )}
 
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Insights Grid - Apple style: no borders, subtle shadows, generous spacing */}
+          {kpis && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               
               {/* Insight 1: Current Month Performance */}
-              <div className="bg-white rounded-lg p-4 border-2 border-neutral-200 relative group hover:shadow-lg transition-all duration-300">
+              <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover relative group animate-fade-in-up stagger-1">
                 {/* Buttons - Top Right (show on hover) */}
-                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <button 
                     onClick={() => generateEmbedCode('insight', 'Current Month Performance')}
-                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors shadow-sm"
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                     title="Get embed code"
                   >
                     <Code className="w-3.5 h-3.5 text-neutral-500" />
@@ -1386,8 +1640,8 @@ export default function DataDashboard() {
                 
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-h-[80px]">
-                    <h3 className="text-[13px] font-bold text-neutral-800 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Current Month Performance</h3>
-                    <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
+                    <h3 className="text-sm font-bold text-neutral-800 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Current Month Performance</h3>
+                    <p className="text-xs text-neutral-600 leading-relaxed mb-3">
                       {kpis.currentMonthName} recorded <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
                       {kpis.yoyChange >= 0 ? ' up ' : ' down '}
                       <span className={`font-semibold ${kpis.yoyChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -1405,8 +1659,8 @@ export default function DataDashboard() {
                 {kpis.overallSparkline && (
                   <div className="mt-3">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-[10px] font-medium text-neutral-600">YoY % Change (Last 6 Months)</p>
-                      <p className="text-[9px] text-neutral-500">Current Month: 
+                      <p className="text-xs font-medium text-neutral-600">YoY % Change (Last 6 Months)</p>
+                      <p className="text-xs text-neutral-500">Current Month: 
                         <span className={`font-semibold ml-1 ${
                           kpis.yoyChange >= 0 
                             ? 'text-emerald-600' : 'text-red-600'
@@ -1431,9 +1685,9 @@ export default function DataDashboard() {
                             return (
                               <>
                                 {/* Y-axis labels */}
-                                <text x="30" y={chartTop + 5} textAnchor="end" className="text-[10px]" fill="#999">+{scale}%</text>
-                                <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[10px]" fill="#666">0%</text>
-                                <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[10px]" fill="#999">-{scale}%</text>
+                                <text x="30" y={chartTop + 5} textAnchor="end" className="text-xs" fill="#999">+{scale}%</text>
+                                <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-xs" fill="#666">0%</text>
+                                <text x="30" y={chartBottom + 5} textAnchor="end" className="text-xs" fill="#999">-{scale}%</text>
                                 
                                 {/* Horizontal grid lines */}
                                 <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#e5e5e5" strokeWidth="0.5" />
@@ -1513,7 +1767,7 @@ export default function DataDashboard() {
                                   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                   const x = chartLeft + (i / (kpis.overallSparkline.length - 1)) * (chartRight - chartLeft);
                                   return (
-                                    <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[10px]" fill="#999">
+                                    <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-xs" fill="#999">
                                       {monthNames[point.month - 1]}
                                     </text>
                                   );
@@ -1530,23 +1784,19 @@ export default function DataDashboard() {
 
               {/* Insight 2: Top Growth Market */}
               {kpis.topGrower && (
-                <div className="rounded-lg p-4 border-2 border-sage-200 relative group hover:shadow-lg transition-all duration-300" style={{
-                  background: 'linear-gradient(135deg, #ffffff 0%, #F9FBF9 100%)',
-                  animationDelay: '100ms',
-                  willChange: 'box-shadow'
-                }}>
+                <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover relative group animate-fade-in-up stagger-2">
                   {/* Buttons - Top Right (show on hover) */}
-                  <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button 
                       onClick={() => generateEmbedCode('insight', 'Leading Growth Market')}
-                      className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                       title="Get embed code"
                     >
                       <Code className="w-3.5 h-3.5 text-neutral-500" />
                     </button>
                     <button 
                       onClick={() => shareKPI('Leading Growth Market', `${getCountryName(kpis.topGrower.name)} leads with +${kpis.topGrower.change} passengers, representing a +${kpis.topGrower.percent.toFixed(1)}% increase`)}
-                      className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                       title="Share on Twitter"
                     >
                       <Share2 className="w-3.5 h-3.5 text-neutral-500" />
@@ -1555,26 +1805,22 @@ export default function DataDashboard() {
                   
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-h-[80px]">
-                      <h3 className="text-[13px] font-bold text-sage-700 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Leading Growth Market - Trailing Twelve Months</h3>
-                      <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
-                        <span className="font-semibold">{getCountryName(kpis.topGrower.name)}</span> leads with 
-                        <span className="font-semibold text-sage-600"> +{kpis.topGrower.change} passengers</span>
-                        , representing a <span className="font-semibold text-sage-600">+{kpis.topGrower.percent.toFixed(1)}%</span> increase.
+                      <h3 className="text-sm font-semibold text-neutral-900 mb-2">Leading Growth Market</h3>
+                      <p className="text-xs text-neutral-500 mb-1">Trailing Twelve Months</p>
+                      <p className="text-sm text-neutral-600 leading-relaxed">
+                        <span className="font-semibold text-neutral-900">{getCountryName(kpis.topGrower.name)}</span> leads with 
+                        <span className="font-semibold text-emerald-600"> +{kpis.topGrower.change}</span>
+                        <span className="text-emerald-600"> (+{kpis.topGrower.percent.toFixed(1)}%)</span>
                       </p>
                     </div>
                   </div>
                   {/* 6-month YoY % trend with proper axes */}
                   {kpis.topGrowerSparkline && (
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-medium text-sage-700">YoY % Change (Last 6 Months)</p>
-                        <p className="text-[9px] text-neutral-600">TTM YoY: 
-                          <span className="font-semibold ml-1 text-sage-600">
-                            +{kpis.topGrower.percent.toFixed(1)}%
-                          </span>
-                        </p>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs text-neutral-500">YoY % Change (Last 6 Months)</p>
                       </div>
-                      <div className="bg-sage-50 rounded-lg p-3">
+                      <div className="bg-neutral-50/70 rounded-xl p-3">
                         <div className="relative">
                           <svg width="100%" height="120" viewBox="0 0 280 120" className="overflow-visible">
                             {(() => {
@@ -1589,19 +1835,19 @@ export default function DataDashboard() {
                               return (
                                 <>
                                   {/* Y-axis labels */}
-                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-[10px]" fill="#5D7A63">+{scale}%</text>
-                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[10px]" fill="#666">0%</text>
-                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[10px]" fill="#999">-{scale}%</text>
+                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-xs" fill="#10b981">+{scale}%</text>
+                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-xs" fill="#666">0%</text>
+                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-xs" fill="#999">-{scale}%</text>
                                   
                                   {/* Grid lines */}
-                                  <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#D4E2D8" strokeWidth="0.5" />
-                                  <line x1={chartLeft} y1={chartMiddle} x2={chartRight} y2={chartMiddle} stroke="#6E8B74" strokeWidth="1" strokeDasharray="3,3" />
-                                  <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="#D4E2D8" strokeWidth="0.5" />
+                                  <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#e5e5e5" strokeWidth="0.5" />
+                                  <line x1={chartLeft} y1={chartMiddle} x2={chartRight} y2={chartMiddle} stroke="#d4d4d4" strokeWidth="1" strokeDasharray="3,3" />
+                                  <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="#e5e5e5" strokeWidth="0.5" />
                                   
                                   {kpis.topGrowerSparkline.map((point, i) => {
                                     const x = chartLeft + (i / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
                                     return (
-                                      <line key={`vgrid-${i}`} x1={x} y1={chartTop} x2={x} y2={chartBottom} stroke="#EDF2EF" strokeWidth="0.5" />
+                                      <line key={`vgrid-${i}`} x1={x} y1={chartTop} x2={x} y2={chartBottom} stroke="#f5f5f5" strokeWidth="0.5" />
                                     );
                                   })}
                                   
@@ -1616,7 +1862,7 @@ export default function DataDashboard() {
                                     const y2 = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
                                     
                                     return (
-                                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#6E8B74" strokeWidth="2" strokeLinecap="round" />
+                                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d4d4d4" strokeWidth="2" strokeLinecap="round" />
                                     );
                                   })}
                                   
@@ -1661,7 +1907,7 @@ export default function DataDashboard() {
                                     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                     const x = chartLeft + (i / (kpis.topGrowerSparkline.length - 1)) * (chartRight - chartLeft);
                                     return (
-                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[10px]" fill="#999">
+                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-xs" fill="#999">
                                         {monthNames[point.month - 1]}
                                       </text>
                                     );
@@ -1679,23 +1925,19 @@ export default function DataDashboard() {
 
               {/* Insight 3: Attention Market */}
               {kpis.topDecliner && (
-                <div className="rounded-lg p-4 border-2 border-terracotta-200 relative group hover:shadow-lg transition-all duration-300" style={{
-                  background: 'linear-gradient(135deg, #ffffff 0%, #FEFAF9 100%)',
-                  animationDelay: '200ms',
-                  willChange: 'box-shadow'
-                }}>
+                <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover relative group animate-fade-in-up stagger-3">
                   {/* Buttons - Top Right (show on hover) */}
-                  <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button 
                       onClick={() => generateEmbedCode('insight', 'Market Under Pressure')}
-                      className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                       title="Get embed code"
                     >
                       <Code className="w-3.5 h-3.5 text-neutral-500" />
                     </button>
                     <button 
                       onClick={() => shareKPI('Market Under Pressure', `${getCountryName(kpis.topDecliner.name)} declined by -${kpis.topDecliner.change} passengers, a ${kpis.topDecliner.percent.toFixed(1)}% decrease`)}
-                      className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                       title="Share on Twitter"
                     >
                       <Share2 className="w-3.5 h-3.5 text-neutral-500" />
@@ -1704,23 +1946,22 @@ export default function DataDashboard() {
                   
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-h-[80px]">
-                      <h3 className="text-[13px] font-bold text-terracotta-600 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Market Under Pressure - Trailing Twelve Months</h3>
-                      <p className="text-[11px] text-neutral-600 leading-relaxed mb-3">
-                        <span className="font-semibold">{getCountryName(kpis.topDecliner.name)}</span> declined by 
-                        <span className="font-semibold text-terracotta-600"> -{kpis.topDecliner.change} passengers</span>
-                        , a <span className="font-semibold text-terracotta-600">{kpis.topDecliner.percent.toFixed(1)}%</span> decrease.
+                      <h3 className="text-sm font-semibold text-neutral-900 mb-2">Market Under Pressure</h3>
+                      <p className="text-xs text-neutral-500 mb-1">Trailing Twelve Months</p>
+                      <p className="text-sm text-neutral-600 leading-relaxed">
+                        <span className="font-semibold text-neutral-900">{getCountryName(kpis.topDecliner.name)}</span> declined by 
+                        <span className="font-semibold text-red-600"> -{kpis.topDecliner.change}</span>
+                        <span className="text-red-600"> ({kpis.topDecliner.percent.toFixed(1)}%)</span>
                       </p>
                     </div>
                   </div>
                   {/* 6-month YoY % trend with proper axes */}
                   {kpis.topDeclinerSparkline && (
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] font-medium text-terracotta-600">YoY % Change (Last 6 Months)</p>
-                        <p className="text-[9px] text-neutral-600">TTM YoY: <span className="font-semibold ml-1 text-terracotta-600">{kpis.topDecliner.percent.toFixed(1)}%</span>
-                        </p>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs text-neutral-500">YoY % Change (Last 6 Months)</p>
                       </div>
-                      <div className="bg-terracotta-50 rounded-lg p-3">
+                      <div className="bg-neutral-50/70 rounded-xl p-3">
                         <div className="relative">
                           <svg width="100%" height="120" viewBox="0 0 280 120" className="overflow-visible">
                             {(() => {
@@ -1735,19 +1976,19 @@ export default function DataDashboard() {
                               return (
                                 <>
                                   {/* Y-axis labels */}
-                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-[10px]" fill="#999">+{scale}%</text>
-                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-[10px]" fill="#666">0%</text>
-                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-[10px]" fill="#B8847D">-{scale}%</text>
+                                  <text x="30" y={chartTop + 5} textAnchor="end" className="text-xs" fill="#999">+{scale}%</text>
+                                  <text x="30" y={chartMiddle + 3} textAnchor="end" className="text-xs" fill="#666">0%</text>
+                                  <text x="30" y={chartBottom + 5} textAnchor="end" className="text-xs" fill="#ef4444">-{scale}%</text>
                                   
                                   {/* Grid lines */}
-                                  <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#E8D7D4" strokeWidth="0.5" />
-                                  <line x1={chartLeft} y1={chartMiddle} x2={chartRight} y2={chartMiddle} stroke="#B8847D" strokeWidth="1" strokeDasharray="3,3" />
-                                  <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="#E8D7D4" strokeWidth="0.5" />
+                                  <line x1={chartLeft} y1={chartTop} x2={chartRight} y2={chartTop} stroke="#e5e5e5" strokeWidth="0.5" />
+                                  <line x1={chartLeft} y1={chartMiddle} x2={chartRight} y2={chartMiddle} stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" />
+                                  <line x1={chartLeft} y1={chartBottom} x2={chartRight} y2={chartBottom} stroke="#e5e5e5" strokeWidth="0.5" />
                                   
                                   {kpis.topDeclinerSparkline.map((point, i) => {
                                     const x = chartLeft + (i / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
                                     return (
-                                      <line key={`vgrid-${i}`} x1={x} y1={chartTop} x2={x} y2={chartBottom} stroke="#F7EFED" strokeWidth="0.5" />
+                                      <line key={`vgrid-${i}`} x1={x} y1={chartTop} x2={x} y2={chartBottom} stroke="#f5f5f5" strokeWidth="0.5" />
                                     );
                                   })}
                                   
@@ -1762,7 +2003,7 @@ export default function DataDashboard() {
                                     const y2 = chartMiddle - (point.value / scale) * (chartMiddle - chartTop);
                                     
                                     return (
-                                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#B8847D" strokeWidth="2" strokeLinecap="round" />
+                                      <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#ef4444" strokeWidth="2" strokeLinecap="round" />
                                     );
                                   })}
                                   
@@ -1807,7 +2048,7 @@ export default function DataDashboard() {
                                     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                     const x = chartLeft + (i / (kpis.topDeclinerSparkline.length - 1)) * (chartRight - chartLeft);
                                     return (
-                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-[10px]" fill="#999">
+                                      <text key={`month-${i}`} x={x} y={chartBottom + 15} textAnchor="middle" className="text-xs" fill="#999">
                                         {monthNames[point.month - 1]}
                                       </text>
                                     );
@@ -1824,256 +2065,178 @@ export default function DataDashboard() {
               )}
 
             </div>
-          </div>
-        )}
-
-
+          )}
         {kpis && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             
             {/* Card 1: Monthly Passengers */}
-            <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative"
-              style={{ 
-                animationDelay: '0ms',
-                borderLeft: `4px solid #3B82F6`,
-                willChange: 'box-shadow'
-              }}
-            >
-              
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
+            <div className="group rounded-2xl bg-white p-5 shadow-sm card-hover relative animate-fade-in-up stagger-1">
               <div className="relative">
                 {/* Buttons - Top Right (show on hover) */}
                 <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                   <button 
                     onClick={() => generateEmbedCode('kpi', 'Monthly Passengers')}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                     title="Get embed code"
                   >
-                    <Code className="w-3.5 h-3.5 text-neutral-500" />
+                    <Code className="w-3.5 h-3.5 text-neutral-400" />
                   </button>
                   <button 
                     onClick={() => shareKPI('Monthly Passengers', `${kpis.currentMonth} passengers in ${kpis.currentMonthName}\n${kpis.yoyChange > 0 ? '+' : ''}${kpis.yoyChange.toFixed(1)}% YoY vs ${kpis.lastYearMonthName}`)}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                     title="Share on Twitter"
                   >
-                    <Share2 className="w-3.5 h-3.5 text-neutral-500" />
+                    <Share2 className="w-3.5 h-3.5 text-neutral-400" />
                   </button>
                 </div>
                 
-                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Monthly Passengers</p>
-                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.currentMonthName}</p>
+                <p className="text-sm font-medium text-neutral-500 mb-1">Monthly</p>
+                <p className="text-xs text-neutral-400 mb-3">{kpis.currentMonthName}</p>
                 
-                <div className="mb-2 h-12 flex items-center">
-                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                    {kpis.currentMonth}
-                  </p>
-                </div>
+                <p className="text-3xl font-bold text-neutral-900 mb-3 animate-number-pop" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                  {kpis.currentMonth}
+                </p>
                 
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[10px] text-neutral-500">vs {kpis.lastYearMonth}</span>
-                  <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${
-                    kpis.yoyChange >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
-                    kpis.yoyChange <= -0.5 ? 'bg-red-50 border border-red-200' : 
-                    'bg-neutral-100 border border-neutral-200'
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${
+                  kpis.yoyChange >= 0.5 ? 'bg-emerald-50' : 
+                  kpis.yoyChange <= -0.5 ? 'bg-red-50' : 
+                  'bg-neutral-100'
+                }`}>
+                  {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
+                   kpis.yoyChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
+                   <Minus className="w-3.5 h-3.5 text-neutral-500" />}
+                  <span className={`text-xs font-semibold ${
+                    kpis.yoyChange >= 0.5 ? 'text-emerald-600' : 
+                    kpis.yoyChange <= -0.5 ? 'text-red-600' : 
+                    'text-neutral-600'
                   }`}>
-                    {kpis.yoyChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
-                     kpis.yoyChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
-                     <Minus className="w-3.5 h-3.5 text-neutral-500" />}
-                    <span className={`text-xs font-semibold ${
-                      kpis.yoyChange >= 0.5 ? 'text-emerald-700' : 
-                      kpis.yoyChange <= -0.5 ? 'text-red-700' : 
-                      'text-neutral-600'
-                    }`}>
-                      {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}% YoY
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Clean Footer */}
-                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
+                    {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}%
+                  </span>
                 </div>
               </div>
             </div>
             
             {/* Card 2: TTM Passengers */}
             <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative"
-              style={{ 
-                animationDelay: '100ms',
-                borderLeft: `4px solid #3B82F6`,
-                willChange: 'box-shadow'
-              }}
-            >
-              
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
+              className="group rounded-2xl bg-white p-5 shadow-sm card-hover relative animate-fade-in-up stagger-2"            >
               <div className="relative">
                 <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                   <button 
                     onClick={() => generateEmbedCode('kpi', 'TTM - Foreign Passengers')}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                     title="Get embed code"
                   >
                     <Code className="w-3.5 h-3.5 text-neutral-500" />
                   </button>
                   <button 
                     onClick={() => shareKPI('TTM - Foreign Passengers', `${kpis.ttmTotal} passengers (${kpis.ttmPeriod})\n${kpis.ttmChange > 0 ? '+' : ''}${kpis.ttmChange.toFixed(1)}% vs prior TTM`)}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                     title="Share on Twitter"
                   >
                     <Share2 className="w-3.5 h-3.5 text-neutral-500" />
                   </button>
                 </div>
                 
-                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">TTM Passengers</p>
-                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
+                <p className="text-sm font-medium text-neutral-500 mb-1">TTM Passengers</p>
+                <p className="text-xs text-neutral-400 mb-3">{kpis.ttmPeriod}</p>
                 
-                <div className="mb-2 h-12 flex items-center">
-                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                    {kpis.ttmTotal}
-                  </p>
-                </div>
+                <p className="text-3xl font-bold text-neutral-900 mb-3 animate-number-pop" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                  {kpis.ttmTotal}
+                </p>
                 
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[10px] text-neutral-500">vs {kpis.lastTtmTotal}</span>
-                  <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${
-                    kpis.ttmChange >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
-                    kpis.ttmChange <= -0.5 ? 'bg-red-50 border border-red-200' : 
-                    'bg-neutral-100 border border-neutral-200'
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${
+                  kpis.ttmChange >= 0.5 ? 'bg-emerald-50' : 
+                  kpis.ttmChange <= -0.5 ? 'bg-red-50' : 
+                  'bg-neutral-100'
+                }`}>
+                  {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
+                   kpis.ttmChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
+                   <Minus className="w-3.5 h-3.5 text-neutral-500" />}
+                  <span className={`text-xs font-semibold ${
+                    kpis.ttmChange >= 0.5 ? 'text-emerald-600' : 
+                    kpis.ttmChange <= -0.5 ? 'text-red-600' : 
+                    'text-neutral-600'
                   }`}>
-                    {kpis.ttmChange >= 0.5 ? <TrendingUp className="w-3.5 h-3.5 text-emerald-600" /> : 
-                     kpis.ttmChange <= -0.5 ? <TrendingDown className="w-3.5 h-3.5 text-red-600" /> :
-                     <Minus className="w-3.5 h-3.5 text-neutral-500" />}
-                    <span className={`text-xs font-semibold ${
-                      kpis.ttmChange >= 0.5 ? 'text-emerald-700' : 
-                      kpis.ttmChange <= -0.5 ? 'text-red-700' : 
-                      'text-neutral-600'
-                    }`}>
-                      {kpis.ttmChange > 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}% YoY
-                    </span>
-                  </div>
+                    {kpis.ttmChange > 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}%
+                  </span>
                 </div>
                 
-                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
-                </div>
               </div>
             </div>
 
             {/* Card 3: Largest Gain */}
             <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative"
-              style={{ 
-                animationDelay: '200ms',
-                borderLeft: `4px solid #3B82F6`,
-                willChange: 'box-shadow'
-              }}
-            >
-              
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
+              className="group rounded-2xl bg-white p-5 shadow-sm card-hover relative animate-fade-in-up stagger-3"            >
               <div className="relative">
                 <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                   <button 
                     onClick={() => generateEmbedCode('kpi', 'TTM - Largest Gain')}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                     title="Get embed code"
                   >
                     <Code className="w-3.5 h-3.5 text-neutral-500" />
                   </button>
                   <button 
                     onClick={() => shareKPI('TTM - Largest Gain', `${getCountryName(kpis.topGrower?.name)}\n${kpis.topGrower?.current.toLocaleString()} vs ${kpis.topGrower?.prior.toLocaleString()} prior TTM\n+${kpis.topGrower?.change} (+${kpis.topGrower?.percent.toFixed(1)}%)`)}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                     title="Share on Twitter"
                   >
                     <Share2 className="w-3.5 h-3.5 text-neutral-500" />
                   </button>
                 </div>
                 
-                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Largest Gain</p>
-                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
+                <p className="text-sm font-medium text-neutral-500 mb-1">Top Gainer</p>
+                <p className="text-xs text-neutral-400 mb-3">{kpis.ttmPeriod}</p>
                 
-                <div className="mb-2 h-12 flex items-center">
-                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                    {kpis.topGrower && getCountryName(kpis.topGrower.name)}
-                  </p>
+                <p className="text-3xl font-bold text-neutral-900 mb-3 animate-number-pop" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                  {kpis.topGrower && getCountryName(kpis.topGrower.name)}
+                </p>
+                
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-xs font-semibold text-emerald-600">
+                    +{kpis.topGrower?.percent.toFixed(1)}%
+                  </span>
                 </div>
                 
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[10px] text-neutral-500">+{kpis.topGrower?.change}</span>
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
-                    <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-xs font-semibold text-emerald-700">
-                      +{kpis.topGrower?.percent.toFixed(1)}% YoY
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
-                </div>
               </div>
             </div>
 
             {/* Card 4: Largest Decline */}
             <div 
-              className="group rounded-xl bg-white border-r border-t border-b border-neutral-200 p-4 shadow-sm hover:shadow-2xl transition-all duration-300 relative"
-              style={{ 
-                animationDelay: '300ms',
-                borderLeft: `4px solid #3B82F6`,
-                willChange: 'box-shadow'
-              }}
-            >
-              
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/0 to-blue-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
+              className="group rounded-2xl bg-white p-5 shadow-sm card-hover relative animate-fade-in-up stagger-4"            >
               <div className="relative">
                 <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                   <button 
                     onClick={() => generateEmbedCode('kpi', 'TTM - Largest Decline')}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                     title="Get embed code"
                   >
                     <Code className="w-3.5 h-3.5 text-neutral-500" />
                   </button>
                   <button 
                     onClick={() => shareKPI('TTM - Largest Decline', `${getCountryName(kpis.topDecliner?.name)}\n${kpis.topDecliner?.current.toLocaleString()} vs ${kpis.topDecliner?.prior.toLocaleString()} prior TTM\n-${kpis.topDecliner?.change} (${kpis.topDecliner?.percent.toFixed(1)}%)`)}
-                    className="p-1.5 hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    className="p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
                     title="Share on Twitter"
                   >
                     <Share2 className="w-3.5 h-3.5 text-neutral-500" />
                   </button>
                 </div>
                 
-                <p className="text-xs font-semibold text-neutral-800 tracking-tight mb-1">Largest Decline</p>
-                <p className="text-[9px] text-neutral-500 mb-2.5">{kpis.ttmPeriod}</p>
+                <p className="text-sm font-medium text-neutral-500 mb-1">Top Decliner</p>
+                <p className="text-xs text-neutral-400 mb-3">{kpis.ttmPeriod}</p>
                 
-                <div className="mb-2 h-12 flex items-center">
-                  <p className="text-3xl font-bold text-neutral-900 leading-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                    {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
-                  </p>
+                <p className="text-3xl font-bold text-neutral-900 mb-3 animate-number-pop" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                  {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
+                </p>
+                
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50">
+                  <TrendingDown className="w-3.5 h-3.5 text-red-600" />
+                  <span className="text-xs font-semibold text-red-600">
+                    {kpis.topDecliner?.percent.toFixed(1)}%
+                  </span>
                 </div>
                 
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <span className="text-[10px] text-neutral-500">-{kpis.topDecliner?.change}</span>
-                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 border border-red-200">
-                    <TrendingDown className="w-3.5 h-3.5 text-red-600" />
-                    <span className="text-xs font-semibold text-red-700">
-                      {kpis.topDecliner?.percent.toFixed(1)}% YoY
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                  <img src="/iceland-insights-logo - text.png" alt="IcelandInsights" className="h-3.5 opacity-50" />
-                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider">KEF Airport</span>
-                </div>
               </div>
             </div>
             
@@ -2082,18 +2245,18 @@ export default function DataDashboard() {
         {/* Top 10 Markets - Completely Static, Never Affected by Filters */}
         {kpis && kpis.top10 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+            <div className="lg:col-span-2 bg-white rounded-2xl p-5 md:p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Top 10 Markets (TTM)
               </h3>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs text-neutral-500">{kpis.ttmPeriod}</p>
-                <p className="text-[9px] text-neutral-400 italic">Click row to filter</p>
+                <p className="text-xs text-neutral-400 italic">Click row to filter</p>
               </div>
               
               {/* Sortable column headers */}
               <div className="grid grid-cols-6 gap-1.5 md:gap-3 mb-2 pb-2 px-2 md:px-3 border-b-2 border-neutral-200">
-                <p className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold col-span-2">Nationality</p>
+                <p className="text-xs uppercase tracking-wider text-neutral-600 font-semibold col-span-2">Nationality</p>
                 
                 <button 
                   onClick={() => {
@@ -2102,7 +2265,7 @@ export default function DataDashboard() {
                       direction: sortConfig.key === 'total' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
                     });
                   }}
-                  className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
+                  className="text-xs uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
                 >
                   Passengers
                   {sortConfig.key === 'total' ? (
@@ -2117,7 +2280,7 @@ export default function DataDashboard() {
                       direction: sortConfig.key === 'absoluteChange' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
                     });
                   }}
-                  className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
+                  className="text-xs uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
                 >
                   Abs Change
                   {sortConfig.key === 'absoluteChange' ? (
@@ -2132,7 +2295,7 @@ export default function DataDashboard() {
                       direction: sortConfig.key === 'ratio' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
                     });
                   }}
-                  className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
+                  className="text-xs uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
                 >
                   % Total
                   {sortConfig.key === 'ratio' ? (
@@ -2147,7 +2310,7 @@ export default function DataDashboard() {
                       direction: sortConfig.key === 'yoy' && sortConfig.direction === 'desc' ? 'asc' : 'desc'
                     });
                   }}
-                  className="text-[11px] uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
+                  className="text-xs uppercase tracking-wider text-neutral-600 font-semibold text-right hover:text-neutral-900 flex items-center justify-end gap-1 transition-colors"
                 >
                   YoY %
                   {sortConfig.key === 'yoy' ? (
@@ -2192,21 +2355,21 @@ export default function DataDashboard() {
                     }}
                   >
                     <div className="flex items-center gap-1.5 md:gap-2.5 col-span-2">
-                      <span className="text-[10px] md:text-[11px] font-medium text-neutral-400 w-3 md:w-4 text-center tabular-nums">{i + 1}</span>
-                      <span className={`text-[11px] md:text-xs ${isSelected ? 'font-semibold text-blue-700' : 'font-medium text-neutral-800'} truncate`}>
+                      <span className="text-xs md:text-xs font-medium text-neutral-400 w-3 md:w-4 text-center tabular-nums">{i + 1}</span>
+                      <span className={`text-xs md:text-xs ${isSelected ? 'font-semibold text-blue-700' : 'font-medium text-neutral-800'} truncate`}>
                         {getCountryName(item.nat)}
                       </span>
                     </div>
-                    <span className="text-[11px] md:text-xs text-neutral-700 font-mono text-right tabular-nums">{item.total.toLocaleString()}</span>
-                    <span className={`text-[11px] md:text-xs font-semibold text-right tabular-nums ${
-                      item.absoluteChange >= 0 ? 'text-sage-600' : 'text-terracotta-600'
+                    <span className="text-xs md:text-xs text-neutral-700 font-mono text-right tabular-nums">{item.total.toLocaleString()}</span>
+                    <span className={`text-xs md:text-xs font-semibold text-right tabular-nums ${
+                      item.absoluteChange >= 0 ? 'text-emerald-600' : 'text-red-500'
                     }`}>
                       {item.absoluteChange >= 0 ? '+' : ''}{item.absoluteChange.toLocaleString()}
                     </span>
-                    <span className="text-[11px] md:text-xs text-neutral-600 font-mono text-right tabular-nums">{item.ratio.toFixed(1)}%</span>
-                    <span className={`text-[11px] md:text-xs font-semibold text-right tabular-nums ${
-                      item.yoy >= 0.5 ? 'text-sage-600' : 
-                      item.yoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-400'
+                    <span className="text-xs md:text-xs text-neutral-600 font-mono text-right tabular-nums">{item.ratio.toFixed(1)}%</span>
+                    <span className={`text-xs md:text-xs font-semibold text-right tabular-nums ${
+                      item.yoy >= 0.5 ? 'text-emerald-600' : 
+                      item.yoy <= -0.5 ? 'text-red-500' : 'text-neutral-400'
                     }`}>
                       {item.yoy > 0 ? '+' : ''}{item.yoy.toFixed(1)}%
                     </span>
@@ -2223,7 +2386,7 @@ export default function DataDashboard() {
                     {kpis.top10.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
                   </span>
                   <span className={`text-xs font-bold text-right ${
-                    kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? 'text-sage-600' : 'text-terracotta-600'
+                    kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? 'text-emerald-600' : 'text-red-500'
                   }`}>
                     {kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0) >= 0 ? '+' : ''}
                     {kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0).toLocaleString()}
@@ -2237,7 +2400,7 @@ export default function DataDashboard() {
                       const absChange = kpis.top10.reduce((sum, item) => sum + item.absoluteChange, 0);
                       const priorTotal = currentTotal - absChange;
                       const yoy = priorTotal > 0 ? (absChange / priorTotal * 100) : 0;
-                      return yoy >= 0.5 ? 'text-sage-600' : yoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-500';
+                      return yoy >= 0.5 ? 'text-emerald-600' : yoy <= -0.5 ? 'text-red-500' : 'text-neutral-500';
                     })()
                   }`}>
                     {(() => {
@@ -2262,7 +2425,7 @@ export default function DataDashboard() {
                       const currentOther = kpis.top10TtmTotal - kpis.top10.reduce((sum, item) => sum + item.total, 0);
                       const priorOther = kpis.top10PriorTtmTotal - kpis.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
                       const otherAbsChange = currentOther - priorOther;
-                      return otherAbsChange >= 0 ? 'text-sage-600' : 'text-terracotta-600';
+                      return otherAbsChange >= 0 ? 'text-emerald-600' : 'text-red-500';
                     })()
                   }`}>
                     {(() => {
@@ -2280,7 +2443,7 @@ export default function DataDashboard() {
                       const currentOther = kpis.top10TtmTotal - kpis.top10.reduce((sum, item) => sum + item.total, 0);
                       const priorOther = kpis.top10PriorTtmTotal - kpis.top10.reduce((sum, item) => sum + item.total - item.absoluteChange, 0);
                       const otherYoy = priorOther > 0 ? ((currentOther - priorOther) / priorOther * 100) : 0;
-                      return otherYoy >= 0.5 ? 'text-sage-600' : otherYoy <= -0.5 ? 'text-terracotta-600' : 'text-neutral-400';
+                      return otherYoy >= 0.5 ? 'text-emerald-600' : otherYoy <= -0.5 ? 'text-red-500' : 'text-neutral-400';
                     })()
                   }`}>
                     {(() => {
@@ -2295,7 +2458,7 @@ export default function DataDashboard() {
             </div>
             
             {kpis && (
-            <div className="lg:col-span-1 bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+            <div className="lg:col-span-1 bg-white rounded-2xl p-5 md:p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 By Continent (TTM)
               </h3>
@@ -2321,16 +2484,16 @@ export default function DataDashboard() {
                         </div>
                         {/* YoY pill inline beside bar */}
                         <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${
-                          continent.yoy >= 0.5 ? 'bg-emerald-50 border border-emerald-200' : 
-                          continent.yoy <= -0.5 ? 'bg-red-50 border border-red-200' : 
-                          'bg-neutral-100 border border-neutral-200'
+                          continent.yoy >= 0.5 ? 'bg-emerald-50' : 
+                          continent.yoy <= -0.5 ? 'bg-red-50' : 
+                          'bg-neutral-100'
                         }`}>
                           {continent.yoy >= 0.5 ? <TrendingUp className="w-3 h-3 text-emerald-600" /> : 
                            continent.yoy <= -0.5 ? <TrendingDown className="w-3 h-3 text-red-600" /> :
                            <Minus className="w-3 h-3 text-neutral-500" />}
-                          <span className={`text-[10px] font-semibold whitespace-nowrap ${
-                            continent.yoy >= 0.5 ? 'text-emerald-700' : 
-                            continent.yoy <= -0.5 ? 'text-red-700' : 
+                          <span className={`text-xs font-semibold whitespace-nowrap ${
+                            continent.yoy >= 0.5 ? 'text-emerald-600' : 
+                            continent.yoy <= -0.5 ? 'text-red-600' : 
                             'text-neutral-600'
                           }`}>
                             {continent.yoy > 0 ? '+' : ''}{continent.yoy.toFixed(1)}% YoY
@@ -2340,8 +2503,8 @@ export default function DataDashboard() {
                       
                       {/* Footer row with absolute number and percentage */}
                       <div className="flex justify-between items-baseline">
-                        <span className="text-[11px] text-neutral-700 font-mono">{continent.total.toLocaleString()}</span>
-                        <span className="text-[11px] text-neutral-500 font-medium">{continent.percentOfForeign.toFixed(1)}% of foreign</span>
+                        <span className="text-xs text-neutral-700 font-mono">{continent.total.toLocaleString()}</span>
+                        <span className="text-xs text-neutral-500 font-medium">{continent.percentOfForeign.toFixed(1)}% of foreign</span>
                       </div>
                     </div>
                   );
@@ -2542,7 +2705,7 @@ export default function DataDashboard() {
                 <span className="text-sm font-semibold text-neutral-800">Nationality Filter</span>
                 <div className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                   selectedCategories.length === 2 
-                    ? 'bg-emerald-100 text-emerald-700' 
+                    ? 'bg-emerald-50 text-emerald-600' 
                     : 'bg-neutral-100 text-neutral-600'
                 }`}>
                   {selectedCategories.length}/2 selected
@@ -2615,8 +2778,8 @@ export default function DataDashboard() {
         </div>
 
         {/* Charts Section */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm" id="monthly-trends-chart">
+        <div className="grid md:grid-cols-2 gap-4 reveal">
+          <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover" id="monthly-trends-chart">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Monthly Trends
@@ -2630,9 +2793,9 @@ export default function DataDashboard() {
               </button>
             </div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-neutral-500">{monthlyChartPeriod}</p>
+              <p className="text-xs text-neutral-500">{monthlyChartPeriod}</p>
               {!selectedCategories.includes('Farþegar alls') && !selectedCategories.includes('Útlendingar alls') && (
-                <p className="text-[9px] text-neutral-400 italic">Click bar to filter</p>
+                <p className="text-xs text-neutral-400 italic">Click bar to filter</p>
               )}
             </div>
             <ResponsiveContainer width="100%" height={230}>
@@ -2706,7 +2869,7 @@ export default function DataDashboard() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm" id="yoy-comparison-chart">
+          <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover" id="yoy-comparison-chart">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                 Year-over-Year Comparison
@@ -2719,7 +2882,7 @@ export default function DataDashboard() {
                 <Code className="w-4 h-4 text-neutral-500" />
               </button>
             </div>
-            <p className="text-[10px] text-neutral-500 mb-3">Jan - {yoyCurrentMonth} (2023 vs 2024 vs 2025)</p>
+            <p className="text-xs text-neutral-500 mb-3">Jan - {yoyCurrentMonth} (2023 vs 2024 vs 2025)</p>
             <ResponsiveContainer width="100%" height={230}>
               <LineChart data={yoyChartData} margin={{ top: 5, right: 5, left: -20, bottom: 18 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -2789,10 +2952,10 @@ export default function DataDashboard() {
         </div>
 
         {/* Annual Overview & YTD Comparison - Grid Layout */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-4 reveal">
           {/* Annual + YTD Bar Chart */}
           {kpis && kpis.annualData && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm" id="annual-overview-chart">
+            <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover" id="annual-overview-chart">
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                   Annual Overview
@@ -2805,7 +2968,7 @@ export default function DataDashboard() {
                   <Code className="w-4 h-4 text-neutral-500" />
                 </button>
               </div>
-              <p className="text-[10px] text-neutral-500 mb-3">2017-2025 YTD</p>
+              <p className="text-xs text-neutral-500 mb-3">2017-2025 YTD</p>
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart data={kpis.annualData} margin={{ top: 20, right: 5, left: -20, bottom: 18 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -2861,7 +3024,7 @@ export default function DataDashboard() {
 
           {/* YTD Comparison Bar Chart */}
           {kpis && kpis.ytdComparisonData && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm" id="ytd-comparison-chart">
+            <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover" id="ytd-comparison-chart">
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
                   YTD Comparison
@@ -2874,7 +3037,7 @@ export default function DataDashboard() {
                   <Code className="w-4 h-4 text-neutral-500" />
                 </button>
               </div>
-              <p className="text-[10px] text-neutral-500 mb-3">Jan - {kpis.currentMonthName.split(' ')[0]} (2017-2025)</p>
+              <p className="text-xs text-neutral-500 mb-3">Jan - {kpis.currentMonthName.split(' ')[0]} (2017-2025)</p>
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart data={kpis.ytdComparisonData} margin={{ top: 20, right: 5, left: -20, bottom: 18 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -2946,9 +3109,9 @@ export default function DataDashboard() {
             <table className="w-full">
               <thead className="bg-neutral-50 border-b border-neutral-200">
                 <tr>
-                  <th className="text-left px-4 py-2 text-[11px] font-medium text-neutral-500 tracking-widest uppercase">Date</th>
-                  <th className="text-left px-4 py-2 text-[11px] font-medium text-neutral-500 tracking-widest uppercase">Category</th>
-                  <th className="text-right px-4 py-2 text-[11px] font-medium text-neutral-500 tracking-widest uppercase">Passengers</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-neutral-500 tracking-widest uppercase">Date</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-neutral-500 tracking-widest uppercase">Category</th>
+                  <th className="text-right px-4 py-2 text-xs font-medium text-neutral-500 tracking-widest uppercase">Passengers</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
