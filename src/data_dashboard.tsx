@@ -1396,7 +1396,7 @@ export default function DataDashboard() {
           <div className="bg-white rounded-2xl shadow-sm p-5 md:p-8">
             {/* Header */}
             <div className="flex items-center gap-2.5 mb-6 md:mb-8">
-              <h2 className="text-lg md:text-xl font-semibold text-neutral-900">Seasonal Performance</h2>
+              <h2 className="text-lg font-semibold text-neutral-900 tracking-tight">Seasonal Performance</h2>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
@@ -1441,15 +1441,15 @@ export default function DataDashboard() {
                       glowColor = 'rgba(245, 158, 11, 0.4)';
                     }
                     
-                    let season = 'LOW';
+                    let season = 'Low Season';
                     let pillBg = 'bg-blue-50';
                     let pillText = 'text-blue-400';
                     if (month >= 5 && month <= 7) {
-                      season = 'HIGH';
+                      season = 'High Season';
                       pillBg = 'bg-blue-100';
                       pillText = 'text-blue-700';
                     } else if (month >= 8 && month <= 9) {
-                      season = 'SHOULDER';
+                      season = 'Shoulder Season';
                       pillBg = 'bg-blue-50';
                       pillText = 'text-blue-500';
                     }
@@ -1461,44 +1461,38 @@ export default function DataDashboard() {
                     return (
                       <>
                         {/* Main stat row */}
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <div className="text-xs font-medium text-neutral-400 uppercase tracking-wide mb-2 animate-fade-in-up">{kpis.currentMonthName}</div>
-                            <div className="text-5xl md:text-7xl font-bold text-neutral-900 tabular-nums tracking-tighter leading-none">
-                              <AnimatedNumber value={kpis.currentMonth} duration={1400} />
-                            </div>
-                            <div className="text-xs text-neutral-400 mt-2 animate-fade-in-up stagger-2">foreign passengers</div>
+                        <div>
+                          <div className="text-sm md:text-base text-neutral-500 mb-2 animate-fade-in-up">{kpis.currentMonthName}</div>
+                          <div className="text-5xl md:text-7xl font-bold text-neutral-900 tabular-nums tracking-tighter leading-none">
+                            <AnimatedNumber value={kpis.currentMonth} duration={1400} />
                           </div>
-                          <div className="text-right animate-fade-in-up stagger-1">
-                            <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${pillBg} ${pillText}`}>
+                          <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-3 animate-fade-in-up stagger-2">
+                            <span className="text-sm md:text-base text-neutral-500">foreign passengers</span>
+                            <div className={`inline-flex items-center px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-semibold ${pillBg} ${pillText}`}>
                               {season}
+                            </div>
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-semibold ${
+                              isUp ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                            }`}>
+                              {isUp ? <TrendingUp className="w-3 h-3 md:w-3.5 md:h-3.5" /> : <TrendingDown className="w-3 h-3 md:w-3.5 md:h-3.5" />}
+                              {isUp ? '+' : ''}{diffPercent}% YoY
                             </div>
                           </div>
                         </div>
                         
-                        {/* Visual Confidence Band - Glanceable Anomaly Detection */}
-                        <div className="pt-6 animate-fade-in-up stagger-2">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-neutral-400 uppercase tracking-wide">Position in Range</span>
-                            <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
-                          </div>
+                        {/* Visual Confidence Band */}
+                        <div className="pt-8 animate-fade-in-up stagger-2">
                           <div className="relative h-8 flex items-center">
                             {/* Background track */}
-                            <div className="absolute inset-x-0 h-2 bg-neutral-100 rounded-full"></div>
+                            <div className="absolute inset-x-0 h-1.5 bg-neutral-100 rounded-full"></div>
                             
                             {/* Expected range (middle zone) */}
                             <div 
-                              className="absolute h-2 bg-neutral-200 rounded-full"
+                              className="absolute h-1.5 bg-neutral-200 rounded-full"
                               style={{
                                 left: `${((expectedMin - rangeMin) / rangeSpan) * 100}%`,
                                 width: `${((expectedMax - expectedMin) / rangeSpan) * 100}%`
                               }}
-                            ></div>
-                            
-                            {/* Average marker */}
-                            <div 
-                              className="absolute w-0.5 h-4 bg-neutral-300 rounded-full"
-                              style={{ left: `${((avgK - rangeMin) / rangeSpan) * 100}%`, transform: 'translateX(-50%)' }}
                             ></div>
                             
                             {/* Current value marker */}
@@ -1519,41 +1513,35 @@ export default function DataDashboard() {
                               )}
                               {/* Marker dot */}
                               <div 
-                                className="relative w-4 h-4 rounded-full border-2 border-white shadow-md z-10"
+                                className="relative w-3.5 h-3.5 rounded-full border-2 border-white shadow-md z-10"
                                 style={{ backgroundColor: markerColor }}
                               ></div>
                             </div>
                           </div>
                           
                           {/* Range labels */}
-                          <div className="flex justify-between mt-1">
-                            <span className="text-xs text-neutral-400 tabular-nums">{rangeMin}k</span>
-                            <span className="text-xs text-neutral-500 tabular-nums">{avgK}k avg</span>
-                            <span className="text-xs text-neutral-400 tabular-nums">{rangeMax}k</span>
+                          <div className="flex justify-between mt-1.5">
+                            <span className="text-sm text-neutral-500 tabular-nums">{rangeMin}k</span>
+                            <span className={`text-sm font-medium ${statusColor}`}>{status}</span>
+                            <span className="text-sm text-neutral-500 tabular-nums">{rangeMax}k</span>
                           </div>
                         </div>
                         
-                        {/* Comparison stats */}
+                        {/* Single row of key stats - no redundancy */}
                         <div className="flex items-center gap-8 pt-6">
                           <div className="animate-fade-in-up stagger-3">
-                            <div className="text-xs text-neutral-400 uppercase tracking-wide mb-1">vs Historical</div>
-                            <div className={`text-2xl font-semibold tabular-nums animate-number-pop ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
-                              {isUp ? '+' : ''}{diffPercent}%
-                            </div>
+                            <div className="text-sm text-neutral-500 mb-1">Historical Avg</div>
+                            <div className="text-xl font-semibold text-neutral-900 tabular-nums">{Math.round(avg / 1000)}k</div>
                           </div>
                           <div className="animate-fade-in-up stagger-4">
-                            <div className="text-xs text-neutral-400 uppercase tracking-wide mb-1">Hist. Avg</div>
-                            <div className="text-2xl font-semibold text-neutral-900 tabular-nums">{Math.round(avg / 1000)}k</div>
-                          </div>
-                          <div className="animate-fade-in-up stagger-5">
-                            <div className="text-xs text-neutral-400 uppercase tracking-wide mb-1">Expected</div>
-                            <div className="text-2xl font-semibold text-neutral-900 tabular-nums">{expectedMin}k–{expectedMax}k</div>
+                            <div className="text-sm text-neutral-500 mb-1">Expected Range</div>
+                            <div className="text-xl font-semibold text-neutral-900 tabular-nums">{expectedMin}k–{expectedMax}k</div>
                           </div>
                         </div>
                         
                         {/* Typical Volume Ranges - clean minimal style */}
                         <div className="pt-6 mt-6 border-t border-neutral-100 animate-fade-in-up stagger-6">
-                          <div className="text-xs text-neutral-400 uppercase tracking-wide mb-4">Typical Range by Season</div>
+                          <div className="text-sm text-neutral-500 mb-3">Typical Range by Season</div>
                           <div className="space-y-3">
                             {(() => {
                               const highSeasonMonths = [5, 6, 7];
@@ -1610,7 +1598,7 @@ export default function DataDashboard() {
                 <div>
                   {/* Chart - cleaner Apple-style with single color family */}
                   <div className="bg-neutral-50/50 rounded-2xl p-4 md:p-6">
-                    <div className="text-xs text-neutral-500 uppercase tracking-wide font-medium mb-4 md:mb-5">Monthly Pattern</div>
+                    <div className="text-sm text-neutral-500 mb-4">Monthly Pattern</div>
                     <ResponsiveContainer width="100%" height={isMobile ? 200 : 280}>
                     <ComposedChart 
                       data={(() => {
@@ -1727,8 +1715,8 @@ export default function DataDashboard() {
                 
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-h-[80px]">
-                    <h3 className="text-sm font-bold text-neutral-800 mb-2.5" style={{ letterSpacing: '-0.01em' }}>Current Month Performance</h3>
-                    <p className="text-xs text-neutral-600 leading-relaxed mb-3">
+                    <h3 className="text-sm font-medium text-neutral-900 mb-2">Current Month</h3>
+                    <p className="text-sm text-neutral-600 leading-relaxed">
                       {kpis.currentMonthName} recorded <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
                       {kpis.yoyChange >= 0 ? ' up ' : ' down '}
                       <span className={`font-semibold ${kpis.yoyChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -1746,7 +1734,7 @@ export default function DataDashboard() {
                 {kpis.overallSparkline && (
                   <div className="mt-3">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-medium text-neutral-600">YoY % Change (Last 6 Months)</p>
+                      <p className="text-sm text-neutral-500">YoY % Change (Last 6 Months)</p>
                       <p className="text-xs text-neutral-500">Current Month: 
                         <span className={`font-semibold ml-1 ${
                           kpis.yoyChange >= 0 
@@ -1892,8 +1880,8 @@ export default function DataDashboard() {
                   
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-h-[80px]">
-                      <h3 className="text-sm font-semibold text-neutral-900 mb-2">Leading Growth Market</h3>
-                      <p className="text-xs text-neutral-500 mb-1">Trailing Twelve Months</p>
+                      <h3 className="text-sm font-medium text-neutral-900 mb-2">Top Grower</h3>
+                      <p className="text-sm text-neutral-500 mb-1">Trailing Twelve Months</p>
                       <p className="text-sm text-neutral-600 leading-relaxed">
                         <span className="font-semibold text-neutral-900">{getCountryName(kpis.topGrower.name)}</span> leads with 
                         <span className="font-semibold text-emerald-600"> +{kpis.topGrower.change}</span>
@@ -1905,7 +1893,7 @@ export default function DataDashboard() {
                   {kpis.topGrowerSparkline && (
                     <div className="mt-4">
                       <div className="flex items-center justify-between mb-3">
-                        <p className="text-xs text-neutral-500">YoY % Change (Last 6 Months)</p>
+                        <p className="text-sm text-neutral-500">YoY % Change (Last 6 Months)</p>
                       </div>
                       <div className="bg-neutral-50/70 rounded-xl p-3">
                         <div className="relative">
@@ -2033,8 +2021,8 @@ export default function DataDashboard() {
                   
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-h-[80px]">
-                      <h3 className="text-sm font-semibold text-neutral-900 mb-2">Market Under Pressure</h3>
-                      <p className="text-xs text-neutral-500 mb-1">Trailing Twelve Months</p>
+                      <h3 className="text-sm font-medium text-neutral-900 mb-2">Top Decliner</h3>
+                      <p className="text-sm text-neutral-500 mb-1">Trailing Twelve Months</p>
                       <p className="text-sm text-neutral-600 leading-relaxed">
                         <span className="font-semibold text-neutral-900">{getCountryName(kpis.topDecliner.name)}</span> declined by 
                         <span className="font-semibold text-red-600"> -{kpis.topDecliner.change}</span>
@@ -2046,7 +2034,7 @@ export default function DataDashboard() {
                   {kpis.topDeclinerSparkline && (
                     <div className="mt-4">
                       <div className="flex items-center justify-between mb-3">
-                        <p className="text-xs text-neutral-500">YoY % Change (Last 6 Months)</p>
+                        <p className="text-sm text-neutral-500">YoY % Change (Last 6 Months)</p>
                       </div>
                       <div className="bg-neutral-50/70 rounded-xl p-3">
                         <div className="relative">
@@ -2177,8 +2165,8 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-sm font-medium text-neutral-500 mb-1">Monthly</p>
-                <p className="text-xs text-neutral-400 mb-3">{kpis.currentMonthName}</p>
+                <p className="text-sm font-medium text-neutral-900 mb-1">Monthly</p>
+                <p className="text-sm text-neutral-500 mb-3">{kpis.currentMonthName}</p>
                 
                 <p className="text-3xl font-bold text-neutral-900 mb-3 animate-number-pop" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                   {kpis.currentMonth}
@@ -2224,8 +2212,8 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-sm font-medium text-neutral-500 mb-1">TTM Passengers</p>
-                <p className="text-xs text-neutral-400 mb-3">{kpis.ttmPeriod}</p>
+                <p className="text-sm font-medium text-neutral-900 mb-1">TTM Passengers</p>
+                <p className="text-sm text-neutral-500 mb-3">{kpis.ttmPeriod}</p>
                 
                 <p className="text-3xl font-bold text-neutral-900 mb-3 animate-number-pop" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                   {kpis.ttmTotal}
@@ -2272,8 +2260,8 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-sm font-medium text-neutral-500 mb-1">Top Gainer</p>
-                <p className="text-xs text-neutral-400 mb-3">{kpis.ttmPeriod}</p>
+                <p className="text-sm font-medium text-neutral-900 mb-1">Top Gainer</p>
+                <p className="text-sm text-neutral-500 mb-3">{kpis.ttmPeriod}</p>
                 
                 <p className="text-3xl font-bold text-neutral-900 mb-3 animate-number-pop" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                   {kpis.topGrower && getCountryName(kpis.topGrower.name)}
@@ -2310,8 +2298,8 @@ export default function DataDashboard() {
                   </button>
                 </div>
                 
-                <p className="text-sm font-medium text-neutral-500 mb-1">Top Decliner</p>
-                <p className="text-xs text-neutral-400 mb-3">{kpis.ttmPeriod}</p>
+                <p className="text-sm font-medium text-neutral-900 mb-1">Top Decliner</p>
+                <p className="text-sm text-neutral-500 mb-3">{kpis.ttmPeriod}</p>
                 
                 <p className="text-3xl font-bold text-neutral-900 mb-3 animate-number-pop" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
                   {kpis.topDecliner && getCountryName(kpis.topDecliner.name)}
@@ -2333,10 +2321,10 @@ export default function DataDashboard() {
         {kpis && kpis.top10 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 bg-white rounded-2xl p-5 md:p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-                Top 10 Markets (TTM)
+              <h3 className="text-lg font-semibold text-neutral-900 tracking-tight mb-1">
+                Top 10 Markets
               </h3>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-neutral-500">{kpis.ttmPeriod}</p>
                 <p className="text-xs text-neutral-400 italic">Click row to filter</p>
               </div>
@@ -2546,10 +2534,10 @@ export default function DataDashboard() {
             
             {kpis && (
             <div className="lg:col-span-1 bg-white rounded-2xl p-5 md:p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-neutral-900 mb-1" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
-                By Continent (TTM)
+              <h3 className="text-lg font-semibold text-neutral-900 tracking-tight mb-1">
+                By Continent
               </h3>
-              <p className="text-xs text-neutral-500 mb-3">{kpis.ttmPeriod}</p>
+              <p className="text-xs text-neutral-500 mb-4">{kpis.ttmPeriod}</p>
               
               <div className="space-y-3">
                 {kpis.continents.map((continent, i) => {
@@ -2618,11 +2606,11 @@ export default function DataDashboard() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                  Customize Your Analysis
+                <h3 className="text-lg font-semibold text-neutral-900 tracking-tight">
+                  Filters
                 </h3>
-                <p className="text-xs text-neutral-600 mt-0.5">
-                  These filters affect charts and detailed data below
+                <p className="text-xs text-neutral-500 mt-0.5">
+                  Affects charts and data below
                 </p>
               </div>
             </div>
@@ -2868,7 +2856,7 @@ export default function DataDashboard() {
         <div className="grid md:grid-cols-2 gap-4 reveal">
           <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover" id="monthly-trends-chart">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+              <h3 className="text-sm font-medium text-neutral-900">
                 Monthly Trends
               </h3>
               <button
@@ -2958,7 +2946,7 @@ export default function DataDashboard() {
 
           <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover" id="yoy-comparison-chart">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+              <h3 className="text-sm font-medium text-neutral-900">
                 Year-over-Year Comparison
               </h3>
               <button
@@ -3044,7 +3032,7 @@ export default function DataDashboard() {
           {kpis && kpis.annualData && (
             <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover" id="annual-overview-chart">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                <h3 className="text-sm font-medium text-neutral-900">
                   Annual Overview
                 </h3>
                 <button
@@ -3113,7 +3101,7 @@ export default function DataDashboard() {
           {kpis && kpis.ytdComparisonData && (
             <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover" id="ytd-comparison-chart">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-semibold text-neutral-900" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.01em' }}>
+                <h3 className="text-sm font-medium text-neutral-900">
                   YTD Comparison
                 </h3>
                 <button
@@ -3181,7 +3169,7 @@ export default function DataDashboard() {
 
         <div className="bg-white rounded border border-neutral-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-neutral-200 flex justify-between items-center">
-            <h3 className="text-sm font-semibold text-neutral-900">Data Table</h3>
+            <h3 className="text-sm font-medium text-neutral-900">Data Table</h3>
             <button
               onClick={exportToExcel}
               className="px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded hover:bg-neutral-800 transition-colors flex items-center gap-2"
