@@ -1391,14 +1391,9 @@ export default function DataDashboard() {
         ) : (
           // ACTUAL CONTENT
           <>
-        {/* Seasonal Performance - Direct on page, no wrapper */}
+        {/* Hero Stats Section */}
         {kpis && seasonalData && (
           <div className="bg-white rounded-2xl shadow-sm p-5 md:p-8">
-            {/* Header */}
-            <div className="flex items-center gap-2.5 mb-6 md:mb-8">
-              <h2 className="text-lg font-semibold text-neutral-900 tracking-tight">Seasonal Performance</h2>
-            </div>
-            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
               {/* LEFT COLUMN - Current Month Stats - Flattened for mobile */}
               <div className="space-y-4">
@@ -1415,13 +1410,8 @@ export default function DataDashboard() {
                   const historicalMin = currentMonthData.length > 0 ? Math.min(...currentMonthData) : 0;
                   const historicalMax = currentMonthData.length > 0 ? Math.max(...currentMonthData) : 0;
                   
-                  // "Typical" range centered around average (±10%), clamped to historical bounds
-                  const typicalSpread = avg * 0.10;
-                  
                   const rangeMin = Math.round(historicalMin / 1000);
                   const rangeMax = Math.round(historicalMax / 1000);
-                  const expectedMin = Math.max(rangeMin, Math.round((avg - typicalSpread) / 1000));
-                  const expectedMax = Math.min(rangeMax, Math.round((avg + typicalSpread) / 1000));
                   const avgK = Math.round(avg / 1000);
                   const actualK = currentValue / 1000;
                     
@@ -1431,24 +1421,17 @@ export default function DataDashboard() {
                       ? Math.max(0, Math.min(100, ((actualK - rangeMin) / rangeSpan) * 100))
                       : 50;
                     
-                    // Status based on actual historical bounds
+                    // Status: Normal if within historical range, Unusual if outside
                     let status = 'Normal';
                     let statusColor = 'text-emerald-600';
                     let markerColor = '#10b981'; // emerald-500
                     let glowColor = 'rgba(16, 185, 129, 0.4)';
                     
                     if (actualK < rangeMin || actualK > rangeMax) {
-                      // Outside all historical records
                       status = 'Unusual';
                       statusColor = 'text-red-600';
                       markerColor = '#ef4444'; // red-500
                       glowColor = 'rgba(239, 68, 68, 0.5)';
-                    } else if (actualK < expectedMin || actualK > expectedMax) {
-                      // Outside typical range (25th-75th percentile)
-                      status = 'Watch';
-                      statusColor = 'text-amber-600';
-                      markerColor = '#f59e0b'; // amber-500
-                      glowColor = 'rgba(245, 158, 11, 0.4)';
                     }
                     
                     let season = 'Low Season';
@@ -1490,20 +1473,11 @@ export default function DataDashboard() {
                           </div>
                         </div>
                         
-                        {/* Visual Confidence Band */}
+                        {/* Visual Range Indicator */}
                         <div className="pt-8 animate-fade-in-up stagger-2">
                           <div className="relative h-8 flex items-center">
                             {/* Background track */}
-                            <div className="absolute inset-x-0 h-1.5 bg-neutral-100 rounded-full"></div>
-                            
-                            {/* Expected range (middle zone) */}
-                            <div 
-                              className="absolute h-1.5 bg-neutral-200 rounded-full"
-                              style={{
-                                left: `${((expectedMin - rangeMin) / rangeSpan) * 100}%`,
-                                width: `${((expectedMax - expectedMin) / rangeSpan) * 100}%`
-                              }}
-                            ></div>
+                            <div className="absolute inset-x-0 h-1.5 bg-neutral-200 rounded-full"></div>
                             
                             {/* Historical average marker */}
                             <div 
@@ -1538,26 +1512,16 @@ export default function DataDashboard() {
                             </div>
                           </div>
                           
-                          {/* Range labels */}
+                          {/* Range labels with tooltip */}
                           <div className="flex justify-between mt-1.5">
                             <span className="text-sm text-neutral-500 tabular-nums">{rangeMin}k</span>
-                            <span className="text-sm text-neutral-400 tabular-nums">{avgK}k avg</span>
+                            <span 
+                              className="text-sm text-neutral-400 tabular-nums cursor-help border-b border-dashed border-neutral-300"
+                              title="Based on 2017–2019, 2023–2024 (excludes COVID years)"
+                            >{avgK}k avg</span>
                             <span className="text-sm text-neutral-500 tabular-nums">{rangeMax}k</span>
                           </div>
                         </div>
-                        
-                        {/* Single row of key stats */}
-                        <div className="flex items-center gap-8 pt-6">
-                          <div className="animate-fade-in-up stagger-3">
-                            <div className="text-sm text-neutral-500 mb-1">Historical Avg</div>
-                            <div className="text-xl font-semibold text-neutral-900 tabular-nums">{avgK}k</div>
-                          </div>
-                          <div className="animate-fade-in-up stagger-4">
-                            <div className="text-sm text-neutral-500 mb-1">Historical Range</div>
-                            <div className="text-xl font-semibold text-neutral-900 tabular-nums">{rangeMin}k–{rangeMax}k</div>
-                          </div>
-                        </div>
-                        <div className="text-xs text-neutral-400 mt-2 animate-fade-in-up stagger-5">Based on 2017–2019, 2023–2024 (excludes COVID years)</div>
                         
                         {/* Typical Volume Ranges - clean minimal style */}
                         <div className="pt-6 mt-6 border-t border-neutral-100 animate-fade-in-up stagger-6">
@@ -1618,7 +1582,7 @@ export default function DataDashboard() {
                 <div>
                   {/* Chart - cleaner Apple-style with single color family */}
                   <div className="bg-neutral-50/50 rounded-2xl p-4 md:p-6">
-                    <div className="text-sm text-neutral-500 mb-4">Monthly Pattern</div>
+                    <h3 className="text-sm font-medium text-neutral-700 mb-4">Monthly Foreign Passenger Arrivals</h3>
                     <ResponsiveContainer width="100%" height={isMobile ? 200 : 280}>
                     <ComposedChart 
                       data={(() => {
@@ -1736,9 +1700,10 @@ export default function DataDashboard() {
                 
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-h-[80px]">
-                    <h3 className="text-sm font-medium text-neutral-900 mb-2">Current Month</h3>
+                    <h3 className="text-sm font-medium text-neutral-900 mb-1">Current Month</h3>
+                    <p className="text-sm text-neutral-500 mb-2">{kpis.currentMonthName}</p>
                     <p className="text-sm text-neutral-600 leading-relaxed">
-                      {kpis.currentMonthName} recorded <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
+                      <span className="font-semibold">{kpis.currentMonth} passengers</span>, 
                       {kpis.yoyChange >= 0 ? ' up ' : ' down '}
                       <span className={`font-semibold ${kpis.yoyChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                         {Math.abs(kpis.yoyChange).toFixed(1)}% YoY
@@ -1756,14 +1721,6 @@ export default function DataDashboard() {
                   <div className="mt-3">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm text-neutral-500">YoY % Change (Last 6 Months)</p>
-                      <p className="text-xs text-neutral-500">Current Month: 
-                        <span className={`font-semibold ml-1 ${
-                          kpis.yoyChange >= 0 
-                            ? 'text-emerald-600' : 'text-red-600'
-                        }`}>
-                          {kpis.yoyChange > 0 ? '+' : ''}{kpis.yoyChange.toFixed(1)}%
-                        </span>
-                      </p>
                     </div>
                     <div className="bg-neutral-50 rounded-lg p-3">
                       <div className="relative">
@@ -1901,8 +1858,8 @@ export default function DataDashboard() {
                   
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-h-[80px]">
-                      <h3 className="text-sm font-medium text-neutral-900 mb-2">Top Grower</h3>
-                      <p className="text-sm text-neutral-500 mb-1">Trailing Twelve Months</p>
+                      <h3 className="text-sm font-medium text-neutral-900 mb-1">Top Grower</h3>
+                      <p className="text-sm text-neutral-500 mb-2">Trailing Twelve Months</p>
                       <p className="text-sm text-neutral-600 leading-relaxed">
                         <span className="font-semibold text-neutral-900">{getCountryName(kpis.topGrower.name)}</span> leads with 
                         <span className="font-semibold text-emerald-600"> +{kpis.topGrower.change}</span>
@@ -2042,8 +1999,8 @@ export default function DataDashboard() {
                   
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-h-[80px]">
-                      <h3 className="text-sm font-medium text-neutral-900 mb-2">Top Decliner</h3>
-                      <p className="text-sm text-neutral-500 mb-1">Trailing Twelve Months</p>
+                      <h3 className="text-sm font-medium text-neutral-900 mb-1">Top Decliner</h3>
+                      <p className="text-sm text-neutral-500 mb-2">Trailing Twelve Months</p>
                       <p className="text-sm text-neutral-600 leading-relaxed">
                         <span className="font-semibold text-neutral-900">{getCountryName(kpis.topDecliner.name)}</span> declined by 
                         <span className="font-semibold text-red-600"> -{kpis.topDecliner.change}</span>
