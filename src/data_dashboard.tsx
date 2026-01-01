@@ -276,7 +276,6 @@ export default function DataDashboard() {
   const [customEndDate, setCustomEndDate] = useState(null);
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   const [showAdditional12Months, setShowAdditional12Months] = useState(false);
-  const [showDetails, setShowDetails] = useState(false); // Collapsible detail sections
 
   // Detect mobile device safely (iPhone, iPad, Android)
   const [isMobile, setIsMobile] = useState(false);
@@ -1392,221 +1391,326 @@ export default function DataDashboard() {
         ) : (
           // ACTUAL CONTENT
           <>
-        {/* HEADLINE LAYOUT - Hero number dominates */}
+        {/* Seasonal Performance - Direct on page, no wrapper */}
         {kpis && seasonalData && (
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            {/* Hero Section - Centered, dominant */}
-            <div className="p-8 md:p-12 text-center">
-              {(() => {
-                const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
-                const currentMonthData = historicalByMonth[month];
-                
-                // Calculate average
-                const avg = currentMonthData.length > 0 
-                  ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
-                  : 0;
-                
-                // Use ACTUAL historical min/max (2020-2022 already excluded in data)
-                const historicalMin = currentMonthData.length > 0 ? Math.min(...currentMonthData) : 0;
-                const historicalMax = currentMonthData.length > 0 ? Math.max(...currentMonthData) : 0;
-                
-                // For "typical" range, use 25th-75th percentile
-                const sorted = [...currentMonthData].sort((a, b) => a - b);
-                const p25 = sorted[Math.floor(sorted.length * 0.25)] || historicalMin;
-                const p75 = sorted[Math.floor(sorted.length * 0.75)] || historicalMax;
-                
-                const rangeMin = Math.round(historicalMin / 1000);
-                const rangeMax = Math.round(historicalMax / 1000);
-                const expectedMin = Math.round(p25 / 1000);
-                const expectedMax = Math.round(p75 / 1000);
-                const avgK = Math.round(avg / 1000);
-                const actualK = currentValue / 1000;
-                  
-                const rangeSpan = rangeMax - rangeMin;
-                const position = rangeSpan > 0 
-                  ? Math.max(0, Math.min(100, ((actualK - rangeMin) / rangeSpan) * 100))
-                  : 50;
-                
-                // Status based on actual historical bounds
-                let status = 'Normal';
-                let statusColor = 'text-emerald-600';
-                let markerColor = '#10b981';
-                let glowColor = 'rgba(16, 185, 129, 0.4)';
-                
-                if (actualK < rangeMin || actualK > rangeMax) {
-                  status = 'Unusual';
-                  statusColor = 'text-red-600';
-                  markerColor = '#ef4444';
-                  glowColor = 'rgba(239, 68, 68, 0.5)';
-                } else if (actualK < expectedMin || actualK > expectedMax) {
-                  status = 'Watch';
-                  statusColor = 'text-amber-600';
-                  markerColor = '#f59e0b';
-                  glowColor = 'rgba(245, 158, 11, 0.4)';
-                }
-                
-                let season = 'Low Season';
-                let pillBg = 'bg-blue-50';
-                let pillText = 'text-blue-400';
-                if (month >= 5 && month <= 7) {
-                  season = 'High Season';
-                  pillBg = 'bg-blue-100';
-                  pillText = 'text-blue-700';
-                } else if (month >= 8 && month <= 9) {
-                  season = 'Shoulder Season';
-                  pillBg = 'bg-blue-50';
-                  pillText = 'text-blue-500';
-                }
-                
-                const diff = currentValue - avg;
-                const diffPercent = ((diff / avg) * 100).toFixed(1);
-                const isUp = diff > 0;
-                
-                return (
-                  <>
-                    {/* Centered hero */}
-                    <div className="mb-8">
-                      <div className="text-base md:text-lg text-neutral-500 mb-3 animate-fade-in-up">{kpis.currentMonthName}</div>
-                      <div className="text-6xl md:text-8xl lg:text-9xl font-bold text-neutral-900 tabular-nums tracking-tighter leading-none animate-fade-in-up">
-                        <AnimatedNumber value={kpis.currentMonth} duration={1400} />
-                      </div>
-                      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-4 animate-fade-in-up stagger-2">
-                        <span className="text-base md:text-lg text-neutral-500">foreign passengers</span>
-                        <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${pillBg} ${pillText}`}>
-                          {season}
-                        </div>
-                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${
-                          isUp ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
-                        }`}>
-                          {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                          {isUp ? '+' : ''}{diffPercent}% vs avg
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Confidence band - centered, max-width */}
-                    <div className="max-w-xl mx-auto mb-8 animate-fade-in-up stagger-3">
-                      <div className="relative h-10 flex items-center">
-                        <div className="absolute inset-x-0 h-2 bg-neutral-100 rounded-full"></div>
-                        <div 
-                          className="absolute h-2 bg-neutral-200 rounded-full"
-                          style={{
-                            left: `${((expectedMin - rangeMin) / rangeSpan) * 100}%`,
-                            width: `${((expectedMax - expectedMin) / rangeSpan) * 100}%`
-                          }}
-                        ></div>
-                        <div 
-                          className="absolute w-0.5 h-5 bg-neutral-400 rounded-full"
-                          style={{ left: `${((avgK - rangeMin) / rangeSpan) * 100}%`, transform: 'translateX(-50%)' }}
-                        ></div>
-                        <div 
-                          className="absolute flex flex-col items-center"
-                          style={{ left: `${position}%`, transform: 'translateX(-50%)', transition: 'left 1s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-                        >
-                          {status === 'Unusual' && (
-                            <div className="absolute w-8 h-8 rounded-full animate-pulse-subtle" style={{ backgroundColor: glowColor, top: '-8px' }}></div>
-                          )}
-                          <div className="relative w-5 h-5 rounded-full border-2 border-white shadow-lg z-10" style={{ backgroundColor: markerColor }}></div>
-                        </div>
-                      </div>
-                      <div className="flex justify-between mt-2">
-                        <span className="text-sm text-neutral-500 tabular-nums">{rangeMin}k</span>
-                        <span className="text-sm text-neutral-400 tabular-nums">{avgK}k avg</span>
-                        <span className="text-sm text-neutral-500 tabular-nums">{rangeMax}k</span>
-                      </div>
-                      <div className="text-xs text-neutral-400 mt-1 text-center">Historical range 2017–2019, 2023–2024</div>
-                    </div>
-                    
-                    {/* Quick stats row */}
-                    <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 pt-6 border-t border-neutral-100 animate-fade-in-up stagger-4">
-                      <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-neutral-900 tabular-nums">{kpis.ttm}</div>
-                        <div className="text-sm text-neutral-500">TTM Passengers</div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-2xl md:text-3xl font-bold tabular-nums ${kpis.ttmChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                          {kpis.ttmChange >= 0 ? '+' : ''}{kpis.ttmChange.toFixed(1)}%
-                        </div>
-                        <div className="text-sm text-neutral-500">TTM Growth</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-emerald-600 tabular-nums">+{kpis.topGrower.change}</div>
-                        <div className="text-sm text-neutral-500">{getCountryName(kpis.topGrower.name)}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-red-600 tabular-nums">-{kpis.topDecliner.change}</div>
-                        <div className="text-sm text-neutral-500">{getCountryName(kpis.topDecliner.name)}</div>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
+          <div className="bg-white rounded-2xl shadow-sm p-5 md:p-8">
+            {/* Header */}
+            <div className="flex items-center gap-2.5 mb-6 md:mb-8">
+              <h2 className="text-lg font-semibold text-neutral-900 tracking-tight">Seasonal Performance</h2>
             </div>
             
-            {/* Chart - Full width */}
-            <div className="bg-neutral-50/50 p-6 md:p-8 border-t border-neutral-100">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-neutral-500">Monthly Pattern</span>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-0.5 bg-neutral-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #525252, #525252 3px, transparent 3px, transparent 6px)' }}></div>
-                    <span className="text-xs text-neutral-500">Historical Avg</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded bg-blue-500"></div>
-                    <span className="text-xs text-neutral-500">2025</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
+              {/* LEFT COLUMN - Current Month Stats - Flattened for mobile */}
+              <div className="space-y-4">
+                {(() => {
+                  const { currentMonth: month, currentValue, historicalByMonth } = seasonalData;
+                  const currentMonthData = historicalByMonth[month];
+                  
+                  // Calculate average
+                  const avg = currentMonthData.length > 0 
+                    ? currentMonthData.reduce((a, b) => a + b, 0) / currentMonthData.length 
+                    : 0;
+                  
+                  // Use ACTUAL historical min/max (2020-2022 already excluded in data)
+                  const historicalMin = currentMonthData.length > 0 ? Math.min(...currentMonthData) : 0;
+                  const historicalMax = currentMonthData.length > 0 ? Math.max(...currentMonthData) : 0;
+                  
+                  // "Typical" range centered around average (±10%), clamped to historical bounds
+                  const typicalSpread = avg * 0.10;
+                  
+                  const rangeMin = Math.round(historicalMin / 1000);
+                  const rangeMax = Math.round(historicalMax / 1000);
+                  const expectedMin = Math.max(rangeMin, Math.round((avg - typicalSpread) / 1000));
+                  const expectedMax = Math.min(rangeMax, Math.round((avg + typicalSpread) / 1000));
+                  const avgK = Math.round(avg / 1000);
+                  const actualK = currentValue / 1000;
+                    
+                    // Calculate position percentage (0-100) within the range
+                    const rangeSpan = rangeMax - rangeMin;
+                    const position = rangeSpan > 0 
+                      ? Math.max(0, Math.min(100, ((actualK - rangeMin) / rangeSpan) * 100))
+                      : 50;
+                    
+                    // Status based on actual historical bounds
+                    let status = 'Normal';
+                    let statusColor = 'text-emerald-600';
+                    let markerColor = '#10b981'; // emerald-500
+                    let glowColor = 'rgba(16, 185, 129, 0.4)';
+                    
+                    if (actualK < rangeMin || actualK > rangeMax) {
+                      // Outside all historical records
+                      status = 'Unusual';
+                      statusColor = 'text-red-600';
+                      markerColor = '#ef4444'; // red-500
+                      glowColor = 'rgba(239, 68, 68, 0.5)';
+                    } else if (actualK < expectedMin || actualK > expectedMax) {
+                      // Outside typical range (25th-75th percentile)
+                      status = 'Watch';
+                      statusColor = 'text-amber-600';
+                      markerColor = '#f59e0b'; // amber-500
+                      glowColor = 'rgba(245, 158, 11, 0.4)';
+                    }
+                    
+                    let season = 'Low Season';
+                    let pillBg = 'bg-blue-50';
+                    let pillText = 'text-blue-400';
+                    if (month >= 5 && month <= 7) {
+                      season = 'High Season';
+                      pillBg = 'bg-blue-100';
+                      pillText = 'text-blue-700';
+                    } else if (month >= 8 && month <= 9) {
+                      season = 'Shoulder Season';
+                      pillBg = 'bg-blue-50';
+                      pillText = 'text-blue-500';
+                    }
+                    
+                    const diff = currentValue - avg;
+                    const diffPercent = ((diff / avg) * 100).toFixed(1);
+                    const isUp = diff > 0;
+                    
+                    return (
+                      <>
+                        {/* Main stat row */}
+                        <div>
+                          <div className="text-sm md:text-base text-neutral-500 mb-2 animate-fade-in-up">{kpis.currentMonthName}</div>
+                          <div className="text-5xl md:text-7xl font-bold text-neutral-900 tabular-nums tracking-tighter leading-none">
+                            <AnimatedNumber value={kpis.currentMonth} duration={1400} />
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-3 animate-fade-in-up stagger-2">
+                            <span className="text-sm md:text-base text-neutral-500">foreign passengers</span>
+                            <div className={`inline-flex items-center px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-semibold ${pillBg} ${pillText}`}>
+                              {season}
+                            </div>
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-semibold ${
+                              isUp ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                            }`}>
+                              {isUp ? <TrendingUp className="w-3 h-3 md:w-3.5 md:h-3.5" /> : <TrendingDown className="w-3 h-3 md:w-3.5 md:h-3.5" />}
+                              {isUp ? '+' : ''}{diffPercent}% YoY
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Visual Confidence Band */}
+                        <div className="pt-8 animate-fade-in-up stagger-2">
+                          <div className="relative h-8 flex items-center">
+                            {/* Background track */}
+                            <div className="absolute inset-x-0 h-1.5 bg-neutral-100 rounded-full"></div>
+                            
+                            {/* Expected range (middle zone) */}
+                            <div 
+                              className="absolute h-1.5 bg-neutral-200 rounded-full"
+                              style={{
+                                left: `${((expectedMin - rangeMin) / rangeSpan) * 100}%`,
+                                width: `${((expectedMax - expectedMin) / rangeSpan) * 100}%`
+                              }}
+                            ></div>
+                            
+                            {/* Historical average marker */}
+                            <div 
+                              className="absolute w-0.5 h-4 bg-neutral-400 rounded-full"
+                              style={{ 
+                                left: `${((avgK - rangeMin) / rangeSpan) * 100}%`, 
+                                transform: 'translateX(-50%)' 
+                              }}
+                            ></div>
+                            
+                            {/* Current value marker */}
+                            <div 
+                              className="absolute flex flex-col items-center"
+                              style={{ 
+                                left: `${position}%`, 
+                                transform: 'translateX(-50%)',
+                                transition: 'left 1s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                              }}
+                            >
+                              {/* Glow effect for unusual */}
+                              {status === 'Unusual' && (
+                                <div 
+                                  className="absolute w-6 h-6 rounded-full animate-pulse-subtle"
+                                  style={{ backgroundColor: glowColor, top: '-6px' }}
+                                ></div>
+                              )}
+                              {/* Marker dot */}
+                              <div 
+                                className="relative w-3.5 h-3.5 rounded-full border-2 border-white shadow-md z-10"
+                                style={{ backgroundColor: markerColor }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          {/* Range labels */}
+                          <div className="flex justify-between mt-1.5">
+                            <span className="text-sm text-neutral-500 tabular-nums">{rangeMin}k</span>
+                            <span className="text-sm text-neutral-400 tabular-nums">{avgK}k avg</span>
+                            <span className="text-sm text-neutral-500 tabular-nums">{rangeMax}k</span>
+                          </div>
+                        </div>
+                        
+                        {/* Single row of key stats */}
+                        <div className="flex items-center gap-8 pt-6">
+                          <div className="animate-fade-in-up stagger-3">
+                            <div className="text-sm text-neutral-500 mb-1">Historical Avg</div>
+                            <div className="text-xl font-semibold text-neutral-900 tabular-nums">{avgK}k</div>
+                          </div>
+                          <div className="animate-fade-in-up stagger-4">
+                            <div className="text-sm text-neutral-500 mb-1">Historical Range</div>
+                            <div className="text-xl font-semibold text-neutral-900 tabular-nums">{rangeMin}k–{rangeMax}k</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-neutral-400 mt-2 animate-fade-in-up stagger-5">Based on 2017–2019, 2023–2024 (excludes COVID years)</div>
+                        
+                        {/* Typical Volume Ranges - clean minimal style */}
+                        <div className="pt-6 mt-6 border-t border-neutral-100 animate-fade-in-up stagger-6">
+                          <div className="text-sm text-neutral-500 mb-3">Typical Range by Season</div>
+                          <div className="space-y-3">
+                            {(() => {
+                              const highSeasonMonths = [5, 6, 7];
+                              const shoulderMonths = [8, 9];
+                              const lowSeasonMonths = [0, 1, 2, 3, 4, 10, 11];
+                              
+                              const calcRange = (months) => {
+                                const allValues = months.flatMap(m => historicalByMonth[m]);
+                                if (allValues.length === 0) return { min: 0, max: 0 };
+                                return {
+                                  min: Math.round(Math.min(...allValues) / 1000),
+                                  max: Math.round(Math.max(...allValues) / 1000)
+                                };
+                              };
+                              
+                              const highRange = calcRange(highSeasonMonths);
+                              const shoulderRange = calcRange(shoulderMonths);
+                              const lowRange = calcRange(lowSeasonMonths);
+                              
+                              return (
+                                <>
+                                  <div className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                                      <span className="text-sm text-neutral-600">High</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-neutral-900 tabular-nums">{highRange.min}k – {highRange.max}k</span>
+                                  </div>
+                                  <div className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
+                                      <span className="text-sm text-neutral-600">Shoulder</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-neutral-900 tabular-nums">{shoulderRange.min}k – {shoulderRange.max}k</span>
+                                  </div>
+                                  <div className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.45s' }}>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2.5 h-2.5 rounded-full bg-blue-200"></div>
+                                      <span className="text-sm text-neutral-600">Low</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-neutral-900 tabular-nums">{lowRange.min}k – {lowRange.max}k</span>
+                                  </div>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                {/* RIGHT COLUMN - Chart */}
+                <div>
+                  {/* Chart - cleaner Apple-style with single color family */}
+                  <div className="bg-neutral-50/50 rounded-2xl p-4 md:p-6">
+                    <div className="text-sm text-neutral-500 mb-4">Monthly Pattern</div>
+                    <ResponsiveContainer width="100%" height={isMobile ? 200 : 280}>
+                    <ComposedChart 
+                      data={(() => {
+                        const { currentMonth, historicalAvg, ytd2025ByMonth } = seasonalData;
+                        const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        return monthLabels.map((label, i) => ({
+                          month: label,
+                          monthIndex: i,
+                          historical: historicalAvg[i],
+                          current: i <= currentMonth ? ytd2025ByMonth[i] : null
+                        }));
+                      })()}
+                      margin={{ top: 10, right: 5, left: -20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
+                      <XAxis 
+                        dataKey="month"
+                        tick={{ fontSize: isMobile ? 9 : 11, fill: '#737373' }}
+                        axisLine={false}
+                        tickLine={false}
+                        interval={isMobile ? 1 : 0}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: isMobile ? 9 : 11, fill: '#737373' }}
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={(value) => `${(value/1000).toFixed(0)}k`}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#fff', 
+                          border: 'none',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          padding: '8px 12px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        }}
+                        formatter={(value, name) => {
+                          if (value === null) return ['N/A', name];
+                          const label = name === 'Historical' ? 'Historical Avg' : name;
+                          return [`${(value/1000).toFixed(0)}k`, label];
+                        }}
+                        labelFormatter={(label) => label}
+                      />
+                      {/* 2025 bars - blue color family encoding seasonality via intensity */}
+                      <Bar 
+                        dataKey="current"
+                        name="2025"
+                        radius={[4, 4, 0, 0]}
+                      >
+                        {(() => {
+                          const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                          return monthLabels.map((label, index) => {
+                            // Blue color family: intensity = seasonality
+                            let fill = '#bfdbfe'; // Low season - light blue
+                            if (index >= 5 && index <= 7) fill = '#2563eb'; // High season - saturated blue
+                            else if (index >= 8 && index <= 9) fill = '#60a5fa'; // Shoulder - medium blue
+                            return <Cell key={`cell-${index}`} fill={fill} />;
+                          });
+                        })()}
+                      </Bar>
+                      {/* Historical average line - neutral gray, not red */}
+                      <Line 
+                        dataKey="historical"
+                        name="Historical"
+                        stroke="#525252"
+                        strokeWidth={2}
+                        strokeDasharray="6 4"
+                        dot={false}
+                        activeDot={{ r: 4, fill: '#525252', stroke: '#fff', strokeWidth: 2 }}
+                        connectNulls={true}
+                        type="monotone"
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                  <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-neutral-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-0.5" style={{ background: 'repeating-linear-gradient(90deg, #525252 0, #525252 6px, transparent 6px, transparent 10px)', height: '2px' }}></div>
+                      <span className="text-xs text-neutral-500">Historical Avg</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-blue-500"></div>
+                      <span className="text-xs text-neutral-500">2025</span>
+                    </div>
                   </div>
                 </div>
+                </div>
               </div>
-              <ResponsiveContainer width="100%" height={280}>
-                <ComposedChart data={seasonalData.historicalAvg.map((avg, i) => ({
-                  month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-                  historical: avg,
-                  current: seasonalData.ytd2025ByMonth[i]
-                }))}>
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#737373' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#737373' }} axisLine={false} tickLine={false} tickFormatter={(value) => `${(value/1000).toFixed(0)}k`} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#fff', border: 'none', borderRadius: '12px', fontSize: '12px', padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                    formatter={(value, name) => {
-                      if (value === null) return ['N/A', name];
-                      const label = name === 'Historical' ? 'Historical Avg' : name;
-                      return [`${(value/1000).toFixed(0)}k`, label];
-                    }}
-                  />
-                  <Bar dataKey="current" name="2025" radius={[4, 4, 0, 0]}>
-                    {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((_, index) => {
-                      let fill = '#bfdbfe';
-                      if (index >= 5 && index <= 7) fill = '#2563eb';
-                      else if (index >= 8 && index <= 9) fill = '#60a5fa';
-                      return <Cell key={`cell-${index}`} fill={fill} />;
-                    })}
-                  </Bar>
-                  <Line dataKey="historical" name="Historical" stroke="#525252" strokeWidth={2} strokeDasharray="6 4" dot={false} activeDot={{ r: 4, fill: '#525252', stroke: '#fff', strokeWidth: 2 }} connectNulls={true} type="monotone" />
-                </ComposedChart>
-              </ResponsiveContainer>
             </div>
-          </div>
-        )}
-        
-        {/* Show Details Toggle */}
-        {kpis && (
-          <div className="flex justify-center">
-            <button
-              onClick={() => setShowDetails(!showDetails)}
-              className="flex items-center gap-2 px-6 py-3 text-sm font-medium text-neutral-600 hover:text-neutral-900 bg-white rounded-full shadow-sm hover:shadow transition-all"
-            >
-              {showDetails ? 'Hide Details' : 'Show Details'}
-              <ChevronDown className={`w-4 h-4 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
-            </button>
-          </div>
-        )}
-        
-        {/* Collapsible Details Section */}
-        {showDetails && kpis && (
-          <div className="space-y-6 animate-fade-in-up">
+          )}
 
-          {/* Insights Grid */}
+          {/* Insights Grid - Apple style: no borders, subtle shadows, generous spacing */}
           {kpis && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               
@@ -2234,10 +2338,6 @@ export default function DataDashboard() {
             
           </div>
         )}
-          </div>
-        )}
-        {/* End Collapsible Details Section */}
-        
         {/* Top 10 Markets - Completely Static, Never Affected by Filters */}
         {kpis && kpis.top10 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
