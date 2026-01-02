@@ -458,11 +458,12 @@ export default function DataDashboard() {
     const currentMonth = monthNames.indexOf(monthStr);
     const currentValue = parseInt(kpis.currentMonth.replace(/,/g, ''));
     
-    const historicalByMonth = Array(12).fill(0).map(() => []);
-    const ytd2025ByMonth = Array(12).fill(null);
-    
-    // Filter once, use multiple times
+    // Detect current year dynamically from data
     const foreignPassengers = filteredData.filter(row => row.flokkur === 'Útlendingar alls');
+    const currentYear = Math.max(...foreignPassengers.map(row => row.year));
+    
+    const historicalByMonth = Array(12).fill(0).map(() => []);
+    const currentYearByMonth = Array(12).fill(null);
     
     // OPTIMIZED: Use row.year and row.month directly (no Date parsing)
     foreignPassengers.forEach(row => {
@@ -471,11 +472,14 @@ export default function DataDashboard() {
       const value = row.fjöldi;
       
       if (!isNaN(value) && value > 0) {
-        if (rowYear >= 2017 && rowYear <= 2024 && rowYear !== 2020 && rowYear !== 2021 && rowYear !== 2022) {
+        // Historical: 2017-2019 and 2023 onwards (exclude COVID years 2020-2022 and current year)
+        const isPreCovid = rowYear >= 2017 && rowYear <= 2019;
+        const isPostCovid = rowYear >= 2023 && rowYear < currentYear;
+        if (isPreCovid || isPostCovid) {
           historicalByMonth[rowMonth].push(value);
         }
-        if (rowYear === 2025) {
-          ytd2025ByMonth[rowMonth] = value;
+        if (rowYear === currentYear) {
+          currentYearByMonth[rowMonth] = value;
         }
       }
     });
@@ -487,9 +491,10 @@ export default function DataDashboard() {
     return {
       currentMonth,
       currentValue,
+      currentYear,
       historicalByMonth,
       historicalAvg,
-      ytd2025ByMonth
+      currentYearByMonth
     };
   }, [filteredData, kpis]);
 
@@ -927,8 +932,12 @@ export default function DataDashboard() {
       dataByYear[row.year].push(row);
     });
     
-    // Years 2017-2024 (full years)
-    for (let year = 2017; year <= 2024; year++) {
+    // Get the max year from data dynamically
+    const maxYear = Math.max(...Object.keys(dataByYear).map(Number));
+    const fullYearEnd = maxYear - 1; // All years except current are "full years"
+    
+    // Years 2017 to fullYearEnd (full years)
+    for (let year = 2017; year <= fullYearEnd; year++) {
       const yearData = { year: year.toString(), label: year.toString() };
       const yearRows = dataByYear[year] || [];
       
@@ -943,24 +952,24 @@ export default function DataDashboard() {
       annualData.push(yearData);
     }
     
-    // YTD 2025 (Jan to current month inclusive) - support multiple series
+    // YTD for current year (Jan to current month inclusive) - support multiple series
     // OPTIMIZED: Use row.month directly instead of Date parsing
-    const ytd2025Data = { year: '2025', label: '2025 YTD' };
-    const year2025Rows = dataByYear[2025] || [];
+    const ytdCurrentYearData = { year: String(maxYear), label: `${maxYear} YTD` };
+    const currentYearRows = dataByYear[maxYear] || [];
     selectedCats.forEach(cat => {
-      const ytd2025 = year2025Rows
+      const ytdValue = currentYearRows
         .filter(row => row.month <= currentYearMonth && row.flokkur === cat)
         .reduce((sum, r) => sum + r.fjöldi, 0);
       
-      ytd2025Data[cat] = ytd2025;
+      ytdCurrentYearData[cat] = ytdValue;
     });
-    annualData.push(ytd2025Data);
+    annualData.push(ytdCurrentYearData);
     
-    // Calculate YTD comparison for 2017-2025 - support multiple series
+    // Calculate YTD comparison for 2017 to current year - support multiple series
     // OPTIMIZED: Use row.month directly instead of Date parsing
     const ytdComparisonData = [];
     
-    for (let year = 2017; year <= 2025; year++) {
+    for (let year = 2017; year <= maxYear; year++) {
       const ytdData = { year: year.toString(), label: `${year}` };
       const yearRows = dataByYear[year] || [];
       
@@ -1165,12 +1174,12 @@ export default function DataDashboard() {
   const prepareYoYChartData = () => {
     if (selectedCategories.length === 0 || !data.length) return [];
     
-    const currentYear = 2025;
-    // OPTIMIZED: Get current month from data using row.month instead of Date parsing
+    // OPTIMIZED: Get current year and month from data using row.year and row.month instead of hardcoding
     const sortedData = [...data].sort((a, b) => {
       if (a.year !== b.year) return b.year - a.year;
       return b.month - a.month;
     });
+    const currentYear = sortedData[0]?.year || new Date().getFullYear();
     const currentMonth = sortedData[0]?.month || 10;
     
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1217,6 +1226,13 @@ export default function DataDashboard() {
   
   // Get current month name for YoY chart subtitle
   const yoyCurrentMonth = yoyChartData.length > 0 ? yoyChartData[yoyChartData.length - 1].month : 'Oct';
+  
+  // Get the years for YoY chart dynamically
+  const yoyYears = useMemo(() => {
+    if (!data.length) return { current: 2025, prior1: 2024, prior2: 2023 };
+    const maxYear = Math.max(...data.map(row => row.year));
+    return { current: maxYear, prior1: maxYear - 1, prior2: maxYear - 2 };
+  }, [data]);
 
   return (
     <div className="min-h-screen bg-neutral-50" style={{
@@ -1230,6 +1246,43 @@ export default function DataDashboard() {
       
       {/* Custom Styles */}
       <style>{styles}</style>
+      
+      {/* Nav Bar Styles */}
+      <style>{`
+        .nav-link {
+          position: relative;
+          padding: 8px 16px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #6B7280;
+          text-decoration: none;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+          color: #111827;
+          background: rgba(0, 0, 0, 0.04);
+        }
+        .nav-link.active {
+          color: #111827;
+          background: rgba(0, 0, 0, 0.06);
+        }
+        .nav-link.active::after {
+          content: '';
+          position: absolute;
+          bottom: -1px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 20px;
+          height: 2px;
+          background: linear-gradient(90deg, #3B82F6, #2563EB);
+          border-radius: 2px;
+        }
+        .nav-blur {
+          backdrop-filter: saturate(180%) blur(20px);
+          -webkit-backdrop-filter: saturate(180%) blur(20px);
+        }
+      `}</style>
       
       {/* Custom Elegant Neutral Palette */}
       <style>{`
@@ -1247,72 +1300,95 @@ export default function DataDashboard() {
         .bg-slate-50 { background-color: #F8F9FA; }
       `}</style>
       
+      {/* ========== ELITE NAV BAR ========== */}
+      <nav className="sticky top-0 z-50 nav-blur" style={{
+        background: 'rgba(255, 255, 255, 0.72)',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.06)'
+      }}>
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo/Brand */}
+            <a href="/" className="flex items-center gap-3 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+              </div>
+              <div className="hidden sm:block">
+                <span style={{ 
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
+                  fontSize: '17px',
+                  fontWeight: '600',
+                  color: '#111827',
+                  letterSpacing: '-0.3px'
+                }}>
+                  Iceland Insights
+                </span>
+              </div>
+            </a>
+            
+            {/* Nav Links */}
+            <div className="flex items-center gap-1">
+              <a href="/arrivals" className="nav-link active">
+                Arrivals
+              </a>
+              <a href="/spending" className="nav-link">
+                Card Spending
+              </a>
+              <a href="/hotels" className="nav-link" style={{ opacity: 0.5, pointerEvents: 'none' }}>
+                Hotels
+                <span className="ml-1.5 text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Soon</span>
+              </a>
+            </div>
+            
+            {/* Right side - could add search, theme toggle, etc */}
+            <div className="hidden md:flex items-center gap-2">
+              <a 
+                href="https://statice.is" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif' }}
+              >
+                Data: Statistics Iceland
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
       {/* NORMAL DASHBOARD */}
       <>
-      {/* Subtle gradient border - soft charcoal */}
-      <div style={{ 
-        height: '1px', 
-        background: 'linear-gradient(90deg, rgba(107, 124, 140, 0.25) 0%, rgba(139, 149, 165, 0.25) 100%)' 
-      }}></div>
       
-      {/* Hero Header - Refined spacing and alignment */}
-      <div className="pt-12 pb-8 px-6" style={{
-        background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(249, 249, 251, 0) 100%)'
-      }}>
+      {/* Page Header - Arrivals specific */}
+      <div className="pt-10 pb-6 px-6">
         <div className="max-w-7xl mx-auto">
-          {/* Logo - Properly sized */}
-          <div className="mb-4 flex justify-center">
-            <img 
-              src="/iceland-insights-logo.png" 
-              alt="Iceland Insights Logo" 
-              style={{
-                height: '120px',
-                width: 'auto',
-                objectFit: 'contain',
-                display: 'block'
-              }}
-            />
-          </div>
-          
-          {/* Subtitle - Centered and properly spaced */}
-          <div className="text-center space-y-1">
-            <p style={{ 
-              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
-              fontSize: '16px',
-              fontWeight: '500',
-              color: '#6B7280',
-              letterSpacing: '-0.2px',
-              margin: 0
+          <div className="text-center">
+            <h1 style={{ 
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
+              fontSize: '32px',
+              fontWeight: '700',
+              color: '#111827',
+              letterSpacing: '-0.5px',
+              margin: '0 0 8px 0'
             }}>
-              Keflavík Airport Passenger Analytics
-            </p>
+              Foreign Passenger Arrivals
+            </h1>
             <p style={{ 
               fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
-              fontSize: '13px',
+              fontSize: '15px',
               fontWeight: '400',
-              color: '#A1A1A6',
+              color: '#6B7280',
               letterSpacing: '-0.1px',
               margin: 0
             }}>
-              Data from <a 
-                href="https://www.statice.is/" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                style={{
-                  color: '#6B7C8C',
-                  textDecoration: 'none'
-                }}
-                onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
-                onMouseOut={(e) => e.target.style.textDecoration = 'none'}
-              >
-                Statistics Iceland
-              </a>
+              Keflavík Airport · Monthly statistics from Statistics Iceland
             </p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 md:px-6 pb-6 space-y-6 md:space-y-8">
+      <div className="max-w-7xl mx-auto px-3 md:px-6 pb-8 space-y-8 md:space-y-10">
 
         {initialLoading ? (
           // PREMIUM SKELETON LOADING
@@ -1393,7 +1469,7 @@ export default function DataDashboard() {
           <>
         {/* Hero Stats Section */}
         {kpis && seasonalData && (
-          <div className="bg-white rounded-2xl shadow-sm p-5 md:p-8">
+          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
               {/* LEFT COLUMN - Current Month Stats - Flattened for mobile */}
               <div className="space-y-4">
@@ -1523,7 +1599,7 @@ export default function DataDashboard() {
                           </div>
                         </div>
                         
-                        {/* Typical Volume Ranges - clean minimal style */}
+                        {/* Typical Volume Ranges */}
                         <div className="pt-6 mt-6 border-t border-neutral-100 animate-fade-in-up stagger-6">
                           <div className="text-sm text-neutral-500 mb-3">Typical Range by Season</div>
                           <div className="space-y-3">
@@ -1547,21 +1623,21 @@ export default function DataDashboard() {
                               
                               return (
                                 <>
-                                  <div className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
+                                  <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
                                       <span className="text-sm text-neutral-600">High</span>
                                     </div>
                                     <span className="text-sm font-semibold text-neutral-900 tabular-nums">{highRange.min}k – {highRange.max}k</span>
                                   </div>
-                                  <div className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                                  <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
                                       <span className="text-sm text-neutral-600">Shoulder</span>
                                     </div>
                                     <span className="text-sm font-semibold text-neutral-900 tabular-nums">{shoulderRange.min}k – {shoulderRange.max}k</span>
                                   </div>
-                                  <div className="flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.45s' }}>
+                                  <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <div className="w-2.5 h-2.5 rounded-full bg-blue-200"></div>
                                       <span className="text-sm text-neutral-600">Low</span>
@@ -1586,16 +1662,16 @@ export default function DataDashboard() {
                     <ResponsiveContainer width="100%" height={isMobile ? 200 : 280}>
                     <ComposedChart 
                       data={(() => {
-                        const { currentMonth, historicalAvg, ytd2025ByMonth } = seasonalData;
+                        const { currentMonth, historicalAvg, currentYearByMonth } = seasonalData;
                         const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                         return monthLabels.map((label, i) => ({
                           month: label,
                           monthIndex: i,
                           historical: historicalAvg[i],
-                          current: i <= currentMonth ? ytd2025ByMonth[i] : null
+                          current: i <= currentMonth ? currentYearByMonth[i] : null
                         }));
                       })()}
-                      margin={{ top: 10, right: 5, left: -20, bottom: 5 }}
+                      margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
                       <XAxis 
@@ -1610,6 +1686,8 @@ export default function DataDashboard() {
                         axisLine={false}
                         tickLine={false}
                         tickFormatter={(value) => `${(value/1000).toFixed(0)}k`}
+                        width={45}
+                        domain={[0, 'auto']}
                       />
                       <Tooltip 
                         contentStyle={{ 
@@ -1627,10 +1705,10 @@ export default function DataDashboard() {
                         }}
                         labelFormatter={(label) => label}
                       />
-                      {/* 2025 bars - blue color family encoding seasonality via intensity */}
+                      {/* Current year bars - blue color family encoding seasonality via intensity */}
                       <Bar 
                         dataKey="current"
-                        name="2025"
+                        name={String(seasonalData.currentYear)}
                         radius={[4, 4, 0, 0]}
                       >
                         {(() => {
@@ -1659,13 +1737,16 @@ export default function DataDashboard() {
                     </ComposedChart>
                   </ResponsiveContainer>
                   <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-neutral-100">
-                    <div className="flex items-center gap-2">
+                    <div 
+                      className="flex items-center gap-2 cursor-help"
+                      title="Average of 2017–2019 and 2023–2024 (excludes COVID years 2020–2022)"
+                    >
                       <div className="w-6 h-0.5" style={{ background: 'repeating-linear-gradient(90deg, #525252 0, #525252 6px, transparent 6px, transparent 10px)', height: '2px' }}></div>
-                      <span className="text-xs text-neutral-500">Historical Avg</span>
+                      <span className="text-xs text-neutral-500 border-b border-dashed border-neutral-300">Historical Avg</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded bg-blue-500"></div>
-                      <span className="text-xs text-neutral-500">2025</span>
+                      <span className="text-xs text-neutral-500">{seasonalData.currentYear}</span>
                     </div>
                   </div>
                 </div>
@@ -1674,9 +1755,9 @@ export default function DataDashboard() {
             </div>
           )}
 
-          {/* Insights Grid - Apple style: no borders, subtle shadows, generous spacing */}
+          {/* Insights Grid */}
           {kpis && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               
               {/* Insight 1: Current Month Performance */}
               <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm card-hover relative group animate-fade-in-up stagger-1">
@@ -2557,7 +2638,7 @@ export default function DataDashboard() {
                       {/* Footer row with absolute number and percentage */}
                       <div className="flex justify-between items-baseline">
                         <span className="text-xs text-neutral-700 font-mono">{continent.total.toLocaleString()}</span>
-                        <span className="text-xs text-neutral-500 font-medium">{continent.percentOfForeign.toFixed(1)}% of foreign</span>
+                        <span className="text-xs text-neutral-500 font-medium">{continent.percentOfForeign.toFixed(1)}% of foreign passengers</span>
                       </div>
                     </div>
                   );
@@ -2935,7 +3016,7 @@ export default function DataDashboard() {
                 <Code className="w-4 h-4 text-neutral-500" />
               </button>
             </div>
-            <p className="text-xs text-neutral-500 mb-3">Jan - {yoyCurrentMonth} (2023 vs 2024 vs 2025)</p>
+            <p className="text-xs text-neutral-500 mb-3">Jan - {yoyCurrentMonth} ({yoyYears.prior2} vs {yoyYears.prior1} vs {yoyYears.current})</p>
             <ResponsiveContainer width="100%" height={230}>
               <LineChart data={yoyChartData} margin={{ top: 5, right: 5, left: -20, bottom: 18 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -2969,34 +3050,34 @@ export default function DataDashboard() {
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="2025"
+                  dataKey={String(yoyYears.current)}
                   stroke="#6B7C8C"
                   strokeWidth={2.5}
                   dot={{ fill: '#fff', stroke: '#6B7C8C', strokeWidth: 2, r: 3 }}
                   activeDot={{ r: 5 }}
-                  name="2025"
+                  name={String(yoyYears.current)}
                   connectNulls
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="2024"
+                  dataKey={String(yoyYears.prior1)}
                   stroke="#FF375F"
                   strokeWidth={2.5}
                   strokeOpacity={0.5}
                   dot={{ fill: '#fff', stroke: '#FF375F', strokeWidth: 2, r: 3, opacity: 0.5 }}
                   activeDot={{ r: 5 }}
-                  name="2024"
+                  name={String(yoyYears.prior1)}
                   connectNulls
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="2023"
+                  dataKey={String(yoyYears.prior2)}
                   stroke="#8E8E93"
                   strokeWidth={2.5}
                   strokeOpacity={0.3}
                   dot={{ fill: '#fff', stroke: '#8E8E93', strokeWidth: 2, r: 3, opacity: 0.3 }}
                   activeDot={{ r: 5 }}
-                  name="2023"
+                  name={String(yoyYears.prior2)}
                   connectNulls
                 />
               </LineChart>
@@ -3021,7 +3102,7 @@ export default function DataDashboard() {
                   <Code className="w-4 h-4 text-neutral-500" />
                 </button>
               </div>
-              <p className="text-xs text-neutral-500 mb-3">2017-2025 YTD</p>
+              <p className="text-xs text-neutral-500 mb-3">2017-{yoyYears.current} YTD</p>
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart data={kpis.annualData} margin={{ top: 20, right: 5, left: -20, bottom: 18 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -3090,7 +3171,7 @@ export default function DataDashboard() {
                   <Code className="w-4 h-4 text-neutral-500" />
                 </button>
               </div>
-              <p className="text-xs text-neutral-500 mb-3">Jan - {kpis.currentMonthName.split(' ')[0]} (2017-2025)</p>
+              <p className="text-xs text-neutral-500 mb-3">Jan - {kpis.currentMonthName.split(' ')[0]} (2017-{yoyYears.current})</p>
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart data={kpis.ytdComparisonData} margin={{ top: 20, right: 5, left: -20, bottom: 18 }} barGap={2} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />

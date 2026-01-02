@@ -1,0 +1,1574 @@
+{
+  "metadata": {
+    "lastUpdated": "2026-01-02",
+    "latestDataPoint": "2025-11",
+    "source": "Central Bank of Iceland",
+    "sourceUrl": "https://www.sedlabanki.is/",
+    "unit": "ISK millions",
+    "description": "Foreign debit and credit card turnover in Iceland",
+    "categories": {
+      "Heildarúttekt": {
+        "is": "Heildarúttekt erlendra korta",
+        "en": "Total Turnover"
+      },
+      "Verslun": {
+        "is": "Verslun",
+        "en": "Retail"
+      },
+      "Bankar": {
+        "is": "Bankar",
+        "en": "Banks"
+      },
+      "Hraðbankar": {
+        "is": "Hraðbankar",
+        "en": "ATMs"
+      }
+    }
+  },
+  "monthlyData": {
+    "2002-09": {
+      "Heildarúttekt": 1451.0
+    },
+    "2002-10": {
+      "Heildarúttekt": 1276.0
+    },
+    "2002-11": {
+      "Heildarúttekt": 643.0
+    },
+    "2002-12": {
+      "Heildarúttekt": 675.85
+    },
+    "2003-01": {
+      "Heildarúttekt": 608.21
+    },
+    "2003-02": {
+      "Heildarúttekt": 541.01
+    },
+    "2003-03": {
+      "Heildarúttekt": 663.9
+    },
+    "2003-04": {
+      "Heildarúttekt": 767.4
+    },
+    "2003-05": {
+      "Heildarúttekt": 932.8
+    },
+    "2003-06": {
+      "Heildarúttekt": 1418.09
+    },
+    "2003-07": {
+      "Heildarúttekt": 2092.38
+    },
+    "2003-08": {
+      "Heildarúttekt": 2215.74
+    },
+    "2003-09": {
+      "Heildarúttekt": 1600.49
+    },
+    "2003-10": {
+      "Heildarúttekt": 895.65
+    },
+    "2003-11": {
+      "Heildarúttekt": 815.41
+    },
+    "2003-12": {
+      "Heildarúttekt": 656.68
+    },
+    "2004-01": {
+      "Heildarúttekt": 653.0
+    },
+    "2004-02": {
+      "Heildarúttekt": 634.0
+    },
+    "2004-03": {
+      "Heildarúttekt": 789.0
+    },
+    "2004-04": {
+      "Heildarúttekt": 836.09
+    },
+    "2004-05": {
+      "Heildarúttekt": 965.6
+    },
+    "2004-06": {
+      "Heildarúttekt": 1579.67
+    },
+    "2004-07": {
+      "Heildarúttekt": 2380.0
+    },
+    "2004-08": {
+      "Heildarúttekt": 2706.13
+    },
+    "2004-09": {
+      "Heildarúttekt": 1619.0
+    },
+    "2004-10": {
+      "Heildarúttekt": 941.0
+    },
+    "2004-11": {
+      "Heildarúttekt": 836.0
+    },
+    "2004-12": {
+      "Heildarúttekt": 655.0
+    },
+    "2005-01": {
+      "Heildarúttekt": 699.7
+    },
+    "2005-02": {
+      "Heildarúttekt": 593.0
+    },
+    "2005-03": {
+      "Heildarúttekt": 815.37,
+      "Verslun": 70.67
+    },
+    "2005-04": {
+      "Heildarúttekt": 921.44,
+      "Verslun": 153.44
+    },
+    "2005-05": {
+      "Heildarúttekt": 1252.94,
+      "Verslun": 188.24
+    },
+    "2005-06": {
+      "Heildarúttekt": 1841.09,
+      "Verslun": 235.09
+    },
+    "2005-07": {
+      "Heildarúttekt": 2565.19,
+      "Verslun": 254.69
+    },
+    "2005-08": {
+      "Heildarúttekt": 3145.6,
+      "Verslun": 254.0
+    },
+    "2005-09": {
+      "Heildarúttekt": 1887.66,
+      "Verslun": 140.66
+    },
+    "2005-10": {
+      "Heildarúttekt": 1058.16,
+      "Verslun": 107.16
+    },
+    "2005-11": {
+      "Heildarúttekt": 869.88,
+      "Verslun": 92.88
+    },
+    "2005-12": {
+      "Heildarúttekt": 720.61,
+      "Verslun": 88.61
+    },
+    "2006-01": {
+      "Heildarúttekt": 861.3,
+      "Verslun": 129.3
+    },
+    "2006-02": {
+      "Heildarúttekt": 788.68,
+      "Verslun": 129.18
+    },
+    "2006-03": {
+      "Heildarúttekt": 971.33,
+      "Verslun": 170.07
+    },
+    "2006-04": {
+      "Heildarúttekt": 1041.95,
+      "Verslun": 188.23
+    },
+    "2006-05": {
+      "Heildarúttekt": 1676.24,
+      "Verslun": 296.1
+    },
+    "2006-06": {
+      "Heildarúttekt": 2248.51,
+      "Verslun": 339.13
+    },
+    "2006-07": {
+      "Heildarúttekt": 3384.46,
+      "Verslun": 405.67
+    },
+    "2006-08": {
+      "Heildarúttekt": 3722.67,
+      "Verslun": 372.79
+    },
+    "2006-09": {
+      "Heildarúttekt": 2159.51,
+      "Verslun": 213.51
+    },
+    "2006-10": {
+      "Heildarúttekt": 1478.3,
+      "Verslun": 180.15
+    },
+    "2006-11": {
+      "Heildarúttekt": 1248.36,
+      "Verslun": 1014.97,
+      "Bankar": 29.59,
+      "Hraðbankar": 203.81
+    },
+    "2006-12": {
+      "Heildarúttekt": 1073.47,
+      "Verslun": 875.55,
+      "Bankar": 23.05,
+      "Hraðbankar": 174.87
+    },
+    "2007-01": {
+      "Heildarúttekt": 1241.49,
+      "Verslun": 1024.68,
+      "Bankar": 28.3,
+      "Hraðbankar": 188.51
+    },
+    "2007-02": {
+      "Heildarúttekt": 1086.95,
+      "Verslun": 896.08,
+      "Bankar": 27.37,
+      "Hraðbankar": 163.5
+    },
+    "2007-03": {
+      "Heildarúttekt": 1369.1,
+      "Verslun": 1154.56,
+      "Bankar": 27.01,
+      "Hraðbankar": 187.53
+    },
+    "2007-04": {
+      "Heildarúttekt": 1521.53,
+      "Verslun": 1274.68,
+      "Bankar": 22.92,
+      "Hraðbankar": 223.92
+    },
+    "2007-05": {
+      "Heildarúttekt": 1857.35,
+      "Verslun": 1567.01,
+      "Bankar": 25.56,
+      "Hraðbankar": 264.78
+    },
+    "2007-06": {
+      "Heildarúttekt": 2785.95,
+      "Verslun": 2292.15,
+      "Bankar": 29.0,
+      "Hraðbankar": 464.8
+    },
+    "2007-07": {
+      "Heildarúttekt": 3998.5,
+      "Verslun": 3190.6,
+      "Bankar": 38.9,
+      "Hraðbankar": 769.0
+    },
+    "2007-08": {
+      "Heildarúttekt": 4179.42,
+      "Verslun": 3406.42,
+      "Bankar": 34.6,
+      "Hraðbankar": 738.4
+    },
+    "2007-09": {
+      "Heildarúttekt": 2460.04,
+      "Verslun": 2068.04,
+      "Bankar": 29.1,
+      "Hraðbankar": 362.9
+    },
+    "2007-10": {
+      "Heildarúttekt": 1649.76,
+      "Verslun": 1387.96,
+      "Bankar": 24.1,
+      "Hraðbankar": 237.7
+    },
+    "2007-11": {
+      "Heildarúttekt": 1330.31,
+      "Verslun": 1110.61,
+      "Bankar": 16.2,
+      "Hraðbankar": 203.5
+    },
+    "2007-12": {
+      "Heildarúttekt": 1183.34,
+      "Verslun": 982.74,
+      "Bankar": 19.5,
+      "Hraðbankar": 181.1
+    },
+    "2008-01": {
+      "Heildarúttekt": 1270.11,
+      "Verslun": 1070.71,
+      "Bankar": 22.7,
+      "Hraðbankar": 176.7
+    },
+    "2008-02": {
+      "Heildarúttekt": 1219.89,
+      "Verslun": 1034.69,
+      "Bankar": 24.5,
+      "Hraðbankar": 160.7
+    },
+    "2008-03": {
+      "Heildarúttekt": 1516.34,
+      "Verslun": 1288.74,
+      "Bankar": 25.9,
+      "Hraðbankar": 201.7
+    },
+    "2008-04": {
+      "Heildarúttekt": 2056.56,
+      "Verslun": 1802.26,
+      "Bankar": 31.9,
+      "Hraðbankar": 222.4
+    },
+    "2008-05": {
+      "Heildarúttekt": 2271.35,
+      "Verslun": 1986.95,
+      "Bankar": 29.5,
+      "Hraðbankar": 254.9
+    },
+    "2008-06": {
+      "Heildarúttekt": 3501.53,
+      "Verslun": 3011.13,
+      "Bankar": 54.4,
+      "Hraðbankar": 436.0
+    },
+    "2008-07": {
+      "Heildarúttekt": 5248.2,
+      "Verslun": 4343.6,
+      "Bankar": 84.6,
+      "Hraðbankar": 820.0
+    },
+    "2008-08": {
+      "Heildarúttekt": 5367.78,
+      "Verslun": 4514.18,
+      "Bankar": 50.6,
+      "Hraðbankar": 803.0
+    },
+    "2008-09": {
+      "Heildarúttekt": 3071.82,
+      "Verslun": 2594.82,
+      "Bankar": 44.0,
+      "Hraðbankar": 433.0
+    },
+    "2008-10": {
+      "Heildarúttekt": 2617.06,
+      "Verslun": 2241.36,
+      "Bankar": 43.7,
+      "Hraðbankar": 332.0
+    },
+    "2008-11": {
+      "Heildarúttekt": 2167.38,
+      "Verslun": 1871.38,
+      "Bankar": 27.0,
+      "Hraðbankar": 269.0
+    },
+    "2008-12": {
+      "Heildarúttekt": 2022.65,
+      "Verslun": 1684.65,
+      "Bankar": 48.0,
+      "Hraðbankar": 290.0
+    },
+    "2009-01": {
+      "Heildarúttekt": 1947.19,
+      "Verslun": 1667.19,
+      "Bankar": 33.5,
+      "Hraðbankar": 246.5
+    },
+    "2009-02": {
+      "Heildarúttekt": 1924.73,
+      "Verslun": 1629.73,
+      "Bankar": 33.6,
+      "Hraðbankar": 261.4
+    },
+    "2009-03": {
+      "Heildarúttekt": 2171.41,
+      "Verslun": 1861.81,
+      "Bankar": 32.7,
+      "Hraðbankar": 276.9
+    },
+    "2009-04": {
+      "Heildarúttekt": 2785.25,
+      "Verslun": 2356.35,
+      "Bankar": 50.9,
+      "Hraðbankar": 378.0
+    },
+    "2009-05": {
+      "Heildarúttekt": 3610.04,
+      "Verslun": 3137.44,
+      "Bankar": 39.3,
+      "Hraðbankar": 433.3
+    },
+    "2009-06": {
+      "Heildarúttekt": 6043.49,
+      "Verslun": 5089.69,
+      "Bankar": 58.6,
+      "Hraðbankar": 895.2
+    },
+    "2009-07": {
+      "Heildarúttekt": 8690.34,
+      "Verslun": 7140.04,
+      "Bankar": 80.8,
+      "Hraðbankar": 1469.5
+    },
+    "2009-08": {
+      "Heildarúttekt": 9070.47,
+      "Verslun": 7477.17,
+      "Bankar": 70.4,
+      "Hraðbankar": 1522.9
+    },
+    "2009-09": {
+      "Heildarúttekt": 4666.33,
+      "Verslun": 3838.23,
+      "Bankar": 56.6,
+      "Hraðbankar": 771.5
+    },
+    "2009-10": {
+      "Heildarúttekt": 2894.34,
+      "Verslun": 2398.84,
+      "Bankar": 52.3,
+      "Hraðbankar": 443.2
+    },
+    "2009-11": {
+      "Heildarúttekt": 2320.24,
+      "Verslun": 1930.34,
+      "Bankar": 36.3,
+      "Hraðbankar": 353.6
+    },
+    "2009-12": {
+      "Heildarúttekt": 2193.73,
+      "Verslun": 1817.13,
+      "Bankar": 41.9,
+      "Hraðbankar": 334.7
+    },
+    "2010-01": {
+      "Heildarúttekt": 2332.63,
+      "Verslun": 1954.03,
+      "Bankar": 42.19,
+      "Hraðbankar": 336.41
+    },
+    "2010-02": {
+      "Heildarúttekt": 2444.74,
+      "Verslun": 2071.86,
+      "Bankar": 37.75,
+      "Hraðbankar": 335.13
+    },
+    "2010-03": {
+      "Heildarúttekt": 2926.76,
+      "Verslun": 2504.0,
+      "Bankar": 38.85,
+      "Hraðbankar": 383.91
+    },
+    "2010-04": {
+      "Heildarúttekt": 2904.77,
+      "Verslun": 2432.63,
+      "Bankar": 46.65,
+      "Hraðbankar": 425.48
+    },
+    "2010-05": {
+      "Heildarúttekt": 3330.13,
+      "Verslun": 2798.87,
+      "Bankar": 45.29,
+      "Hraðbankar": 485.97
+    },
+    "2010-06": {
+      "Heildarúttekt": 5477.31,
+      "Verslun": 4527.02,
+      "Bankar": 59.13,
+      "Hraðbankar": 891.16
+    },
+    "2010-07": {
+      "Heildarúttekt": 8557.33,
+      "Verslun": 6939.9,
+      "Bankar": 101.2,
+      "Hraðbankar": 1516.23
+    },
+    "2010-08": {
+      "Heildarúttekt": 8363.15,
+      "Verslun": 6802.85,
+      "Bankar": 88.26,
+      "Hraðbankar": 1472.05
+    },
+    "2010-09": {
+      "Heildarúttekt": 4361.75,
+      "Verslun": 3597.44,
+      "Bankar": 49.28,
+      "Hraðbankar": 715.03
+    },
+    "2010-10": {
+      "Heildarúttekt": 2995.37,
+      "Verslun": 2491.99,
+      "Bankar": 48.8,
+      "Hraðbankar": 454.58
+    },
+    "2010-11": {
+      "Heildarúttekt": 2429.68,
+      "Verslun": 2005.52,
+      "Bankar": 48.33,
+      "Hraðbankar": 375.83
+    },
+    "2010-12": {
+      "Heildarúttekt": 2253.9,
+      "Verslun": 1854.17,
+      "Bankar": 50.75,
+      "Hraðbankar": 348.97
+    },
+    "2011-01": {
+      "Heildarúttekt": 2635.23,
+      "Verslun": 2227.53,
+      "Bankar": 48.3,
+      "Hraðbankar": 359.4
+    },
+    "2011-02": {
+      "Heildarúttekt": 2620.54,
+      "Verslun": 2238.44,
+      "Bankar": 41.3,
+      "Hraðbankar": 340.8
+    },
+    "2011-03": {
+      "Heildarúttekt": 3472.91,
+      "Verslun": 2995.61,
+      "Bankar": 48.2,
+      "Hraðbankar": 429.1
+    },
+    "2011-04": {
+      "Heildarúttekt": 4000.79,
+      "Verslun": 3463.59,
+      "Bankar": 49.1,
+      "Hraðbankar": 488.1
+    },
+    "2011-05": {
+      "Heildarúttekt": 5047.54,
+      "Verslun": 4430.54,
+      "Bankar": 52.1,
+      "Hraðbankar": 564.9
+    },
+    "2011-06": {
+      "Heildarúttekt": 7951.13,
+      "Verslun": 6778.83,
+      "Bankar": 76.1,
+      "Hraðbankar": 1096.2
+    },
+    "2011-07": {
+      "Heildarúttekt": 10882.43,
+      "Verslun": 9097.13,
+      "Bankar": 107.8,
+      "Hraðbankar": 1677.5
+    },
+    "2011-08": {
+      "Heildarúttekt": 10910.17,
+      "Verslun": 9179.37,
+      "Bankar": 89.95,
+      "Hraðbankar": 1640.85
+    },
+    "2011-09": {
+      "Heildarúttekt": 5528.68,
+      "Verslun": 4616.38,
+      "Bankar": 63.83,
+      "Hraðbankar": 848.47
+    },
+    "2011-10": {
+      "Heildarúttekt": 3573.77,
+      "Verslun": 2965.39,
+      "Bankar": 49.42,
+      "Hraðbankar": 558.95
+    },
+    "2011-11": {
+      "Heildarúttekt": 2740.03,
+      "Verslun": 2301.83,
+      "Bankar": 48.65,
+      "Hraðbankar": 389.55
+    },
+    "2011-12": {
+      "Heildarúttekt": 2697.31,
+      "Verslun": 2235.31,
+      "Bankar": 49.09,
+      "Hraðbankar": 412.92
+    },
+    "2012-01": {
+      "Heildarúttekt": 3007.36,
+      "Verslun": 2525.96,
+      "Bankar": 52.48,
+      "Hraðbankar": 428.92
+    },
+    "2012-02": {
+      "Heildarúttekt": 3207.1,
+      "Verslun": 2732.48,
+      "Bankar": 51.06,
+      "Hraðbankar": 423.57
+    },
+    "2012-03": {
+      "Heildarúttekt": 3795.89,
+      "Verslun": 3267.15,
+      "Bankar": 52.13,
+      "Hraðbankar": 476.61
+    },
+    "2012-04": {
+      "Heildarúttekt": 4446.05,
+      "Verslun": 3814.89,
+      "Bankar": 63.26,
+      "Hraðbankar": 567.9
+    },
+    "2012-05": {
+      "Heildarúttekt": 5847.95,
+      "Verslun": 5102.7,
+      "Bankar": 50.35,
+      "Hraðbankar": 694.89
+    },
+    "2012-06": {
+      "Heildarúttekt": 9378.63,
+      "Verslun": 8024.53,
+      "Bankar": 96.6,
+      "Hraðbankar": 1257.5
+    },
+    "2012-07": {
+      "Heildarúttekt": 13087.38,
+      "Verslun": 11048.15,
+      "Bankar": 126.36,
+      "Hraðbankar": 1912.87
+    },
+    "2012-08": {
+      "Heildarúttekt": 12375.22,
+      "Verslun": 10390.12,
+      "Bankar": 115.47,
+      "Hraðbankar": 1869.62
+    },
+    "2012-09": {
+      "Heildarúttekt": 6767.1,
+      "Verslun": 5746.58,
+      "Bankar": 77.25,
+      "Hraðbankar": 943.26
+    },
+    "2012-10": {
+      "Heildarúttekt": 4515.93,
+      "Verslun": 3843.0,
+      "Bankar": 75.26,
+      "Hraðbankar": 597.67
+    },
+    "2012-11": {
+      "Heildarúttekt": 4215.14,
+      "Verslun": 3557.52,
+      "Bankar": 72.28,
+      "Hraðbankar": 585.35
+    },
+    "2012-12": {
+      "Heildarúttekt": 3802.02,
+      "Verslun": 3215.84,
+      "Bankar": 80.59,
+      "Hraðbankar": 505.6
+    },
+    "2013-01": {
+      "Heildarúttekt": 4352.83,
+      "Verslun": 3820.95,
+      "Bankar": 69.86,
+      "Hraðbankar": 462.02
+    },
+    "2013-02": {
+      "Heildarúttekt": 4564.24,
+      "Verslun": 4006.29,
+      "Bankar": 55.48,
+      "Hraðbankar": 502.47
+    },
+    "2013-03": {
+      "Heildarúttekt": 5487.61,
+      "Verslun": 4807.88,
+      "Bankar": 62.56,
+      "Hraðbankar": 617.17
+    },
+    "2013-04": {
+      "Heildarúttekt": 5204.3,
+      "Verslun": 4584.8,
+      "Bankar": 63.65,
+      "Hraðbankar": 555.85
+    },
+    "2013-05": {
+      "Heildarúttekt": 7092.8,
+      "Verslun": 6253.41,
+      "Bankar": 69.03,
+      "Hraðbankar": 770.36
+    },
+    "2013-06": {
+      "Heildarúttekt": 11348.41,
+      "Verslun": 9874.49,
+      "Bankar": 108.99,
+      "Hraðbankar": 1364.93
+    },
+    "2013-07": {
+      "Heildarúttekt": 15445.55,
+      "Verslun": 13253.12,
+      "Bankar": 144.99,
+      "Hraðbankar": 2047.44
+    },
+    "2013-08": {
+      "Heildarúttekt": 14235.12,
+      "Verslun": 12348.25,
+      "Bankar": 99.66,
+      "Hraðbankar": 1787.22
+    },
+    "2013-09": {
+      "Heildarúttekt": 7495.14,
+      "Verslun": 6580.34,
+      "Bankar": 74.77,
+      "Hraðbankar": 840.02
+    },
+    "2013-10": {
+      "Heildarúttekt": 5699.17,
+      "Verslun": 4963.0,
+      "Bankar": 82.69,
+      "Hraðbankar": 653.48
+    },
+    "2013-11": {
+      "Heildarúttekt": 4944.98,
+      "Verslun": 4253.0,
+      "Bankar": 90.49,
+      "Hraðbankar": 601.49
+    },
+    "2013-12": {
+      "Heildarúttekt": 5206.17,
+      "Verslun": 4473.23,
+      "Bankar": 94.51,
+      "Hraðbankar": 638.43
+    },
+    "2014-01": {
+      "Heildarúttekt": 5489.52,
+      "Verslun": 4847.97,
+      "Bankar": 76.47,
+      "Hraðbankar": 565.08
+    },
+    "2014-02": {
+      "Heildarúttekt": 5728.33,
+      "Verslun": 5066.24,
+      "Bankar": 75.1,
+      "Hraðbankar": 586.99
+    },
+    "2014-03": {
+      "Heildarúttekt": 6868.63,
+      "Verslun": 6136.45,
+      "Bankar": 69.36,
+      "Hraðbankar": 662.82
+    },
+    "2014-04": {
+      "Heildarúttekt": 6724.58,
+      "Verslun": 5982.04,
+      "Bankar": 73.21,
+      "Hraðbankar": 669.33
+    },
+    "2014-05": {
+      "Heildarúttekt": 9062.86,
+      "Verslun": 8078.78,
+      "Bankar": 87.43,
+      "Hraðbankar": 896.65
+    },
+    "2014-06": {
+      "Heildarúttekt": 14054.92,
+      "Verslun": 12411.14,
+      "Bankar": 108.13,
+      "Hraðbankar": 1535.65
+    },
+    "2014-07": {
+      "Heildarúttekt": 18507.1,
+      "Verslun": 16177.77,
+      "Bankar": 137.37,
+      "Hraðbankar": 2191.96
+    },
+    "2014-08": {
+      "Heildarúttekt": 17034.67,
+      "Verslun": 15022.2,
+      "Bankar": 105.9,
+      "Hraðbankar": 1906.57
+    },
+    "2014-09": {
+      "Heildarúttekt": 9365.66,
+      "Verslun": 8353.58,
+      "Bankar": 98.57,
+      "Hraðbankar": 913.51
+    },
+    "2014-10": {
+      "Heildarúttekt": 7181.25,
+      "Verslun": 6442.46,
+      "Bankar": 74.48,
+      "Hraðbankar": 664.31
+    },
+    "2014-11": {
+      "Heildarúttekt": 6500.16,
+      "Verslun": 5771.65,
+      "Bankar": 73.54,
+      "Hraðbankar": 654.97
+    },
+    "2014-12": {
+      "Heildarúttekt": 6534.42,
+      "Verslun": 5794.56,
+      "Bankar": 92.34,
+      "Hraðbankar": 647.52
+    },
+    "2015-01": {
+      "Heildarúttekt": 7277.26,
+      "Verslun": 6589.4,
+      "Bankar": 72.72,
+      "Hraðbankar": 615.14
+    },
+    "2015-02": {
+      "Heildarúttekt": 7967.84,
+      "Verslun": 7240.07,
+      "Bankar": 69.43,
+      "Hraðbankar": 658.34
+    },
+    "2015-03": {
+      "Heildarúttekt": 9788.98,
+      "Verslun": 8922.37,
+      "Bankar": 72.55,
+      "Hraðbankar": 794.06
+    },
+    "2015-04": {
+      "Heildarúttekt": 9308.83,
+      "Verslun": 8537.49,
+      "Bankar": 70.43,
+      "Hraðbankar": 700.91
+    },
+    "2015-05": {
+      "Heildarúttekt": 13192.96,
+      "Verslun": 12076.48,
+      "Bankar": 72.13,
+      "Hraðbankar": 1044.35
+    },
+    "2015-06": {
+      "Heildarúttekt": 18384.99,
+      "Verslun": 16701.65,
+      "Bankar": 118.24,
+      "Hraðbankar": 1565.1
+    },
+    "2015-07": {
+      "Heildarúttekt": 24046.27,
+      "Verslun": 21619.62,
+      "Bankar": 133.69,
+      "Hraðbankar": 2292.96
+    },
+    "2015-08": {
+      "Heildarúttekt": 22145.66,
+      "Verslun": 20003.69,
+      "Bankar": 113.58,
+      "Hraðbankar": 2028.39
+    },
+    "2015-09": {
+      "Heildarúttekt": 13639.08,
+      "Verslun": 12437.85,
+      "Bankar": 92.32,
+      "Hraðbankar": 1108.91
+    },
+    "2015-10": {
+      "Heildarúttekt": 10448.13,
+      "Verslun": 9586.78,
+      "Bankar": 68.02,
+      "Hraðbankar": 793.33
+    },
+    "2015-11": {
+      "Heildarúttekt": 9150.45,
+      "Verslun": 8381.49,
+      "Bankar": 68.07,
+      "Hraðbankar": 700.89
+    },
+    "2015-12": {
+      "Heildarúttekt": 9444.93,
+      "Verslun": 8664.31,
+      "Bankar": 79.09,
+      "Hraðbankar": 701.53
+    },
+    "2016-01": {
+      "Heildarúttekt": 11657.25,
+      "Verslun": 11007.12,
+      "Bankar": 48.78,
+      "Hraðbankar": 601.35
+    },
+    "2016-02": {
+      "Heildarúttekt": 13150.73,
+      "Verslun": 12313.51,
+      "Bankar": 59.15,
+      "Hraðbankar": 778.07
+    },
+    "2016-03": {
+      "Heildarúttekt": 15043.75,
+      "Verslun": 14125.32,
+      "Bankar": 61.5,
+      "Hraðbankar": 856.93
+    },
+    "2016-04": {
+      "Heildarúttekt": 14612.51,
+      "Verslun": 13778.99,
+      "Bankar": 53.41,
+      "Hraðbankar": 780.11
+    },
+    "2016-05": {
+      "Heildarúttekt": 19871.13,
+      "Verslun": 18654.41,
+      "Bankar": 41.31,
+      "Hraðbankar": 1175.41
+    },
+    "2016-06": {
+      "Heildarúttekt": 26111.83,
+      "Verslun": 24126.39,
+      "Bankar": 74.58,
+      "Hraðbankar": 1910.86
+    },
+    "2016-07": {
+      "Heildarúttekt": 31797.76,
+      "Verslun": 29181.38,
+      "Bankar": 73.57,
+      "Hraðbankar": 2542.81
+    },
+    "2016-08": {
+      "Heildarúttekt": 30990.88,
+      "Verslun": 28568.7,
+      "Bankar": 61.55,
+      "Hraðbankar": 2360.63
+    },
+    "2016-09": {
+      "Heildarúttekt": 21684.22,
+      "Verslun": 20233.28,
+      "Bankar": 79.0,
+      "Hraðbankar": 1371.94
+    },
+    "2016-10": {
+      "Heildarúttekt": 17454.71,
+      "Verslun": 16421.57,
+      "Bankar": 52.92,
+      "Hraðbankar": 980.22
+    },
+    "2016-11": {
+      "Heildarúttekt": 15374.0,
+      "Verslun": 14560.64,
+      "Bankar": 40.67,
+      "Hraðbankar": 772.69
+    },
+    "2016-12": {
+      "Heildarúttekt": 14937.77,
+      "Verslun": 14065.12,
+      "Bankar": 43.64,
+      "Hraðbankar": 829.01
+    },
+    "2017-01": {
+      "Heildarúttekt": 17847.41,
+      "Verslun": 17076.88,
+      "Bankar": 36.62,
+      "Hraðbankar": 733.92
+    },
+    "2017-02": {
+      "Heildarúttekt": 17374.54,
+      "Verslun": 16498.5,
+      "Bankar": 31.82,
+      "Hraðbankar": 844.22
+    },
+    "2017-03": {
+      "Heildarúttekt": 20445.37,
+      "Verslun": 19451.55,
+      "Bankar": 41.02,
+      "Hraðbankar": 952.8
+    },
+    "2017-04": {
+      "Heildarúttekt": 19197.25,
+      "Verslun": 18344.55,
+      "Bankar": 29.55,
+      "Hraðbankar": 823.14
+    },
+    "2017-05": {
+      "Heildarúttekt": 21626.46,
+      "Verslun": 20634.17,
+      "Bankar": 30.15,
+      "Hraðbankar": 962.14
+    },
+    "2017-06": {
+      "Heildarúttekt": 27799.57,
+      "Verslun": 26127.41,
+      "Bankar": 50.65,
+      "Hraðbankar": 1621.51
+    },
+    "2017-07": {
+      "Heildarúttekt": 33558.91,
+      "Verslun": 31515.65,
+      "Bankar": 58.33,
+      "Hraðbankar": 1984.92
+    },
+    "2017-08": {
+      "Heildarúttekt": 33066.13,
+      "Verslun": 31184.81,
+      "Bankar": 62.92,
+      "Hraðbankar": 1818.4
+    },
+    "2017-09": {
+      "Heildarúttekt": 24496.81,
+      "Verslun": 23275.69,
+      "Bankar": 46.79,
+      "Hraðbankar": 1174.33
+    },
+    "2017-10": {
+      "Heildarúttekt": 20186.84,
+      "Verslun": 19318.87,
+      "Bankar": 27.97,
+      "Hraðbankar": 840.0
+    },
+    "2017-11": {
+      "Heildarúttekt": 14463.29,
+      "Verslun": 13838.93,
+      "Bankar": 27.83,
+      "Hraðbankar": 596.53
+    },
+    "2017-12": {
+      "Heildarúttekt": 14378.47,
+      "Verslun": 13697.67,
+      "Bankar": 29.85,
+      "Hraðbankar": 650.95
+    },
+    "2018-01": {
+      "Heildarúttekt": 15834.18,
+      "Verslun": 15169.94,
+      "Bankar": 25.31,
+      "Hraðbankar": 638.93
+    },
+    "2018-02": {
+      "Heildarúttekt": 16263.19,
+      "Verslun": 15508.93,
+      "Bankar": 32.16,
+      "Hraðbankar": 722.1
+    },
+    "2018-03": {
+      "Heildarúttekt": 18459.7,
+      "Verslun": 17603.68,
+      "Bankar": 23.69,
+      "Hraðbankar": 832.33
+    },
+    "2018-04": {
+      "Heildarúttekt": 15927.86,
+      "Verslun": 15222.98,
+      "Bankar": 28.39,
+      "Hraðbankar": 676.49
+    },
+    "2018-05": {
+      "Heildarúttekt": 21238.18,
+      "Verslun": 20218.62,
+      "Bankar": 29.97,
+      "Hraðbankar": 989.59
+    },
+    "2018-06": {
+      "Heildarúttekt": 27959.69,
+      "Verslun": 26477.2,
+      "Bankar": 42.18,
+      "Hraðbankar": 1440.31
+    },
+    "2018-07": {
+      "Heildarúttekt": 33536.77,
+      "Verslun": 31728.44,
+      "Bankar": 46.29,
+      "Hraðbankar": 1762.05
+    },
+    "2018-08": {
+      "Heildarúttekt": 33635.79,
+      "Verslun": 31908.29,
+      "Bankar": 48.44,
+      "Hraðbankar": 1679.07
+    },
+    "2018-09": {
+      "Heildarúttekt": 24559.84,
+      "Verslun": 23378.4,
+      "Bankar": 35.68,
+      "Hraðbankar": 1145.75
+    },
+    "2018-10": {
+      "Heildarúttekt": 19793.28,
+      "Verslun": 18866.75,
+      "Bankar": 28.66,
+      "Hraðbankar": 897.87
+    },
+    "2018-11": {
+      "Heildarúttekt": 15641.42,
+      "Verslun": 14943.04,
+      "Bankar": 33.2,
+      "Hraðbankar": 665.19
+    },
+    "2018-12": {
+      "Heildarúttekt": 14481.3,
+      "Verslun": 13765.11,
+      "Bankar": 26.75,
+      "Hraðbankar": 689.44
+    },
+    "2019-01": {
+      "Heildarúttekt": 15103.87,
+      "Verslun": 14517.35,
+      "Bankar": 38.08,
+      "Hraðbankar": 548.43
+    },
+    "2019-02": {
+      "Heildarúttekt": 15767.23,
+      "Verslun": 15089.77,
+      "Bankar": 26.67,
+      "Hraðbankar": 650.79
+    },
+    "2019-03": {
+      "Heildarúttekt": 18292.14,
+      "Verslun": 17524.5,
+      "Bankar": 26.72,
+      "Hraðbankar": 740.92
+    },
+    "2019-04": {
+      "Heildarúttekt": 14609.48,
+      "Verslun": 13956.91,
+      "Bankar": 27.38,
+      "Hraðbankar": 625.2
+    },
+    "2019-05": {
+      "Heildarúttekt": 18779.59,
+      "Verslun": 17967.05,
+      "Bankar": 32.88,
+      "Hraðbankar": 779.66
+    },
+    "2019-06": {
+      "Heildarúttekt": 24945.84,
+      "Verslun": 23710.5,
+      "Bankar": 32.71,
+      "Hraðbankar": 1202.62
+    },
+    "2019-07": {
+      "Heildarúttekt": 31181.39,
+      "Verslun": 29646.61,
+      "Bankar": 41.1,
+      "Hraðbankar": 1493.69
+    },
+    "2019-08": {
+      "Heildarúttekt": 31358.19,
+      "Verslun": 29916.46,
+      "Bankar": 40.28,
+      "Hraðbankar": 1401.45
+    },
+    "2019-09": {
+      "Heildarúttekt": 22392.6,
+      "Verslun": 21156.51,
+      "Bankar": 32.0,
+      "Hraðbankar": 1204.09
+    },
+    "2019-10": {
+      "Heildarúttekt": 17515.49,
+      "Verslun": 16817.17,
+      "Bankar": 27.83,
+      "Hraðbankar": 670.49
+    },
+    "2019-11": {
+      "Heildarúttekt": 13392.46,
+      "Verslun": 12857.11,
+      "Bankar": 24.8,
+      "Hraðbankar": 510.56
+    },
+    "2019-12": {
+      "Heildarúttekt": 12978.09,
+      "Verslun": 12440.93,
+      "Bankar": 21.37,
+      "Hraðbankar": 515.79
+    },
+    "2020-01": {
+      "Heildarúttekt": 13957.99,
+      "Verslun": 13514.09,
+      "Bankar": 19.88,
+      "Hraðbankar": 424.02
+    },
+    "2020-02": {
+      "Heildarúttekt": 14181.79,
+      "Verslun": 13650.98,
+      "Bankar": 13.61,
+      "Hraðbankar": 517.21
+    },
+    "2020-03": {
+      "Heildarúttekt": 6202.1,
+      "Verslun": 6098.28,
+      "Bankar": 9.05,
+      "Hraðbankar": 94.77
+    },
+    "2020-04": {
+      "Heildarúttekt": 390.05,
+      "Verslun": 244.39,
+      "Bankar": 4.24,
+      "Hraðbankar": 141.42
+    },
+    "2020-05": {
+      "Heildarúttekt": 814.03,
+      "Verslun": 666.91,
+      "Bankar": 9.93,
+      "Hraðbankar": 137.19
+    },
+    "2020-06": {
+      "Heildarúttekt": 2432.13,
+      "Verslun": 2211.39,
+      "Bankar": 13.21,
+      "Hraðbankar": 207.53
+    },
+    "2020-07": {
+      "Heildarúttekt": 9645.45,
+      "Verslun": 9104.1,
+      "Bankar": 20.98,
+      "Hraðbankar": 520.37
+    },
+    "2020-08": {
+      "Heildarúttekt": 9348.47,
+      "Verslun": 8841.93,
+      "Bankar": 22.66,
+      "Hraðbankar": 483.88
+    },
+    "2020-09": {
+      "Heildarúttekt": 2275.63,
+      "Verslun": 2059.57,
+      "Bankar": 15.74,
+      "Hraðbankar": 200.32
+    },
+    "2020-10": {
+      "Heildarúttekt": 1677.45,
+      "Verslun": 1492.94,
+      "Bankar": 9.72,
+      "Hraðbankar": 174.79
+    },
+    "2020-11": {
+      "Heildarúttekt": 1627.59,
+      "Verslun": 1468.11,
+      "Bankar": 5.45,
+      "Hraðbankar": 154.03
+    },
+    "2020-12": {
+      "Heildarúttekt": 1694.3,
+      "Verslun": 1531.32,
+      "Bankar": 6.3,
+      "Hraðbankar": 156.67
+    },
+    "2021-01": {
+      "Heildarúttekt": 1439.64,
+      "Verslun": 1289.5,
+      "Bankar": 14.19,
+      "Hraðbankar": 135.95
+    },
+    "2021-02": {
+      "Heildarúttekt": 1368.96,
+      "Verslun": 1218.46,
+      "Bankar": 12.27,
+      "Hraðbankar": 138.22
+    },
+    "2021-03": {
+      "Heildarúttekt": 2029.59,
+      "Verslun": 1858.67,
+      "Bankar": 11.64,
+      "Hraðbankar": 159.28
+    },
+    "2021-04": {
+      "Heildarúttekt": 2911.64,
+      "Verslun": 2749.49,
+      "Bankar": 14.73,
+      "Hraðbankar": 147.42
+    },
+    "2021-05": {
+      "Heildarúttekt": 5657.1,
+      "Verslun": 5427.84,
+      "Bankar": 9.36,
+      "Hraðbankar": 219.9
+    },
+    "2021-06": {
+      "Heildarúttekt": 12622.21,
+      "Verslun": 12259.49,
+      "Bankar": 11.44,
+      "Hraðbankar": 351.29
+    },
+    "2021-07": {
+      "Heildarúttekt": 23666.68,
+      "Verslun": 22919.9,
+      "Bankar": 14.77,
+      "Hraðbankar": 732.01
+    },
+    "2021-08": {
+      "Heildarúttekt": 25218.66,
+      "Verslun": 24399.71,
+      "Bankar": 16.2,
+      "Hraðbankar": 802.76
+    },
+    "2021-09": {
+      "Heildarúttekt": 19382.78,
+      "Verslun": 18837.94,
+      "Bankar": 15.43,
+      "Hraðbankar": 529.41
+    },
+    "2021-10": {
+      "Heildarúttekt": 15334.2,
+      "Verslun": 14880.93,
+      "Bankar": 13.8,
+      "Hraðbankar": 439.47
+    },
+    "2021-11": {
+      "Heildarúttekt": 10777.67,
+      "Verslun": 10449.77,
+      "Bankar": 9.52,
+      "Hraðbankar": 318.38
+    },
+    "2021-12": {
+      "Heildarúttekt": 9228.92,
+      "Verslun": 8942.37,
+      "Bankar": 11.61,
+      "Hraðbankar": 274.94
+    },
+    "2022-01": {
+      "Heildarúttekt": 7543.43,
+      "Verslun": 7323.17,
+      "Bankar": 8.27,
+      "Hraðbankar": 212.0
+    },
+    "2022-02": {
+      "Heildarúttekt": 10453.26,
+      "Verslun": 10167.1,
+      "Bankar": 6.76,
+      "Hraðbankar": 279.4
+    },
+    "2022-03": {
+      "Heildarúttekt": 14610.17,
+      "Verslun": 14270.27,
+      "Bankar": 13.46,
+      "Hraðbankar": 326.44
+    },
+    "2022-04": {
+      "Heildarúttekt": 14757.18,
+      "Verslun": 14387.56,
+      "Bankar": 10.02,
+      "Hraðbankar": 359.61
+    },
+    "2022-05": {
+      "Heildarúttekt": 20028.2,
+      "Verslun": 19543.08,
+      "Bankar": 15.04,
+      "Hraðbankar": 470.08
+    },
+    "2022-06": {
+      "Heildarúttekt": 29717.99,
+      "Verslun": 29029.27,
+      "Bankar": 15.59,
+      "Hraðbankar": 673.13
+    },
+    "2022-07": {
+      "Heildarúttekt": 37397.56,
+      "Verslun": 36507.76,
+      "Bankar": 24.95,
+      "Hraðbankar": 864.85
+    },
+    "2022-08": {
+      "Heildarúttekt": 38669.39,
+      "Verslun": 37824.69,
+      "Bankar": 21.58,
+      "Hraðbankar": 823.12
+    },
+    "2022-09": {
+      "Heildarúttekt": 27662.41,
+      "Verslun": 27098.11,
+      "Bankar": 19.35,
+      "Hraðbankar": 544.95
+    },
+    "2022-10": {
+      "Heildarúttekt": 20759.68,
+      "Verslun": 20346.88,
+      "Bankar": 15.73,
+      "Hraðbankar": 397.06
+    },
+    "2022-11": {
+      "Heildarúttekt": 16663.17,
+      "Verslun": 16326.21,
+      "Bankar": 11.2,
+      "Hraðbankar": 325.76
+    },
+    "2022-12": {
+      "Heildarúttekt": 15764.39,
+      "Verslun": 15450.65,
+      "Bankar": 11.13,
+      "Hraðbankar": 302.61
+    },
+    "2023-01": {
+      "Heildarúttekt": 16776.26,
+      "Verslun": 16499.2,
+      "Bankar": 11.06,
+      "Hraðbankar": 266.0
+    },
+    "2023-02": {
+      "Heildarúttekt": 18793.82,
+      "Verslun": 18482.41,
+      "Bankar": 9.63,
+      "Hraðbankar": 301.78
+    },
+    "2023-03": {
+      "Heildarúttekt": 22303.72,
+      "Verslun": 21947.29,
+      "Bankar": 14.1,
+      "Hraðbankar": 342.34
+    },
+    "2023-04": {
+      "Heildarúttekt": 20463.75,
+      "Verslun": 20102.09,
+      "Bankar": 8.58,
+      "Hraðbankar": 353.08
+    },
+    "2023-05": {
+      "Heildarúttekt": 27218.86,
+      "Verslun": 26769.55,
+      "Bankar": 11.26,
+      "Hraðbankar": 438.05
+    },
+    "2023-06": {
+      "Heildarúttekt": 37207.72,
+      "Verslun": 36580.84,
+      "Bankar": 17.92,
+      "Hraðbankar": 608.96
+    },
+    "2023-07": {
+      "Heildarúttekt": 44951.36,
+      "Verslun": 44177.3,
+      "Bankar": 18.99,
+      "Hraðbankar": 755.08
+    },
+    "2023-08": {
+      "Heildarúttekt": 44103.25,
+      "Verslun": 43399.0,
+      "Bankar": 13.14,
+      "Hraðbankar": 691.12
+    },
+    "2023-09": {
+      "Heildarúttekt": 34277.9,
+      "Verslun": 33760.9,
+      "Bankar": 17.0,
+      "Hraðbankar": 500.0
+    },
+    "2023-10": {
+      "Heildarúttekt": 27377.11,
+      "Verslun": 26974.93,
+      "Bankar": 10.56,
+      "Hraðbankar": 391.62
+    },
+    "2023-11": {
+      "Heildarúttekt": 18604.17,
+      "Verslun": 18323.01,
+      "Bankar": 7.46,
+      "Hraðbankar": 273.7
+    },
+    "2023-12": {
+      "Heildarúttekt": 16235.82,
+      "Verslun": 15956.01,
+      "Bankar": 10.25,
+      "Hraðbankar": 269.57
+    },
+    "2024-01": {
+      "Heildarúttekt": 17003.41,
+      "Verslun": 16781.44,
+      "Bankar": 5.34,
+      "Hraðbankar": 216.63
+    },
+    "2024-02": {
+      "Heildarúttekt": 20627.39,
+      "Verslun": 20433.97,
+      "Bankar": 5.28,
+      "Hraðbankar": 188.15
+    },
+    "2024-03": {
+      "Heildarúttekt": 25405.89,
+      "Verslun": 25176.87,
+      "Bankar": 5.02,
+      "Hraðbankar": 224.0
+    },
+    "2024-04": {
+      "Heildarúttekt": 21350.74,
+      "Verslun": 21145.33,
+      "Bankar": 6.14,
+      "Hraðbankar": 199.27
+    },
+    "2024-05": {
+      "Heildarúttekt": 26690.94,
+      "Verslun": 26463.36,
+      "Bankar": 5.08,
+      "Hraðbankar": 222.49
+    },
+    "2024-06": {
+      "Heildarúttekt": 36301.48,
+      "Verslun": 35999.64,
+      "Bankar": 5.03,
+      "Hraðbankar": 296.8
+    },
+    "2024-07": {
+      "Heildarúttekt": 47493.9,
+      "Verslun": 47105.09,
+      "Bankar": 14.06,
+      "Hraðbankar": 374.75
+    },
+    "2024-08": {
+      "Heildarúttekt": 48064.87,
+      "Verslun": 47710.68,
+      "Bankar": 13.17,
+      "Hraðbankar": 341.02
+    },
+    "2024-09": {
+      "Heildarúttekt": 37672.13,
+      "Verslun": 37413.37,
+      "Bankar": 17.2,
+      "Hraðbankar": 241.56
+    },
+    "2024-10": {
+      "Heildarúttekt": 30309.34,
+      "Verslun": 30103.16,
+      "Bankar": 12.99,
+      "Hraðbankar": 193.19
+    },
+    "2024-11": {
+      "Heildarúttekt": 20965.78,
+      "Verslun": 20800.6,
+      "Bankar": 6.45,
+      "Hraðbankar": 158.73
+    },
+    "2024-12": {
+      "Heildarúttekt": 20051.74,
+      "Verslun": 19900.45,
+      "Bankar": 8.17,
+      "Hraðbankar": 143.11
+    },
+    "2025-01": {
+      "Heildarúttekt": 19100.11,
+      "Verslun": 18977.45,
+      "Bankar": 5.2,
+      "Hraðbankar": 117.45
+    },
+    "2025-02": {
+      "Heildarúttekt": 21667.94,
+      "Verslun": 21529.15,
+      "Bankar": 5.7,
+      "Hraðbankar": 133.09
+    },
+    "2025-03": {
+      "Heildarúttekt": 24975.31,
+      "Verslun": 24802.84,
+      "Bankar": 8.54,
+      "Hraðbankar": 163.94
+    },
+    "2025-04": {
+      "Heildarúttekt": 23476.39,
+      "Verslun": 23300.26,
+      "Bankar": 7.13,
+      "Hraðbankar": 169.0
+    },
+    "2025-05": {
+      "Heildarúttekt": 28585.71,
+      "Verslun": 28384.88,
+      "Bankar": 7.61,
+      "Hraðbankar": 193.22
+    },
+    "2025-06": {
+      "Heildarúttekt": 39966.82,
+      "Verslun": 39704.24,
+      "Bankar": 9.69,
+      "Hraðbankar": 252.89
+    },
+    "2025-07": {
+      "Heildarúttekt": 50558.58,
+      "Verslun": 50228.58,
+      "Bankar": 12.27,
+      "Hraðbankar": 317.73
+    },
+    "2025-08": {
+      "Heildarúttekt": 50958.16,
+      "Verslun": 50648.82,
+      "Bankar": 11.28,
+      "Hraðbankar": 298.07
+    },
+    "2025-09": {
+      "Heildarúttekt": 36645.45,
+      "Verslun": 36418.98,
+      "Bankar": 11.28,
+      "Hraðbankar": 215.19
+    },
+    "2025-10": {
+      "Heildarúttekt": 27290.5,
+      "Verslun": 27115.46,
+      "Bankar": 9.33,
+      "Hraðbankar": 165.71
+    },
+    "2025-11": {
+      "Heildarúttekt": 19138.29,
+      "Verslun": 19002.21,
+      "Bankar": 6.32,
+      "Hraðbankar": 129.75
+    }
+  }
+}
