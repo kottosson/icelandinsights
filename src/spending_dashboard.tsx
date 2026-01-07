@@ -555,7 +555,7 @@ const SpendingDashboard = () => {
             </div>
 
             {/* ========== PRIMARY CHART: Monthly Comparison ========== */}
-            <div className="card p-6 mb-6 animate-fade-in delay-2">
+            <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-2">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
                 <div>
                   <h2 className="section-title">Monthly Card Turnover</h2>
@@ -563,7 +563,7 @@ const SpendingDashboard = () => {
                     {priorYear} vs {currentYear} · Inflation-adjusted to {priorYear} ISK
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded bg-neutral-300"></div>
                     <span className="text-xs text-neutral-500">{priorYear}</span>
@@ -579,31 +579,32 @@ const SpendingDashboard = () => {
                 </div>
               </div>
               
-              <ResponsiveContainer width="100%" height={320}>
-                <ComposedChart data={monthlyChartData} margin={{ top: 10, right: 50, left: 0, bottom: 5 }}>
+              <ResponsiveContainer width="100%" height={isMobile ? 280 : 320}>
+                <ComposedChart data={monthlyChartData} margin={{ top: 10, right: isMobile ? 40 : 50, left: isMobile ? -10 : 0, bottom: 5 }} barGap={isMobile ? 1 : 2} barCategoryGap={isMobile ? '15%' : '20%'}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
                   <XAxis 
                     dataKey="month"
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
+                    tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
                     axisLine={false}
                     tickLine={false}
+                    interval={isMobile ? 1 : 0}
                   />
                   <YAxis 
                     yAxisId="left"
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
+                    tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={(value) => `${(value/1000).toFixed(0)}B`}
-                    width={45}
+                    width={isMobile ? 35 : 45}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
-                    tick={{ fontSize: 10, fill: '#6366F1' }}
+                    tick={{ fontSize: isMobile ? 9 : 10, fill: '#6366F1' }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={(value) => `${value > 0 ? '+' : ''}${value.toFixed(0)}%`}
-                    width={45}
+                    width={isMobile ? 35 : 45}
                     domain={[-20, 20]}
                     ticks={[-20, -10, 0, 10, 20]}
                   />
@@ -645,7 +646,7 @@ const SpendingDashboard = () => {
             </div>
 
             {/* ========== SECONDARY CHART: Spending per Visitor ========== */}
-            <div className="card p-6 mb-6 animate-fade-in delay-3" style={{ background: 'linear-gradient(135deg, #ECFDF5 0%, #F0FDFA 100%)' }}>
+            <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3" style={{ background: 'linear-gradient(135deg, #ECFDF5 0%, #F0FDFA 100%)' }}>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
                 <div>
                   <div className="flex items-center gap-2">
@@ -656,7 +657,7 @@ const SpendingDashboard = () => {
                     Real ISK per foreign visitor · Adjusted to {priorYear} prices
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded bg-neutral-300"></div>
                     <span className="text-xs text-neutral-500">{priorYear}</span>
@@ -672,31 +673,32 @@ const SpendingDashboard = () => {
                 </div>
               </div>
               
-              <ResponsiveContainer width="100%" height={280}>
-                <ComposedChart data={spvChartData} margin={{ top: 10, right: 50, left: 0, bottom: 5 }}>
+              <ResponsiveContainer width="100%" height={isMobile ? 260 : 280}>
+                <ComposedChart data={spvChartData} margin={{ top: 10, right: isMobile ? 40 : 50, left: isMobile ? -10 : 0, bottom: 5 }} barGap={isMobile ? 1 : 2} barCategoryGap={isMobile ? '15%' : '20%'}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#D1FAE5" vertical={false} />
                   <XAxis 
                     dataKey="month"
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
+                    tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
                     axisLine={false}
                     tickLine={false}
+                    interval={isMobile ? 1 : 0}
                   />
                   <YAxis 
                     yAxisId="left"
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
+                    tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={(value) => `${Math.round(value)}k`}
-                    width={45}
+                    width={isMobile ? 35 : 45}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
-                    tick={{ fontSize: 10, fill: '#6366F1' }}
+                    tick={{ fontSize: isMobile ? 9 : 10, fill: '#6366F1' }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={(value) => `${value > 0 ? '+' : ''}${value.toFixed(0)}%`}
-                    width={45}
+                    width={isMobile ? 35 : 45}
                     domain={[-25, 25]}
                     ticks={[-20, -10, 0, 10, 20]}
                   />
@@ -745,7 +747,7 @@ const SpendingDashboard = () => {
             </div>
 
             {/* ========== ANNUAL TOTALS CHART ========== */}
-            <div className="card p-6 mb-6 animate-fade-in delay-3">
+            <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3">
               <div className="mb-6">
                 <h2 className="section-title">Annual Card Turnover</h2>
                 <p className="text-xs text-neutral-500 mt-1">
@@ -753,7 +755,7 @@ const SpendingDashboard = () => {
                 </p>
               </div>
               
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={isMobile ? 220 : 260}>
                 <BarChart 
                   data={(() => {
                     const yearTotals: Record<number, { total: number; months: number }> = {};
@@ -775,21 +777,25 @@ const SpendingDashboard = () => {
                       }))
                       .sort((a, b) => parseInt(a.year) - parseInt(b.year));
                   })()}
-                  margin={{ top: 20, right: 10, left: 0, bottom: 5 }}
+                  margin={{ top: 20, right: 10, left: isMobile ? -10 : 0, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
                   <XAxis 
                     dataKey="label"
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
+                    tick={{ fontSize: isMobile ? 9 : 11, fill: '#6B7280' }}
                     axisLine={false}
                     tickLine={false}
+                    interval={0}
+                    angle={isMobile ? -45 : 0}
+                    textAnchor={isMobile ? 'end' : 'middle'}
+                    height={isMobile ? 40 : 30}
                   />
                   <YAxis 
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
+                    tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={(val) => `${(val/1000).toFixed(0)}B`}
-                    width={45}
+                    width={isMobile ? 35 : 45}
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -833,18 +839,18 @@ const SpendingDashboard = () => {
                 </BarChart>
               </ResponsiveContainer>
               
-              <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-neutral-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-emerald-500"></div>
-                  <span className="text-xs text-neutral-500">Normal years</span>
+              <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-4 pt-4 border-t border-neutral-100">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-emerald-500"></div>
+                  <span className="text-[10px] md:text-xs text-neutral-500">Normal</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-neutral-300"></div>
-                  <span className="text-xs text-neutral-500">COVID years</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-neutral-300"></div>
+                  <span className="text-[10px] md:text-xs text-neutral-500">COVID</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-emerald-300"></div>
-                  <span className="text-xs text-neutral-500">Year to date</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-emerald-300"></div>
+                  <span className="text-[10px] md:text-xs text-neutral-500">YTD</span>
                 </div>
               </div>
             </div>
