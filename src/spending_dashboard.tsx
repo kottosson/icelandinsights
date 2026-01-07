@@ -556,11 +556,11 @@ const SpendingDashboard = () => {
 
             {/* ========== PRIMARY CHART: Monthly Comparison ========== */}
             <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-2">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
                 <div>
                   <h2 className="section-title">Monthly Card Turnover</h2>
                   <p className="text-xs text-neutral-500 mt-1">
-                    {priorYear} vs {currentYear} · Inflation-adjusted to {priorYear} ISK
+                    <span className="md:hidden">Last 6 months · </span>{priorYear} vs {currentYear} · Inflation-adjusted
                   </p>
                 </div>
                 <div className="hidden md:flex items-center gap-4">
@@ -579,15 +579,20 @@ const SpendingDashboard = () => {
                 </div>
               </div>
               
-              <ResponsiveContainer width="100%" height={isMobile ? 280 : 320}>
-                <ComposedChart data={monthlyChartData} margin={{ top: 10, right: isMobile ? 40 : 50, left: isMobile ? -10 : 0, bottom: 5 }} barGap={isMobile ? 1 : 2} barCategoryGap={isMobile ? '15%' : '20%'}>
+              <ResponsiveContainer width="100%" height={isMobile ? 260 : 320}>
+                <ComposedChart 
+                  data={isMobile ? monthlyChartData.slice(-6) : monthlyChartData} 
+                  margin={{ top: 10, right: isMobile ? 35 : 50, left: isMobile ? -5 : 0, bottom: 5 }} 
+                  barGap={isMobile ? 2 : 2} 
+                  barCategoryGap={isMobile ? '20%' : '20%'}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
                   <XAxis 
                     dataKey="month"
-                    tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
+                    tick={{ fontSize: 11, fill: '#6B7280' }}
                     axisLine={false}
                     tickLine={false}
-                    interval={isMobile ? 1 : 0}
+                    interval={0}
                   />
                   <YAxis 
                     yAxisId="left"
@@ -643,18 +648,33 @@ const SpendingDashboard = () => {
                   />
                 </ComposedChart>
               </ResponsiveContainer>
+              {/* Mobile legend */}
+              <div className="flex md:hidden items-center justify-center gap-4 mt-3 pt-3 border-t border-neutral-100">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded bg-neutral-300"></div>
+                  <span className="text-[10px] text-neutral-500">{priorYear}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded bg-emerald-500"></div>
+                  <span className="text-[10px] text-neutral-500">{currentYear}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-0.5 bg-indigo-500 rounded"></div>
+                  <span className="text-[10px] text-neutral-500">YoY</span>
+                </div>
+              </div>
             </div>
 
             {/* ========== SECONDARY CHART: Spending per Visitor ========== */}
             <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3" style={{ background: 'linear-gradient(135deg, #ECFDF5 0%, #F0FDFA 100%)' }}>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="section-title">Spending per Visitor</h2>
                     <span className="badge badge-success text-[10px]">Key Metric</span>
                   </div>
                   <p className="text-xs text-neutral-500 mt-1">
-                    Real ISK per foreign visitor · Adjusted to {priorYear} prices
+                    <span className="md:hidden">Last 6 months · </span>Real ISK per visitor · {priorYear} prices
                   </p>
                 </div>
                 <div className="hidden md:flex items-center gap-4">
@@ -673,15 +693,20 @@ const SpendingDashboard = () => {
                 </div>
               </div>
               
-              <ResponsiveContainer width="100%" height={isMobile ? 260 : 280}>
-                <ComposedChart data={spvChartData} margin={{ top: 10, right: isMobile ? 40 : 50, left: isMobile ? -10 : 0, bottom: 5 }} barGap={isMobile ? 1 : 2} barCategoryGap={isMobile ? '15%' : '20%'}>
+              <ResponsiveContainer width="100%" height={isMobile ? 240 : 280}>
+                <ComposedChart 
+                  data={isMobile ? spvChartData.slice(-6) : spvChartData} 
+                  margin={{ top: 10, right: isMobile ? 35 : 50, left: isMobile ? -5 : 0, bottom: 5 }} 
+                  barGap={isMobile ? 2 : 2} 
+                  barCategoryGap={isMobile ? '20%' : '20%'}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#D1FAE5" vertical={false} />
                   <XAxis 
                     dataKey="month"
-                    tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
+                    tick={{ fontSize: 11, fill: '#6B7280' }}
                     axisLine={false}
                     tickLine={false}
-                    interval={isMobile ? 1 : 0}
+                    interval={0}
                   />
                   <YAxis 
                     yAxisId="left"
@@ -723,7 +748,7 @@ const SpendingDashboard = () => {
                       return [`${Math.round(value).toLocaleString()}k ISK`, name];
                     }}
                   />
-                  <Bar yAxisId="left" dataKey={String(priorYear)} fill="#9CA3AF" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Bar yAxisId="left" dataKey={String(priorYear)} fill="#D1D5DB" radius={[4, 4, 0, 0]} maxBarSize={28} />
                   <Bar yAxisId="left" dataKey={String(currentYear)} fill="#059669" radius={[4, 4, 0, 0]} maxBarSize={28} />
                   <Line 
                     yAxisId="right"
@@ -738,7 +763,23 @@ const SpendingDashboard = () => {
                 </ComposedChart>
               </ResponsiveContainer>
               
-              <div className="mt-4 pt-4 border-t border-emerald-200/50 flex items-start gap-2">
+              {/* Mobile legend */}
+              <div className="flex md:hidden items-center justify-center gap-4 mt-3 pt-3 border-t border-emerald-200/50">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded bg-neutral-300"></div>
+                  <span className="text-[10px] text-neutral-500">{priorYear}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded bg-emerald-600"></div>
+                  <span className="text-[10px] text-neutral-500">{currentYear}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-0.5 bg-indigo-500 rounded"></div>
+                  <span className="text-[10px] text-neutral-500">YoY</span>
+                </div>
+              </div>
+              
+              <div className="hidden md:flex mt-4 pt-4 border-t border-emerald-200/50 items-start gap-2">
                 <span className="text-emerald-600">💡</span>
                 <p className="text-xs text-emerald-700">
                   This metric controls for both visitor volume and inflation — showing how much each tourist actually spends in real purchasing power.
@@ -755,7 +796,7 @@ const SpendingDashboard = () => {
                 </p>
               </div>
               
-              <ResponsiveContainer width="100%" height={isMobile ? 220 : 260}>
+              <ResponsiveContainer width="100%" height={isMobile ? 200 : 260}>
                 <BarChart 
                   data={(() => {
                     const yearTotals: Record<number, { total: number; months: number }> = {};
@@ -770,25 +811,22 @@ const SpendingDashboard = () => {
                     return Object.entries(yearTotals)
                       .map(([year, d]) => ({
                         year: year,
-                        label: parseInt(year) === currentYear ? `${year} YTD` : year,
+                        label: parseInt(year) === currentYear ? `'${String(year).slice(-2)}` : `'${String(year).slice(-2)}`,
                         value: d.total,
                         isCovid: parseInt(year) >= 2020 && parseInt(year) <= 2022,
                         isPartial: parseInt(year) === currentYear
                       }))
                       .sort((a, b) => parseInt(a.year) - parseInt(b.year));
                   })()}
-                  margin={{ top: 20, right: 10, left: isMobile ? -10 : 0, bottom: 5 }}
+                  margin={{ top: 20, right: 10, left: isMobile ? -5 : 0, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
                   <XAxis 
                     dataKey="label"
-                    tick={{ fontSize: isMobile ? 9 : 11, fill: '#6B7280' }}
+                    tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
                     axisLine={false}
                     tickLine={false}
                     interval={0}
-                    angle={isMobile ? -45 : 0}
-                    textAnchor={isMobile ? 'end' : 'middle'}
-                    height={isMobile ? 40 : 30}
                   />
                   <YAxis 
                     tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
@@ -806,7 +844,7 @@ const SpendingDashboard = () => {
                       boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
                     }}
                     formatter={(value: any) => [`${(value/1000).toFixed(1)}B ISK`]}
-                    labelFormatter={(label) => `Year: ${label}`}
+                    labelFormatter={(label) => `Year: 20${label.replace("'", "")}`}
                   />
                   <Bar 
                     dataKey="value" 
