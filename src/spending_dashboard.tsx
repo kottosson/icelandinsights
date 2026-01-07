@@ -11,32 +11,35 @@ const styles = `
   }
   
   .nav-link {
-    display: inline-flex;
-    align-items: center;
+    position: relative;
     padding: 8px 16px;
     font-size: 14px;
     font-weight: 500;
     color: #6B7280;
+    text-decoration: none;
     border-radius: 8px;
     transition: all 0.2s ease;
-    text-decoration: none;
   }
   
-  .nav-link:hover { color: #111827; background: rgba(0,0,0,0.04); }
+  .nav-link:hover {
+    color: #111827;
+    background: rgba(0, 0, 0, 0.04);
+  }
   
   .nav-link.active {
-    color: #059669;
-    position: relative;
+    color: #111827;
+    background: rgba(0, 0, 0, 0.06);
   }
   
   .nav-link.active::after {
     content: '';
     position: absolute;
-    bottom: -4px;
-    left: 16px;
-    right: 16px;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
     height: 2px;
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, #3B82F6, #2563EB);
     border-radius: 2px;
   }
   
@@ -244,10 +247,15 @@ const SpendingDashboard = () => {
     const currentSpv = latest.spendingPerVisitor;
     const lastYearSpv = lastYear?.spendingPerVisitor;
     let spvRealChange = 0;
+    let spvNominalChange = 0;
     
-    if (currentSpv && lastYearSpv && currentCpi && lastYearCpi) {
-      const realCurrentSpv = currentSpv * (lastYearCpi / currentCpi);
-      spvRealChange = ((realCurrentSpv - lastYearSpv) / lastYearSpv) * 100;
+    if (currentSpv && lastYearSpv) {
+      spvNominalChange = ((currentSpv - lastYearSpv) / lastYearSpv) * 100;
+      
+      if (currentCpi && lastYearCpi) {
+        const realCurrentSpv = currentSpv * (lastYearCpi / currentCpi);
+        spvRealChange = ((realCurrentSpv - lastYearSpv) / lastYearSpv) * 100;
+      }
     }
     
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -263,6 +271,7 @@ const SpendingDashboard = () => {
       ttmRealChange,
       currentSpv,
       spvRealChange,
+      spvNominalChange,
       arrivals: latest.arrivals,
       lastYearArrivals: lastYear?.arrivals,
       latest,
@@ -311,11 +320,11 @@ const SpendingDashboard = () => {
     
     const currentYear = kpis.latest.year;
     const priorYear = currentYear - 1;
-    const currentMonth = kpis.latest.month;
+    const currentMonth = kpis.latest.month - 1;
     const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const baseCpi = kpis.baseCpi;
     
-    return monthLabels.slice(0, currentMonth).map((label, i) => {
+    return monthLabels.map((label, i) => {
       const month = i + 1;
       const currentRow = data.find(d => d.year === currentYear && d.month === month);
       const priorRow = data.find(d => d.year === priorYear && d.month === month);
@@ -334,9 +343,9 @@ const SpendingDashboard = () => {
       
       return {
         month: label,
-        [priorYear]: priorReal,
-        [currentYear]: currentReal,
-        yoyChange,
+        [priorYear]: i <= currentMonth ? priorReal : null,
+        [currentYear]: i <= currentMonth ? currentReal : null,
+        yoyChange: i <= currentMonth ? yoyChange : null,
       };
     });
   }, [data, kpis]);
@@ -359,47 +368,92 @@ const SpendingDashboard = () => {
     <div className="min-h-screen bg-[#FAFAFA]">
       <style>{styles}</style>
       
-      {/* ========== NAV BAR ========== */}
+      {/* ========== ELITE NAV BAR ========== */}
       <nav className="sticky top-0 z-50 nav-blur" style={{
         background: 'rgba(255, 255, 255, 0.72)',
         borderBottom: '1px solid rgba(0, 0, 0, 0.06)'
       }}>
-        <div className="max-w-6xl mx-auto px-4 md:px-6">
-          <div className="flex items-center justify-between h-14">
-            <a href="/" className="flex items-center gap-3">
-              <img 
-                src="/iceland-insights-logo.png" 
-                alt="Iceland Insights" 
-                style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
-              />
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo/Brand */}
+            <a href="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+              }}>
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3v18h18" />
+                  <path d="M18 9l-5 5-4-4-3 3" />
+                </svg>
+              </div>
+              <span style={{
+                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
+                fontWeight: '600',
+                fontSize: '15px',
+                color: '#111827',
+                letterSpacing: '-0.3px'
+              }}>Iceland Insights</span>
             </a>
             
+            {/* Nav Links */}
             <div className="flex items-center gap-1">
-              <a href="/arrivals" className="nav-link">Arrivals</a>
-              <a href="/spending" className="nav-link active">Card Spending</a>
+              <a href="/arrivals" className="nav-link">
+                Arrivals
+              </a>
+              <a href="/spending" className="nav-link active">
+                Card Spending
+              </a>
               <a href="/hotels" className="nav-link" style={{ opacity: 0.5, pointerEvents: 'none' }}>
                 Hotels
-                <span className="ml-1.5 text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Soon</span>
+                <span className="ml-1.5 text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Soon</span>
               </a>
             </div>
             
-            <div className="hidden md:block">
-              <span className="text-xs text-neutral-400">
+            {/* Right side */}
+            <div className="hidden md:flex items-center gap-2">
+              <a 
+                href="https://sedlabanki.is" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif' }}
+              >
                 Data: Central Bank of Iceland
-              </span>
+              </a>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* ========== MAIN CONTENT ========== */}
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
-        
-        {/* Page Title */}
-        <div className="mb-8 animate-fade-in">
-          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Foreign Card Spending</h1>
-          <p className="text-sm text-neutral-500 mt-1">Debit & credit card turnover from foreign visitors · Inflation-adjusted analysis</p>
+      {/* Page Header */}
+      <div className="pt-10 pb-6 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <h1 style={{ 
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
+              fontSize: '32px',
+              fontWeight: '700',
+              color: '#111827',
+              letterSpacing: '-0.5px',
+              margin: '0 0 8px 0'
+            }}>
+              Foreign Card Spending
+            </h1>
+            <p style={{ 
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+              fontSize: '15px',
+              fontWeight: '400',
+              color: '#6B7280',
+              letterSpacing: '-0.1px',
+              margin: 0
+            }}>
+              Debit & credit card turnover · Inflation-adjusted analysis
+            </p>
+          </div>
         </div>
+      </div>
+
+      {/* ========== MAIN CONTENT ========== */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pb-8">
 
         {kpis && (
           <>
@@ -408,63 +462,84 @@ const SpendingDashboard = () => {
               
               {/* TTM Total */}
               <div className="card p-5 animate-fade-in delay-1">
-                <div className="metric-label mb-2">Trailing 12 Months</div>
+                <div className="metric-label mb-1">Trailing 12 Months</div>
+                <div className="text-[11px] text-neutral-400 mb-2">ISK</div>
                 <div className="metric-value">{(kpis.ttmTotal / 1000).toFixed(1)}B</div>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`badge ${kpis.ttmRealChange >= 0.05 ? 'badge-success' : kpis.ttmRealChange <= -0.05 ? 'badge-danger' : 'badge-neutral'}`}>
-                    {kpis.ttmRealChange >= 0.05 ? <TrendingUp className="w-3 h-3" /> : 
-                     kpis.ttmRealChange <= -0.05 ? <TrendingDown className="w-3 h-3" /> : 
-                     <Minus className="w-3 h-3" />}
-                    {formatPct(kpis.ttmRealChange)}%
-                  </span>
-                  <span className="text-xs text-neutral-400">real</span>
+                <div className="flex flex-col gap-1.5 mt-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`badge ${kpis.ttmRealChange >= 0.05 ? 'badge-success' : kpis.ttmRealChange <= -0.05 ? 'badge-danger' : 'badge-neutral'}`}>
+                      {kpis.ttmRealChange >= 0.05 ? <TrendingUp className="w-3 h-3" /> : 
+                       kpis.ttmRealChange <= -0.05 ? <TrendingDown className="w-3 h-3" /> : 
+                       <Minus className="w-3 h-3" />}
+                      {formatPct(kpis.ttmRealChange)}%
+                    </span>
+                    <span className="text-[10px] text-neutral-400">real</span>
+                  </div>
+                  <div className="text-[10px] text-neutral-400">
+                    {formatPct(kpis.ttmNominalChange)}% nominal
+                  </div>
                 </div>
               </div>
               
               {/* Current Month */}
               <div className="card p-5 animate-fade-in delay-1">
-                <div className="metric-label mb-2">{kpis.currentMonth}</div>
+                <div className="metric-label mb-1">{kpis.currentMonth}</div>
+                <div className="text-[11px] text-neutral-400 mb-2">ISK</div>
                 <div className="metric-value">{(kpis.currentValue / 1000).toFixed(1)}B</div>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`badge ${kpis.realYoyChange >= 0.05 ? 'badge-success' : kpis.realYoyChange <= -0.05 ? 'badge-danger' : 'badge-neutral'}`}>
-                    {kpis.realYoyChange >= 0.05 ? <TrendingUp className="w-3 h-3" /> : 
-                     kpis.realYoyChange <= -0.05 ? <TrendingDown className="w-3 h-3" /> : 
-                     <Minus className="w-3 h-3" />}
-                    {formatPct(kpis.realYoyChange)}%
-                  </span>
-                  <span className="text-xs text-neutral-400">YoY real</span>
+                <div className="flex flex-col gap-1.5 mt-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`badge ${kpis.realYoyChange >= 0.05 ? 'badge-success' : kpis.realYoyChange <= -0.05 ? 'badge-danger' : 'badge-neutral'}`}>
+                      {kpis.realYoyChange >= 0.05 ? <TrendingUp className="w-3 h-3" /> : 
+                       kpis.realYoyChange <= -0.05 ? <TrendingDown className="w-3 h-3" /> : 
+                       <Minus className="w-3 h-3" />}
+                      {formatPct(kpis.realYoyChange)}%
+                    </span>
+                    <span className="text-[10px] text-neutral-400">real YoY</span>
+                  </div>
+                  <div className="text-[10px] text-neutral-400">
+                    {formatPct(kpis.nominalYoyChange)}% nominal
+                  </div>
                 </div>
               </div>
               
               {/* Spend per Visitor */}
               <div className="card p-5 animate-fade-in delay-2">
-                <div className="metric-label mb-2">Per Visitor</div>
+                <div className="metric-label mb-1">Per Visitor</div>
+                <div className="text-[11px] text-neutral-400 mb-2">ISK</div>
                 <div className="metric-value">{kpis.currentSpv ? `${Math.round(kpis.currentSpv)}k` : '—'}</div>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`badge ${kpis.spvRealChange >= 0.05 ? 'badge-success' : kpis.spvRealChange <= -0.05 ? 'badge-danger' : 'badge-neutral'}`}>
-                    {kpis.spvRealChange >= 0.05 ? <TrendingUp className="w-3 h-3" /> : 
-                     kpis.spvRealChange <= -0.05 ? <TrendingDown className="w-3 h-3" /> : 
-                     <Minus className="w-3 h-3" />}
-                    {formatPct(kpis.spvRealChange)}%
-                  </span>
-                  <span className="text-xs text-neutral-400">real</span>
+                <div className="flex flex-col gap-1.5 mt-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`badge ${kpis.spvRealChange >= 0.05 ? 'badge-success' : kpis.spvRealChange <= -0.05 ? 'badge-danger' : 'badge-neutral'}`}>
+                      {kpis.spvRealChange >= 0.05 ? <TrendingUp className="w-3 h-3" /> : 
+                       kpis.spvRealChange <= -0.05 ? <TrendingDown className="w-3 h-3" /> : 
+                       <Minus className="w-3 h-3" />}
+                      {formatPct(kpis.spvRealChange)}%
+                    </span>
+                    <span className="text-[10px] text-neutral-400">real YoY</span>
+                  </div>
+                  <div className="text-[10px] text-neutral-400">
+                    {formatPct(kpis.spvNominalChange)}% nominal
+                  </div>
                 </div>
               </div>
               
               {/* Visitors */}
               <div className="card p-5 animate-fade-in delay-2">
-                <div className="metric-label mb-2">Visitors</div>
+                <div className="metric-label mb-1">Visitors</div>
+                <div className="text-[11px] text-neutral-400 mb-2">{kpis.currentMonth}</div>
                 <div className="metric-value">{kpis.arrivals ? `${(kpis.arrivals / 1000).toFixed(0)}k` : '—'}</div>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex flex-col gap-1.5 mt-3">
                   {kpis.lastYearArrivals && (
                     <>
-                      <span className={`badge ${
-                        kpis.arrivals >= kpis.lastYearArrivals ? 'badge-success' : 'badge-danger'
-                      }`}>
-                        {kpis.arrivals >= kpis.lastYearArrivals ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                        {formatPct(((kpis.arrivals - kpis.lastYearArrivals) / kpis.lastYearArrivals) * 100)}%
-                      </span>
-                      <span className="text-xs text-neutral-400">YoY</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`badge ${
+                          kpis.arrivals >= kpis.lastYearArrivals ? 'badge-success' : 'badge-danger'
+                        }`}>
+                          {kpis.arrivals >= kpis.lastYearArrivals ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          {formatPct(((kpis.arrivals - kpis.lastYearArrivals) / kpis.lastYearArrivals) * 100)}%
+                        </span>
+                        <span className="text-[10px] text-neutral-400">YoY</span>
+                      </div>
                     </>
                   )}
                 </div>

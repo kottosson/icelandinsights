@@ -1308,23 +1308,22 @@ export default function DataDashboard() {
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo/Brand */}
-            <a href="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            <a href="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{
+                background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)'
+              }}>
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3v18h18" />
+                  <path d="M18 9l-5 5-4-4-3 3" />
                 </svg>
               </div>
-              <div className="hidden sm:block">
-                <span style={{ 
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
-                  fontSize: '17px',
-                  fontWeight: '600',
-                  color: '#111827',
-                  letterSpacing: '-0.3px'
-                }}>
-                  Iceland Insights
-                </span>
-              </div>
+              <span style={{
+                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
+                fontWeight: '600',
+                fontSize: '15px',
+                color: '#111827',
+                letterSpacing: '-0.3px'
+              }}>Iceland Insights</span>
             </a>
             
             {/* Nav Links */}
