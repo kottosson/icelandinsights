@@ -582,7 +582,7 @@ const SpendingDashboard = () => {
               <ResponsiveContainer width="100%" height={isMobile ? 260 : 320}>
                 <ComposedChart 
                   data={isMobile ? monthlyChartData.slice(-6) : monthlyChartData} 
-                  margin={{ top: 10, right: isMobile ? 35 : 50, left: isMobile ? -5 : 0, bottom: 5 }} 
+                  margin={{ top: 10, right: isMobile ? 5 : 10, left: isMobile ? -5 : 0, bottom: 5 }} 
                   barGap={isMobile ? 2 : 2} 
                   barCategoryGap={isMobile ? '20%' : '20%'}
                 >
@@ -696,7 +696,7 @@ const SpendingDashboard = () => {
               <ResponsiveContainer width="100%" height={isMobile ? 240 : 280}>
                 <ComposedChart 
                   data={isMobile ? spvChartData.slice(-6) : spvChartData} 
-                  margin={{ top: 10, right: isMobile ? 35 : 50, left: isMobile ? -5 : 0, bottom: 5 }} 
+                  margin={{ top: 10, right: isMobile ? 5 : 10, left: isMobile ? -5 : 0, bottom: 5 }} 
                   barGap={isMobile ? 2 : 2} 
                   barCategoryGap={isMobile ? '20%' : '20%'}
                 >
