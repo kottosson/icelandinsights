@@ -1,0 +1,788 @@
+[
+  {
+    "year": 2015,
+    "month": 1,
+    "hotels": 96,
+    "rooms": 6031
+  },
+  {
+    "year": 2015,
+    "month": 2,
+    "hotels": 102,
+    "rooms": 6357
+  },
+  {
+    "year": 2015,
+    "month": 3,
+    "hotels": 107,
+    "rooms": 6497
+  },
+  {
+    "year": 2015,
+    "month": 4,
+    "hotels": 107,
+    "rooms": 6484
+  },
+  {
+    "year": 2015,
+    "month": 5,
+    "hotels": 111,
+    "rooms": 6772
+  },
+  {
+    "year": 2015,
+    "month": 6,
+    "hotels": 115,
+    "rooms": 7262
+  },
+  {
+    "year": 2015,
+    "month": 7,
+    "hotels": 117,
+    "rooms": 7372
+  },
+  {
+    "year": 2015,
+    "month": 8,
+    "hotels": 119,
+    "rooms": 7572
+  },
+  {
+    "year": 2015,
+    "month": 9,
+    "hotels": 119,
+    "rooms": 7579
+  },
+  {
+    "year": 2015,
+    "month": 10,
+    "hotels": 118,
+    "rooms": 7586
+  },
+  {
+    "year": 2015,
+    "month": 11,
+    "hotels": 109,
+    "rooms": 7233
+  },
+  {
+    "year": 2015,
+    "month": 12,
+    "hotels": 111,
+    "rooms": 7364
+  },
+  {
+    "year": 2016,
+    "month": 1,
+    "hotels": 120,
+    "rooms": 7614
+  },
+  {
+    "year": 2016,
+    "month": 2,
+    "hotels": 127,
+    "rooms": 7842
+  },
+  {
+    "year": 2016,
+    "month": 3,
+    "hotels": 129,
+    "rooms": 7904
+  },
+  {
+    "year": 2016,
+    "month": 4,
+    "hotels": 128,
+    "rooms": 7910
+  },
+  {
+    "year": 2016,
+    "month": 5,
+    "hotels": 134,
+    "rooms": 8269
+  },
+  {
+    "year": 2016,
+    "month": 6,
+    "hotels": 138,
+    "rooms": 8547
+  },
+  {
+    "year": 2016,
+    "month": 7,
+    "hotels": 139,
+    "rooms": 8763
+  },
+  {
+    "year": 2016,
+    "month": 8,
+    "hotels": 139,
+    "rooms": 8794
+  },
+  {
+    "year": 2016,
+    "month": 9,
+    "hotels": 140,
+    "rooms": 8917
+  },
+  {
+    "year": 2016,
+    "month": 10,
+    "hotels": 136,
+    "rooms": 8836
+  },
+  {
+    "year": 2016,
+    "month": 11,
+    "hotels": 133,
+    "rooms": 8727
+  },
+  {
+    "year": 2016,
+    "month": 12,
+    "hotels": 126,
+    "rooms": 8400
+  },
+  {
+    "year": 2017,
+    "month": 1,
+    "hotels": 127,
+    "rooms": 8511
+  },
+  {
+    "year": 2017,
+    "month": 2,
+    "hotels": 129,
+    "rooms": 8578
+  },
+  {
+    "year": 2017,
+    "month": 3,
+    "hotels": 135,
+    "rooms": 8849
+  },
+  {
+    "year": 2017,
+    "month": 4,
+    "hotels": 136,
+    "rooms": 8799
+  },
+  {
+    "year": 2017,
+    "month": 5,
+    "hotels": 142,
+    "rooms": 9223
+  },
+  {
+    "year": 2017,
+    "month": 6,
+    "hotels": 145,
+    "rooms": 9355
+  },
+  {
+    "year": 2017,
+    "month": 7,
+    "hotels": 146,
+    "rooms": 9524
+  },
+  {
+    "year": 2017,
+    "month": 8,
+    "hotels": 147,
+    "rooms": 9532
+  },
+  {
+    "year": 2017,
+    "month": 9,
+    "hotels": 147,
+    "rooms": 9528
+  },
+  {
+    "year": 2017,
+    "month": 10,
+    "hotels": 145,
+    "rooms": 9468
+  },
+  {
+    "year": 2017,
+    "month": 11,
+    "hotels": 138,
+    "rooms": 9217
+  },
+  {
+    "year": 2017,
+    "month": 12,
+    "hotels": 135,
+    "rooms": 9187
+  },
+  {
+    "year": 2018,
+    "month": 1,
+    "hotels": 143,
+    "rooms": 9474
+  },
+  {
+    "year": 2018,
+    "month": 2,
+    "hotels": 146,
+    "rooms": 9536
+  },
+  {
+    "year": 2018,
+    "month": 3,
+    "hotels": 152,
+    "rooms": 9811
+  },
+  {
+    "year": 2018,
+    "month": 4,
+    "hotels": 150,
+    "rooms": 9738
+  },
+  {
+    "year": 2018,
+    "month": 5,
+    "hotels": 156,
+    "rooms": 10048
+  },
+  {
+    "year": 2018,
+    "month": 6,
+    "hotels": 156,
+    "rooms": 10146
+  },
+  {
+    "year": 2018,
+    "month": 7,
+    "hotels": 160,
+    "rooms": 10460
+  },
+  {
+    "year": 2018,
+    "month": 8,
+    "hotels": 160,
+    "rooms": 10461
+  },
+  {
+    "year": 2018,
+    "month": 9,
+    "hotels": 158,
+    "rooms": 10373
+  },
+  {
+    "year": 2018,
+    "month": 10,
+    "hotels": 157,
+    "rooms": 10269
+  },
+  {
+    "year": 2018,
+    "month": 11,
+    "hotels": 152,
+    "rooms": 10137
+  },
+  {
+    "year": 2018,
+    "month": 12,
+    "hotels": 149,
+    "rooms": 10005
+  },
+  {
+    "year": 2019,
+    "month": 1,
+    "hotels": 148,
+    "rooms": 10028
+  },
+  {
+    "year": 2019,
+    "month": 2,
+    "hotels": 155,
+    "rooms": 10291
+  },
+  {
+    "year": 2019,
+    "month": 3,
+    "hotels": 158,
+    "rooms": 10384
+  },
+  {
+    "year": 2019,
+    "month": 4,
+    "hotels": 158,
+    "rooms": 10432
+  },
+  {
+    "year": 2019,
+    "month": 5,
+    "hotels": 163,
+    "rooms": 10731
+  },
+  {
+    "year": 2019,
+    "month": 6,
+    "hotels": 168,
+    "rooms": 11022
+  },
+  {
+    "year": 2019,
+    "month": 7,
+    "hotels": 169,
+    "rooms": 11058
+  },
+  {
+    "year": 2019,
+    "month": 8,
+    "hotels": 170,
+    "rooms": 11200
+  },
+  {
+    "year": 2019,
+    "month": 9,
+    "hotels": 171,
+    "rooms": 11232
+  },
+  {
+    "year": 2019,
+    "month": 10,
+    "hotels": 170,
+    "rooms": 11214
+  },
+  {
+    "year": 2019,
+    "month": 11,
+    "hotels": 161,
+    "rooms": 10948
+  },
+  {
+    "year": 2019,
+    "month": 12,
+    "hotels": 160,
+    "rooms": 10889
+  },
+  {
+    "year": 2020,
+    "month": 1,
+    "hotels": 160,
+    "rooms": 10841
+  },
+  {
+    "year": 2020,
+    "month": 2,
+    "hotels": 164,
+    "rooms": 10919
+  },
+  {
+    "year": 2020,
+    "month": 3,
+    "hotels": 161,
+    "rooms": 10730
+  },
+  {
+    "year": 2020,
+    "month": 4,
+    "hotels": 95,
+    "rooms": 6090
+  },
+  {
+    "year": 2020,
+    "month": 5,
+    "hotels": 132,
+    "rooms": 8613
+  },
+  {
+    "year": 2020,
+    "month": 6,
+    "hotels": 138,
+    "rooms": 8583
+  },
+  {
+    "year": 2020,
+    "month": 7,
+    "hotels": 144,
+    "rooms": 8958
+  },
+  {
+    "year": 2020,
+    "month": 8,
+    "hotels": 143,
+    "rooms": 9078
+  },
+  {
+    "year": 2020,
+    "month": 9,
+    "hotels": 133,
+    "rooms": 8623
+  },
+  {
+    "year": 2020,
+    "month": 10,
+    "hotels": 129,
+    "rooms": 8429
+  },
+  {
+    "year": 2020,
+    "month": 11,
+    "hotels": 113,
+    "rooms": 7549
+  },
+  {
+    "year": 2020,
+    "month": 12,
+    "hotels": 114,
+    "rooms": 7238
+  },
+  {
+    "year": 2021,
+    "month": 1,
+    "hotels": 107,
+    "rooms": 7154
+  },
+  {
+    "year": 2021,
+    "month": 2,
+    "hotels": 119,
+    "rooms": 7857
+  },
+  {
+    "year": 2021,
+    "month": 3,
+    "hotels": 128,
+    "rooms": 8052
+  },
+  {
+    "year": 2021,
+    "month": 4,
+    "hotels": 130,
+    "rooms": 7953
+  },
+  {
+    "year": 2021,
+    "month": 5,
+    "hotels": 138,
+    "rooms": 8559
+  },
+  {
+    "year": 2021,
+    "month": 6,
+    "hotels": 148,
+    "rooms": 9466
+  },
+  {
+    "year": 2021,
+    "month": 7,
+    "hotels": 156,
+    "rooms": 10123
+  },
+  {
+    "year": 2021,
+    "month": 8,
+    "hotels": 163,
+    "rooms": 10723
+  },
+  {
+    "year": 2021,
+    "month": 9,
+    "hotels": 165,
+    "rooms": 11060
+  },
+  {
+    "year": 2021,
+    "month": 10,
+    "hotels": 164,
+    "rooms": 11169
+  },
+  {
+    "year": 2021,
+    "month": 11,
+    "hotels": 162,
+    "rooms": 11196
+  },
+  {
+    "year": 2021,
+    "month": 12,
+    "hotels": 158,
+    "rooms": 10953
+  },
+  {
+    "year": 2022,
+    "month": 1,
+    "hotels": 155,
+    "rooms": 10678
+  },
+  {
+    "year": 2022,
+    "month": 2,
+    "hotels": 161,
+    "rooms": 11094
+  },
+  {
+    "year": 2022,
+    "month": 3,
+    "hotels": 164,
+    "rooms": 11253
+  },
+  {
+    "year": 2022,
+    "month": 4,
+    "hotels": 162,
+    "rooms": 11107
+  },
+  {
+    "year": 2022,
+    "month": 5,
+    "hotels": 168,
+    "rooms": 11418
+  },
+  {
+    "year": 2022,
+    "month": 6,
+    "hotels": 169,
+    "rooms": 11530
+  },
+  {
+    "year": 2022,
+    "month": 7,
+    "hotels": 170,
+    "rooms": 11591
+  },
+  {
+    "year": 2022,
+    "month": 8,
+    "hotels": 170,
+    "rooms": 11596
+  },
+  {
+    "year": 2022,
+    "month": 9,
+    "hotels": 170,
+    "rooms": 11678
+  },
+  {
+    "year": 2022,
+    "month": 10,
+    "hotels": 166,
+    "rooms": 11465
+  },
+  {
+    "year": 2022,
+    "month": 11,
+    "hotels": 166,
+    "rooms": 11450
+  },
+  {
+    "year": 2022,
+    "month": 12,
+    "hotels": 161,
+    "rooms": 11191
+  },
+  {
+    "year": 2023,
+    "month": 1,
+    "hotels": 156,
+    "rooms": 10877
+  },
+  {
+    "year": 2023,
+    "month": 2,
+    "hotels": 159,
+    "rooms": 11255
+  },
+  {
+    "year": 2023,
+    "month": 3,
+    "hotels": 165,
+    "rooms": 11515
+  },
+  {
+    "year": 2023,
+    "month": 4,
+    "hotels": 164,
+    "rooms": 11497
+  },
+  {
+    "year": 2023,
+    "month": 5,
+    "hotels": 167,
+    "rooms": 11620
+  },
+  {
+    "year": 2023,
+    "month": 6,
+    "hotels": 170,
+    "rooms": 11763
+  },
+  {
+    "year": 2023,
+    "month": 7,
+    "hotels": 168,
+    "rooms": 11685
+  },
+  {
+    "year": 2023,
+    "month": 8,
+    "hotels": 170,
+    "rooms": 11757
+  },
+  {
+    "year": 2023,
+    "month": 9,
+    "hotels": 170,
+    "rooms": 11725
+  },
+  {
+    "year": 2023,
+    "month": 10,
+    "hotels": 168,
+    "rooms": 11630
+  },
+  {
+    "year": 2023,
+    "month": 11,
+    "hotels": 168,
+    "rooms": 11574
+  },
+  {
+    "year": 2023,
+    "month": 12,
+    "hotels": 159,
+    "rooms": 11254
+  },
+  {
+    "year": 2024,
+    "month": 1,
+    "hotels": 163,
+    "rooms": 11554
+  },
+  {
+    "year": 2024,
+    "month": 2,
+    "hotels": 170,
+    "rooms": 11665
+  },
+  {
+    "year": 2024,
+    "month": 3,
+    "hotels": 175,
+    "rooms": 12039
+  },
+  {
+    "year": 2024,
+    "month": 4,
+    "hotels": 174,
+    "rooms": 11868
+  },
+  {
+    "year": 2024,
+    "month": 5,
+    "hotels": 176,
+    "rooms": 12084
+  },
+  {
+    "year": 2024,
+    "month": 6,
+    "hotels": 177,
+    "rooms": 12093
+  },
+  {
+    "year": 2024,
+    "month": 7,
+    "hotels": 177,
+    "rooms": 12115
+  },
+  {
+    "year": 2024,
+    "month": 8,
+    "hotels": 177,
+    "rooms": 12128
+  },
+  {
+    "year": 2024,
+    "month": 9,
+    "hotels": 176,
+    "rooms": 12091
+  },
+  {
+    "year": 2024,
+    "month": 10,
+    "hotels": 175,
+    "rooms": 11974
+  },
+  {
+    "year": 2024,
+    "month": 11,
+    "hotels": 169,
+    "rooms": 11753
+  },
+  {
+    "year": 2024,
+    "month": 12,
+    "hotels": 163,
+    "rooms": 11603
+  },
+  {
+    "year": 2025,
+    "month": 1,
+    "hotels": 161,
+    "rooms": 11488
+  },
+  {
+    "year": 2025,
+    "month": 2,
+    "hotels": 165,
+    "rooms": 11587
+  },
+  {
+    "year": 2025,
+    "month": 3,
+    "hotels": 172,
+    "rooms": 12038
+  },
+  {
+    "year": 2025,
+    "month": 4,
+    "hotels": 170,
+    "rooms": 11821
+  },
+  {
+    "year": 2025,
+    "month": 5,
+    "hotels": 178,
+    "rooms": 12217
+  },
+  {
+    "year": 2025,
+    "month": 6,
+    "hotels": 177,
+    "rooms": 12103
+  },
+  {
+    "year": 2025,
+    "month": 7,
+    "hotels": 181,
+    "rooms": 12509
+  },
+  {
+    "year": 2025,
+    "month": 8,
+    "hotels": 182,
+    "rooms": 12618
+  },
+  {
+    "year": 2025,
+    "month": 9,
+    "hotels": 180,
+    "rooms": 12400
+  },
+  {
+    "year": 2025,
+    "month": 10,
+    "hotels": 179,
+    "rooms": 12420
+  },
+  {
+    "year": 2025,
+    "month": 11,
+    "hotels": 173,
+    "rooms": 12115
+  }
+]

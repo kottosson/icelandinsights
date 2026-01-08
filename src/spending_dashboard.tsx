@@ -410,9 +410,8 @@ const SpendingDashboard = () => {
               <a href="/spending" className="nav-link active">
                 Card Spending
               </a>
-              <a href="/hotels" className="nav-link" style={{ opacity: 0.5, pointerEvents: 'none' }}>
+              <a href="/hotels" className="nav-link">
                 Hotels
-                <span className="ml-1.5 text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Soon</span>
               </a>
             </div>
             
