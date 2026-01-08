@@ -1347,6 +1347,9 @@ export default function DataDashboard() {
               <a href="/spending" className="nav-link">
                 Card Spending
               </a>
+              <a href="/blog" className="nav-link">
+                Reports
+              </a>
             </div>
             
             {/* Right side - fixed width to match left */}

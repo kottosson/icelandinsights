@@ -427,6 +427,9 @@ const SpendingDashboard = () => {
               <a href="/spending" className="nav-link active">
                 Card Spending
               </a>
+              <a href="/blog" className="nav-link">
+                Reports
+              </a>
             </div>
             
             {/* Right side - fixed width to match left */}

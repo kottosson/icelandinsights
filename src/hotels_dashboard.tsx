@@ -483,6 +483,7 @@ const HotelsDashboard = () => {
               <a href="/arrivals" className="nav-link">Arrivals</a>
               <a href="/hotels" className="nav-link active">Hotels</a>
               <a href="/spending" className="nav-link">Card Spending</a>
+              <a href="/blog" className="nav-link">Reports</a>
             </div>
             
             <div className="hidden md:flex items-center gap-2" style={{ minWidth: '160px', justifyContent: 'flex-end' }}>
