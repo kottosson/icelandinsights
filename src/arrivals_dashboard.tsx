@@ -4,6 +4,8 @@ import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, Chevron
 
 // Rich animations for premium feel
 const styles = `
+  html { overflow-y: scroll; }
+
   /* Premium shimmer effect for loading */
   @keyframes shimmer {
     0% {
@@ -1332,17 +1334,16 @@ export default function DataDashboard() {
               <a href="/arrivals" className="nav-link active">
                 Arrivals
               </a>
+              <a href="/hotels" className="nav-link">
+                Hotels
+              </a>
               <a href="/spending" className="nav-link">
                 Card Spending
-              </a>
-              <a href="/hotels" className="nav-link" style={{ opacity: 0.5, pointerEvents: 'none' }}>
-                Hotels
-                <span className="ml-1.5 text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Soon</span>
               </a>
             </div>
             
             {/* Right side - could add search, theme toggle, etc */}
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2" style={{ minWidth: '160px', justifyContent: 'flex-end' }}>
               <a 
                 href="https://statice.is" 
                 target="_blank" 
@@ -1388,7 +1389,7 @@ export default function DataDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 md:px-6 pb-8 space-y-8 md:space-y-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pb-8 space-y-8">
 
         {initialLoading ? (
           // PREMIUM SKELETON LOADING

@@ -4,6 +4,8 @@ import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, Chevron
 
 // Rich animations for premium feel
 const styles = `
+  html { overflow-y: scroll; }
+  
   /* Premium shimmer effect for loading */
   @keyframes shimmer {
     0% {
@@ -1308,7 +1310,7 @@ export default function DataDashboard() {
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo/Brand */}
-            <a href="/" className="flex items-center gap-2.5 group">
+            <a href="/" className="flex items-center gap-2.5 group" style={{ minWidth: '160px' }}>
               <div style={{
                 width: '32px',
                 height: '32px',
@@ -1339,16 +1341,16 @@ export default function DataDashboard() {
               <a href="/arrivals" className="nav-link active">
                 Arrivals
               </a>
-              <a href="/spending" className="nav-link">
-                Card Spending
-              </a>
               <a href="/hotels" className="nav-link">
                 Hotels
               </a>
+              <a href="/spending" className="nav-link">
+                Card Spending
+              </a>
             </div>
             
-            {/* Right side - could add search, theme toggle, etc */}
-            <div className="hidden md:flex items-center gap-2">
+            {/* Right side - fixed width to match left */}
+            <div className="hidden md:flex items-center gap-2" style={{ minWidth: '160px', justifyContent: 'flex-end' }}>
               <a 
                 href="https://statice.is" 
                 target="_blank" 
@@ -1394,7 +1396,7 @@ export default function DataDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 md:px-6 pb-8 space-y-8 md:space-y-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pb-8 space-y-8">
 
         {initialLoading ? (
           // PREMIUM SKELETON LOADING

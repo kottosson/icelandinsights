@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { TrendingUp, TrendingDown, Minus, Building2, BedDouble, Users, Calendar, Percent } from 'lucide-react';
 
 const styles = `
+  html { overflow-y: scroll; }
   * { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif; }
   
   .nav-blur {
@@ -452,7 +453,7 @@ const HotelsDashboard = () => {
       }}>
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between h-16">
-            <a href="/" className="flex items-center gap-2.5 group">
+            <a href="/" className="flex items-center gap-2.5 group" style={{ minWidth: '160px' }}>
               <div style={{
                 width: '32px',
                 height: '32px',
@@ -480,11 +481,11 @@ const HotelsDashboard = () => {
             
             <div className="flex items-center gap-1">
               <a href="/arrivals" className="nav-link">Arrivals</a>
-              <a href="/spending" className="nav-link">Card Spending</a>
               <a href="/hotels" className="nav-link active">Hotels</a>
+              <a href="/spending" className="nav-link">Card Spending</a>
             </div>
             
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2" style={{ minWidth: '160px', justifyContent: 'flex-end' }}>
               <a 
                 href="https://statice.is" 
                 target="_blank" 

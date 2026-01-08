@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { TrendingUp, TrendingDown, Minus, CreditCard, Users, Calendar, ArrowRight } from 'lucide-react';
 
 const styles = `
+  html { overflow-y: scroll; }
   * { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif; }
   
   .nav-blur {
@@ -116,6 +117,7 @@ const SpendingDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [metadata, setMetadata] = useState<any>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [showRealValues, setShowRealValues] = useState(true);
 
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
@@ -279,7 +281,7 @@ const SpendingDashboard = () => {
     };
   }, [data]);
 
-  // Chart data: Monthly inflation-adjusted comparison
+  // Chart data: Monthly comparison (both real and nominal)
   const monthlyChartData = useMemo(() => {
     if (!data.length || !kpis) return [];
     
@@ -294,6 +296,7 @@ const SpendingDashboard = () => {
       const currentRow = data.find(d => d.year === currentYear && d.month === month);
       const priorRow = data.find(d => d.year === priorYear && d.month === month);
       
+      // Real (inflation-adjusted) values
       const currentReal = currentRow?.Heildarúttekt && currentRow?.cpi
         ? currentRow.Heildarúttekt * (baseCpi / currentRow.cpi)
         : null;
@@ -301,15 +304,26 @@ const SpendingDashboard = () => {
         ? priorRow.Heildarúttekt * (baseCpi / priorRow.cpi)
         : null;
       
-      const yoyChange = (currentReal && priorReal && priorReal > 0)
+      // Nominal values
+      const currentNominal = currentRow?.Heildarúttekt || null;
+      const priorNominal = priorRow?.Heildarúttekt || null;
+      
+      const yoyChangeReal = (currentReal && priorReal && priorReal > 0)
         ? ((currentReal - priorReal) / priorReal) * 100
+        : null;
+      
+      const yoyChangeNominal = (currentNominal && priorNominal && priorNominal > 0)
+        ? ((currentNominal - priorNominal) / priorNominal) * 100
         : null;
       
       return {
         month: label,
-        [priorYear]: i <= currentMonth ? priorReal : null,
-        [currentYear]: i <= currentMonth ? currentReal : null,
-        yoyChange: i <= currentMonth ? yoyChange : null,
+        [`${priorYear}_real`]: i <= currentMonth ? priorReal : null,
+        [`${currentYear}_real`]: i <= currentMonth ? currentReal : null,
+        [`${priorYear}_nominal`]: i <= currentMonth ? priorNominal : null,
+        [`${currentYear}_nominal`]: i <= currentMonth ? currentNominal : null,
+        yoyChangeReal: i <= currentMonth ? yoyChangeReal : null,
+        yoyChangeNominal: i <= currentMonth ? yoyChangeNominal : null,
       };
     });
   }, [data, kpis]);
@@ -375,8 +389,8 @@ const SpendingDashboard = () => {
       }}>
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between h-16">
-            {/* Logo/Brand */}
-            <a href="/" className="flex items-center gap-2.5 group">
+            {/* Logo/Brand - fixed width */}
+            <a href="/" className="flex items-center gap-2.5 group" style={{ minWidth: '160px' }}>
               <div style={{
                 width: '32px',
                 height: '32px',
@@ -407,24 +421,24 @@ const SpendingDashboard = () => {
               <a href="/arrivals" className="nav-link">
                 Arrivals
               </a>
-              <a href="/spending" className="nav-link active">
-                Card Spending
-              </a>
               <a href="/hotels" className="nav-link">
                 Hotels
               </a>
+              <a href="/spending" className="nav-link active">
+                Card Spending
+              </a>
             </div>
             
-            {/* Right side */}
-            <div className="hidden md:flex items-center gap-2">
+            {/* Right side - fixed width to match left */}
+            <div className="hidden md:flex items-center gap-2" style={{ minWidth: '160px', justifyContent: 'flex-end' }}>
               <a 
-                href="https://sedlabanki.is" 
+                href="https://statice.is" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
                 style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif' }}
               >
-                Data: Central Bank of Iceland
+                Data: Statistics Iceland
               </a>
             </div>
           </div>
@@ -559,21 +573,46 @@ const SpendingDashboard = () => {
                 <div>
                   <h2 className="section-title">Monthly Card Turnover</h2>
                   <p className="text-xs text-neutral-500 mt-1">
-                    <span className="md:hidden">Last 6 months · </span>{priorYear} vs {currentYear} · Inflation-adjusted
+                    <span className="md:hidden">Last 6 months · </span>{priorYear} vs {currentYear} · {showRealValues ? 'Inflation-adjusted' : 'Nominal'}
                   </p>
                 </div>
-                <div className="hidden md:flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded bg-neutral-300"></div>
-                    <span className="text-xs text-neutral-500">{priorYear}</span>
+                <div className="flex items-center gap-4">
+                  {/* Real/Nominal Toggle */}
+                  <div className="flex items-center bg-neutral-100 rounded-lg p-0.5">
+                    <button
+                      onClick={() => setShowRealValues(true)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        showRealValues 
+                          ? 'bg-white text-neutral-900 shadow-sm' 
+                          : 'text-neutral-500 hover:text-neutral-700'
+                      }`}
+                    >
+                      Real
+                    </button>
+                    <button
+                      onClick={() => setShowRealValues(false)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        !showRealValues 
+                          ? 'bg-white text-neutral-900 shadow-sm' 
+                          : 'text-neutral-500 hover:text-neutral-700'
+                      }`}
+                    >
+                      Nominal
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded bg-emerald-500"></div>
-                    <span className="text-xs text-neutral-500">{currentYear}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-0.5 bg-indigo-500 rounded"></div>
-                    <span className="text-xs text-neutral-500">YoY %</span>
+                  <div className="hidden md:flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-neutral-300"></div>
+                      <span className="text-xs text-neutral-500">{priorYear}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-emerald-500"></div>
+                      <span className="text-xs text-neutral-500">{currentYear}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-0.5 bg-indigo-500 rounded"></div>
+                      <span className="text-xs text-neutral-500">YoY %</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -630,15 +669,15 @@ const SpendingDashboard = () => {
                     formatter={(value: any, name: string) => {
                       if (value === null) return ['—', name];
                       if (name === 'YoY Change') return [`${value > 0 ? '+' : ''}${value.toFixed(1)}%`, 'YoY Change'];
-                      return [`${(value/1000).toFixed(2)}B ISK`, name];
+                      return [`${(value/1000).toFixed(2)}B ISK`, name.replace('_real', '').replace('_nominal', '')];
                     }}
                   />
-                  <Bar yAxisId="left" dataKey={String(priorYear)} fill="#D1D5DB" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                  <Bar yAxisId="left" dataKey={String(currentYear)} fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Bar yAxisId="left" dataKey={`${priorYear}_${showRealValues ? 'real' : 'nominal'}`} name={String(priorYear)} fill="#D1D5DB" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Bar yAxisId="left" dataKey={`${currentYear}_${showRealValues ? 'real' : 'nominal'}`} name={String(currentYear)} fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={28} />
                   <Line 
                     yAxisId="right"
                     type="monotone"
-                    dataKey="yoyChange"
+                    dataKey={showRealValues ? 'yoyChangeReal' : 'yoyChangeNominal'}
                     name="YoY Change"
                     stroke="#6366F1"
                     strokeWidth={2.5}
