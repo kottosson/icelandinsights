@@ -121,6 +121,7 @@ const HotelsDashboard = () => {
   const [capacityData, setCapacityData] = useState<any[]>([]);
   const [occupancyData, setOccupancyData] = useState<any[]>([]);
   const [regionalOccupancy, setRegionalOccupancy] = useState<any[]>([]);
+  const [arrivalsData, setArrivalsData] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -134,17 +135,27 @@ const HotelsDashboard = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [nightsRes, capacityRes, occupancyRes, regionalRes] = await Promise.all([
+        const [nightsRes, capacityRes, occupancyRes, regionalRes, arrivalsRes] = await Promise.all([
           fetch('/hotel_nights_hotels_only.json'),
           fetch('/hotel_capacity.json'),
           fetch('/hotel_occupancy.json'),
-          fetch('/hotel_occupancy_regional.json')
+          fetch('/hotel_occupancy_regional.json'),
+          fetch('/data.json')
         ]);
         
         setNightsData(await nightsRes.json());
         setCapacityData(await capacityRes.json());
         setOccupancyData(await occupancyRes.json());
         setRegionalOccupancy(await regionalRes.json());
+        
+        // Build arrivals lookup
+        const arrivalsJson = await arrivalsRes.json();
+        const arrivalsLookup: Record<string, number> = {};
+        Object.entries(arrivalsJson.monthlyData).forEach(([dateStr, values]: [string, any]) => {
+          arrivalsLookup[dateStr] = values['Útlendingar alls'] || 0;
+        });
+        setArrivalsData(arrivalsLookup);
+        
         setLoading(false);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -168,17 +179,17 @@ const HotelsDashboard = () => {
     const latestMonth = latestCapacity.month;
     const priorYear = latestYear - 1;
 
-    // Get nights for latest month (Total only)
+    // Get nights for latest month (Foreigners only)
     const latestNights = nightsData.find(d => 
-      d.year === latestYear && d.month === latestMonth && d.nationality === 'Total'
+      d.year === latestYear && d.month === latestMonth && d.nationality === 'Foreigners'
     );
     const priorNights = nightsData.find(d => 
-      d.year === priorYear && d.month === latestMonth && d.nationality === 'Total'
+      d.year === priorYear && d.month === latestMonth && d.nationality === 'Foreigners'
     );
 
-    // TTM nights
+    // TTM nights (Foreigners only)
     const ttmNights = nightsData
-      .filter(d => d.nationality === 'Total')
+      .filter(d => d.nationality === 'Foreigners')
       .filter(d => {
         const latestDate = new Date(latestYear, latestMonth - 1);
         const rowDate = new Date(d.year, d.month - 1);
@@ -189,7 +200,7 @@ const HotelsDashboard = () => {
       .reduce((sum, d) => sum + d.nights, 0);
 
     const lastTtmNights = nightsData
-      .filter(d => d.nationality === 'Total')
+      .filter(d => d.nationality === 'Foreigners')
       .filter(d => {
         const latestDate = new Date(priorYear, latestMonth - 1);
         const rowDate = new Date(d.year, d.month - 1);
@@ -209,6 +220,18 @@ const HotelsDashboard = () => {
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+    // Calculate nights per visitor
+    const monthStr = latestMonth.toString().padStart(2, '0');
+    const currentArrivals = arrivalsData[`${latestYear}-${monthStr}`];
+    const priorArrivalsVal = arrivalsData[`${priorYear}-${monthStr}`];
+    
+    const nightsPerVisitor = latestNights?.nights && currentArrivals 
+      ? latestNights.nights / currentArrivals 
+      : 0;
+    const priorNpv = priorNights?.nights && priorArrivalsVal 
+      ? priorNights.nights / priorArrivalsVal 
+      : 0;
+
     return {
       latestMonth: `${monthNames[latestMonth - 1]} ${latestYear}`,
       latestYear,
@@ -223,6 +246,10 @@ const HotelsDashboard = () => {
       ttmNights,
       ttmNightsYoY: lastTtmNights > 0 ? ((ttmNights - lastTtmNights) / lastTtmNights) * 100 : 0,
       
+      // Nights per visitor
+      nightsPerVisitor,
+      nightsPerVisitorYoY: priorNpv > 0 ? ((nightsPerVisitor - priorNpv) / priorNpv) * 100 : 0,
+      
       // Capacity
       hotels: latestCapacity.hotels,
       rooms: latestCapacity.rooms,
@@ -233,7 +260,7 @@ const HotelsDashboard = () => {
         ? latestOccupancy?.occupancy_rate - priorOccupancy.occupancy_rate 
         : 0,
     };
-  }, [nightsData, capacityData, occupancyData]);
+  }, [nightsData, capacityData, occupancyData, arrivalsData]);
 
   // Monthly nights chart data
   const monthlyChartData = useMemo(() => {
@@ -246,8 +273,8 @@ const HotelsDashboard = () => {
     
     return monthLabels.map((label, i) => {
       const month = i + 1;
-      const currentRow = nightsData.find(d => d.year === currentYear && d.month === month && d.nationality === 'Total');
-      const priorRow = nightsData.find(d => d.year === priorYear && d.month === month && d.nationality === 'Total');
+      const currentRow = nightsData.find(d => d.year === currentYear && d.month === month && d.nationality === 'Foreigners');
+      const priorRow = nightsData.find(d => d.year === priorYear && d.month === month && d.nationality === 'Foreigners');
       
       const yoyChange = (currentRow?.nights && priorRow?.nights && priorRow.nights > 0)
         ? ((currentRow.nights - priorRow.nights) / priorRow.nights) * 100
@@ -261,6 +288,44 @@ const HotelsDashboard = () => {
       };
     });
   }, [nightsData, kpis]);
+
+  // Nights per visitor chart data
+  const nightsPerVisitorData = useMemo(() => {
+    if (!nightsData.length || !kpis || !Object.keys(arrivalsData).length) return [];
+    
+    const currentYear = kpis.latestYear;
+    const priorYear = kpis.priorYear;
+    const currentMonth = kpis.latestMonthNum - 1;
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    return monthLabels.map((label, i) => {
+      const month = i + 1;
+      const monthStr = month.toString().padStart(2, '0');
+      
+      // Get foreign nights
+      const currentNights = nightsData.find(d => d.year === currentYear && d.month === month && d.nationality === 'Foreigners')?.nights;
+      const priorNights = nightsData.find(d => d.year === priorYear && d.month === month && d.nationality === 'Foreigners')?.nights;
+      
+      // Get foreign arrivals
+      const currentArrivals = arrivalsData[`${currentYear}-${monthStr}`];
+      const priorArrivals = arrivalsData[`${priorYear}-${monthStr}`];
+      
+      // Calculate nights per visitor
+      const currentNpv = currentNights && currentArrivals ? currentNights / currentArrivals : null;
+      const priorNpv = priorNights && priorArrivals ? priorNights / priorArrivals : null;
+      
+      const yoyChange = (currentNpv && priorNpv && priorNpv > 0)
+        ? ((currentNpv - priorNpv) / priorNpv) * 100
+        : null;
+      
+      return {
+        month: label,
+        [priorYear]: i <= currentMonth ? priorNpv : null,
+        [currentYear]: i <= currentMonth ? currentNpv : null,
+        yoyChange: i <= currentMonth ? yoyChange : null,
+      };
+    });
+  }, [nightsData, arrivalsData, kpis]);
 
   // Regional occupancy data for latest month
   const regionalChartData = useMemo(() => {
@@ -329,6 +394,31 @@ const HotelsDashboard = () => {
       percentage: (d.nights / total * 100).toFixed(1),
       fill: colors[i]
     }));
+  }, [nightsData, kpis]);
+
+  // Icelandic hotel nights by year
+  const icelandicNightsByYear = useMemo(() => {
+    if (!nightsData.length) return [];
+    
+    const yearTotals: Record<number, number> = {};
+    
+    nightsData
+      .filter(d => d.nationality === 'Iceland')
+      .forEach(d => {
+        if (!yearTotals[d.year]) yearTotals[d.year] = 0;
+        yearTotals[d.year] += d.nights;
+      });
+    
+    return Object.entries(yearTotals)
+      .map(([year, nights]) => ({
+        year: `'${String(year).slice(-2)}`,
+        fullYear: parseInt(year),
+        nights,
+        isCovid: parseInt(year) >= 2020 && parseInt(year) <= 2022,
+        isPartial: parseInt(year) === (kpis?.latestYear || 2025)
+      }))
+      .filter(d => d.fullYear >= 2010)
+      .sort((a, b) => a.fullYear - b.fullYear);
   }, [nightsData, kpis]);
 
   const currentYear = kpis?.latestYear || 2025;
@@ -444,10 +534,10 @@ const HotelsDashboard = () => {
             {/* ========== KEY METRICS ROW ========== */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               
-              {/* TTM Nights */}
+              {/* TTM Foreign Nights */}
               <div className="card p-5 animate-fade-in delay-1">
-                <div className="metric-label mb-1">Trailing 12 Months</div>
-                <div className="text-[11px] text-neutral-400 mb-2">Nights</div>
+                <div className="metric-label mb-1">Hotel Nights</div>
+                <div className="text-[11px] text-neutral-400 mb-2">Foreigners · TTM</div>
                 <div className="metric-value">{(kpis.ttmNights / 1000000).toFixed(1)}M</div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2">
@@ -462,10 +552,10 @@ const HotelsDashboard = () => {
                 </div>
               </div>
               
-              {/* Current Month Nights */}
+              {/* Current Month Foreign Nights */}
               <div className="card p-5 animate-fade-in delay-1">
-                <div className="metric-label mb-1">{kpis.latestMonth}</div>
-                <div className="text-[11px] text-neutral-400 mb-2">Nights</div>
+                <div className="metric-label mb-1">Hotel Nights</div>
+                <div className="text-[11px] text-neutral-400 mb-2">Foreigners · {kpis.latestMonth}</div>
                 <div className="metric-value">{formatNumber(kpis.monthNights)}</div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2">
@@ -520,7 +610,7 @@ const HotelsDashboard = () => {
                 <div>
                   <h2 className="section-title">Monthly Hotel Nights</h2>
                   <p className="text-xs text-neutral-500 mt-1">
-                    <span className="md:hidden">Last 6 months · </span>{priorYear} vs {currentYear}
+                    <span className="md:hidden">Last 6 months · </span>Foreigners · {priorYear} vs {currentYear}
                   </p>
                 </div>
                 <div className="hidden md:flex items-center gap-4">
@@ -623,6 +713,129 @@ const HotelsDashboard = () => {
                   <div className="w-3 h-0.5 bg-amber-500 rounded"></div>
                   <span className="text-[10px] text-neutral-500">YoY</span>
                 </div>
+              </div>
+            </div>
+
+            {/* ========== NIGHTS PER VISITOR CHART ========== */}
+            <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3" style={{ background: 'linear-gradient(135deg, #FDF4FF 0%, #FAF5FF 100%)' }}>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="section-title">Hotel Nights per Visitor</h2>
+                    <span className="badge badge-purple text-[10px]">Key Metric</span>
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    <span className="md:hidden">Last 6 months · </span>Average hotel nights per foreign arrival
+                  </p>
+                </div>
+                <div className="hidden md:flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded bg-neutral-300"></div>
+                    <span className="text-xs text-neutral-500">{priorYear}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded bg-fuchsia-500"></div>
+                    <span className="text-xs text-neutral-500">{currentYear}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-0.5 bg-amber-500 rounded"></div>
+                    <span className="text-xs text-neutral-500">YoY %</span>
+                  </div>
+                </div>
+              </div>
+              
+              <ResponsiveContainer width="100%" height={isMobile ? 240 : 280}>
+                <ComposedChart 
+                  data={isMobile ? nightsPerVisitorData.slice(-6) : nightsPerVisitorData} 
+                  margin={{ top: 10, right: isMobile ? 5 : 10, left: isMobile ? -5 : 0, bottom: 5 }} 
+                  barGap={2} 
+                  barCategoryGap="20%"
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F3E8FF" vertical={false} />
+                  <XAxis 
+                    dataKey="month"
+                    tick={{ fontSize: 11, fill: '#6B7280' }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={0}
+                  />
+                  <YAxis 
+                    yAxisId="left"
+                    tick={{ fontSize: isMobile ? 10 : 11, fill: '#6B7280' }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(value) => value.toFixed(1)}
+                    width={isMobile ? 30 : 35}
+                    domain={[0, 'auto']}
+                  />
+                  <YAxis 
+                    yAxisId="right"
+                    orientation="right"
+                    tick={{ fontSize: isMobile ? 9 : 10, fill: '#F59E0B' }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(value) => `${value > 0 ? '+' : ''}${value.toFixed(0)}%`}
+                    width={isMobile ? 35 : 45}
+                    domain={[-20, 20]}
+                    ticks={[-20, -10, 0, 10, 20]}
+                  />
+                  <ReferenceLine 
+                    yAxisId="right" 
+                    y={0} 
+                    stroke="#F59E0B" 
+                    strokeWidth={1.5} 
+                    strokeDasharray="4 4"
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#fff', 
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    }}
+                    formatter={(value: any, name: string) => {
+                      if (value === null) return ['—', name];
+                      if (name === 'YoY Change') return [`${value > 0 ? '+' : ''}${value.toFixed(1)}%`, 'YoY Change'];
+                      return [`${value.toFixed(2)} nights`, name];
+                    }}
+                  />
+                  <Bar yAxisId="left" dataKey={String(priorYear)} fill="#D1D5DB" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Bar yAxisId="left" dataKey={String(currentYear)} fill="#D946EF" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Line 
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="yoyChange"
+                    name="YoY Change"
+                    stroke="#F59E0B"
+                    strokeWidth={2.5}
+                    dot={{ fill: '#F59E0B', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                    connectNulls
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+              
+              {/* Mobile legend */}
+              <div className="flex md:hidden items-center justify-center gap-4 mt-3 pt-3 border-t border-fuchsia-200/50">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded bg-neutral-300"></div>
+                  <span className="text-[10px] text-neutral-500">{priorYear}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded bg-fuchsia-500"></div>
+                  <span className="text-[10px] text-neutral-500">{currentYear}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-0.5 bg-amber-500 rounded"></div>
+                  <span className="text-[10px] text-neutral-500">YoY</span>
+                </div>
+              </div>
+              
+              <div className="hidden md:flex mt-4 pt-4 border-t border-fuchsia-200/50 items-start gap-2">
+                <span className="text-fuchsia-600">💡</span>
+                <p className="text-xs text-fuchsia-700">
+                  This metric shows how long foreign visitors stay in hotels on average — a key indicator of tourism depth beyond visitor counts.
+                </p>
               </div>
             </div>
 
@@ -751,6 +964,76 @@ const HotelsDashboard = () => {
                     <div className="text-sm font-semibold text-neutral-700">{country.percentage}%</div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* ========== DOMESTIC TOURISM ========== */}
+            <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3">
+              <div className="mb-4 md:mb-6">
+                <h2 className="section-title">Domestic Hotel Nights</h2>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Icelandic guests · Annual totals
+                </p>
+              </div>
+              
+              <ResponsiveContainer width="100%" height={isMobile ? 180 : 220}>
+                <BarChart 
+                  data={icelandicNightsByYear}
+                  margin={{ top: 10, right: 10, left: isMobile ? -10 : 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
+                  <XAxis 
+                    dataKey="year"
+                    tick={{ fontSize: isMobile ? 9 : 10, fill: '#6B7280' }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={isMobile ? 1 : 0}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10, fill: '#6B7280' }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(val) => `${(val/1000000).toFixed(1)}M`}
+                    width={isMobile ? 35 : 40}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#fff', 
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '10px',
+                      fontSize: '12px'
+                    }}
+                    formatter={(value: any) => [`${(value/1000000).toFixed(2)}M nights`]}
+                    labelFormatter={(label) => `Year: 20${label.replace("'", "")}`}
+                  />
+                  <Bar 
+                    dataKey="nights" 
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={30}
+                  >
+                    {icelandicNightsByYear.map((entry, index) => {
+                      let fill = '#8B5CF6';
+                      if (entry.isCovid) fill = '#C4B5FD';
+                      if (entry.isPartial) fill = '#DDD6FE';
+                      return <Cell key={`cell-${index}`} fill={fill} />;
+                    })}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              
+              <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-4 pt-4 border-t border-neutral-100">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded" style={{ background: '#8B5CF6' }}></div>
+                  <span className="text-[10px] text-neutral-500">Normal</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded" style={{ background: '#C4B5FD' }}></div>
+                  <span className="text-[10px] text-neutral-500">COVID</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded" style={{ background: '#DDD6FE' }}></div>
+                  <span className="text-[10px] text-neutral-500">YTD</span>
+                </div>
               </div>
             </div>
 
