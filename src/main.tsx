@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import DataDashboard from './data_dashboard.tsx'
 import SpendingDashboard from './spending_dashboard.tsx'
 import HotelsDashboard from './hotels_dashboard.tsx'
@@ -19,6 +20,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Route path="/blog" element={<BlogListPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
       </Routes>
+      <Analytics />
     </BrowserRouter>
   </React.StrictMode>,
 )

@@ -966,16 +966,16 @@ const HotelsDashboard = () => {
                 
                 <div className="space-y-2">
                   {nationalityData.slice(0, 6).map((country, i) => (
-                    <div key={country.name} className="flex items-center gap-3 p-2.5 rounded-lg bg-neutral-50">
+                    <div key={country.name} className="flex items-center gap-3 h-14 px-3 rounded-lg bg-neutral-50">
                       <div 
-                        className="w-2 h-8 rounded-full"
+                        className="w-2 h-7 rounded-full flex-shrink-0"
                         style={{ background: country.fill }}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-neutral-800 truncate">{country.name}</div>
                         <div className="text-[10px] text-neutral-500">{formatNumber(country.value)} nights</div>
                       </div>
-                      <div className="text-sm font-semibold text-neutral-700">{country.percentage}%</div>
+                      <div className="text-sm font-semibold text-neutral-700 tabular-nums">{country.percentage}%</div>
                     </div>
                   ))}
                 </div>
@@ -985,7 +985,7 @@ const HotelsDashboard = () => {
               {nationalityAnalysis.length > 0 && (
                 <div className="card p-4 md:p-6 animate-fade-in delay-3 overflow-hidden" 
                      style={{ background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)' }}>
-                  <div className="mb-4">
+                  <div className="mb-4 md:mb-6">
                     <div className="flex items-center gap-2 mb-1">
                       <h2 className="section-title">Average Stay Length</h2>
                       <span className="px-2 py-0.5 rounded-full bg-amber-200/60 text-amber-800 text-[10px] font-semibold">TTM</span>
@@ -1004,25 +1004,25 @@ const HotelsDashboard = () => {
                       return (
                         <div 
                           key={nat.nationality}
-                          className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${
+                          className={`flex items-center gap-3 h-14 px-3 rounded-lg transition-all ${
                             isTop 
                               ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' 
                               : 'bg-white/60'
                           }`}
                         >
-                          <span className="text-lg">{nat.flag}</span>
+                          <span className="text-lg flex-shrink-0 w-6 text-center">{nat.flag}</span>
                           <div className="flex-1 min-w-0">
                             <div className={`text-sm font-medium truncate ${isTop ? 'text-white' : 'text-neutral-800'}`}>
                               {nat.nationality}
                             </div>
-                            <div className="h-1.5 bg-white/30 rounded-full mt-1 overflow-hidden">
+                            <div className={`h-1 rounded-full mt-1.5 overflow-hidden ${isTop ? 'bg-white/30' : 'bg-amber-200'}`}>
                               <div 
                                 className={`h-full rounded-full ${isTop ? 'bg-white' : 'bg-amber-400'}`}
                                 style={{ width: `${barWidth}%` }}
                               />
                             </div>
                           </div>
-                          <div className={`text-lg font-bold tabular-nums ${isTop ? 'text-white' : 'text-neutral-900'}`}>
+                          <div className={`text-base font-bold tabular-nums flex-shrink-0 ${isTop ? 'text-white' : 'text-neutral-900'}`}>
                             {nat.nightsPerVisitor.toFixed(1)}
                           </div>
                         </div>
