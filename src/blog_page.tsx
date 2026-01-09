@@ -76,6 +76,10 @@ const BlogPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = 'Iceland Tourism Statistics Reports | Monthly Data Analysis | Iceland Insights';
+  }, []);
+
+  useEffect(() => {
     const load = async () => {
       try {
         const [nRes, oRes, sRes] = await Promise.all([
@@ -420,7 +424,134 @@ const BlogPage: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* SEO: FAQ Section */}
+        <section className="mt-12 pt-8 border-t border-neutral-200">
+          <h2 className="text-lg font-bold text-neutral-900 mb-4">Frequently Asked Questions About Iceland Tourism</h2>
+          <div className="space-y-3">
+            {[
+              { 
+                q: "How many tourists visit Iceland each year?", 
+                a: "Iceland receives approximately 2 million foreign visitors annually through Keflavík Airport. Monthly arrivals range from around 65,000 in winter months to over 250,000 in peak summer (July-August)." 
+              },
+              { 
+                q: "What is the best time to visit Iceland?", 
+                a: "Summer (June-August) offers midnight sun and best weather with highest visitor numbers. Winter (November-March) is ideal for northern lights and ice caves. Shoulder seasons (May, September-October) balance good conditions with fewer crowds." 
+              },
+              { 
+                q: "Where do most Iceland tourists come from?", 
+                a: "The United States is Iceland's largest source market (typically 20-25% of visitors), followed by United Kingdom (12-15%), Germany (10-13%), France (6-8%), and Canada (4-6%)." 
+              },
+              { 
+                q: "How much do tourists spend in Iceland?", 
+                a: "Foreign card spending in Iceland totals 350-450 billion ISK annually. Monthly spending ranges from around 15-20 billion ISK in winter to 50+ billion ISK in peak summer months." 
+              },
+              { 
+                q: "What is Iceland's hotel occupancy rate?", 
+                a: "National hotel occupancy averages 60-70% annually, peaking at 85-90% in July-August and dropping to 45-55% in January-February. The Capital Region typically runs 5-10 percentage points above the national average." 
+              },
+              { 
+                q: "When is northern lights season in Iceland?", 
+                a: "Northern lights (aurora borealis) are visible from late August through mid-April, with peak viewing from September to March when nights are darkest and skies are often clear." 
+              }
+            ].map((faq, i) => (
+              <details key={i} className="group bg-white rounded-lg border border-neutral-200">
+                <summary className="cursor-pointer p-4 text-sm font-medium text-neutral-800 hover:text-amber-600">{faq.q}</summary>
+                <p className="px-4 pb-4 text-sm text-neutral-600">{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* SEO: Static descriptive content for crawlers */}
+        <section className="mt-12 pt-8 border-t border-neutral-200">
+          <h2 className="text-lg font-bold text-neutral-900 mb-4">About These Tourism Reports</h2>
+          <div className="text-sm text-neutral-600 space-y-3">
+            <p>
+              Iceland Insights publishes monthly tourism statistics reports analyzing foreign visitor data for Iceland. 
+              Each report covers three key metrics: foreign hotel nights (from Statistics Iceland), national and regional 
+              hotel occupancy rates, and foreign card spending (from the Central Bank of Iceland).
+            </p>
+            <p>
+              Our reports break down hotel nights by source market, showing which countries contribute most visitors. 
+              We track year-over-year changes to identify growth trends and seasonal patterns in Iceland's tourism industry.
+            </p>
+            <p>
+              Data is updated monthly as official statistics become available, typically with a 4-6 week lag from the 
+              reporting period. All figures are sourced directly from Hagstofa Íslands (Statistics Iceland) and 
+              Seðlabanki Íslands (Central Bank of Iceland).
+            </p>
+          </div>
+        </section>
       </main>
+
+      {/* JSON-LD Structured Data */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Iceland Insights - Tourism Statistics",
+        "url": "https://icelandinsights.com",
+        "description": "Monthly reports on Iceland tourism statistics including foreign visitor hotel nights, occupancy rates, and card spending data.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Iceland Insights"
+        }
+      })}} />
+      
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How many tourists visit Iceland each year?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Iceland receives approximately 2 million foreign visitors annually through Keflavík Airport. Monthly arrivals range from around 65,000 in winter months to over 250,000 in peak summer (July-August)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the best time to visit Iceland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Summer (June-August) offers midnight sun and best weather with highest visitor numbers. Winter (November-March) is ideal for northern lights and ice caves. Shoulder seasons (May, September-October) balance good conditions with fewer crowds."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Where do most Iceland tourists come from?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The United States is Iceland's largest source market (typically 20-25% of visitors), followed by United Kingdom (12-15%), Germany (10-13%), France (6-8%), and Canada (4-6%)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How much do tourists spend in Iceland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Foreign card spending in Iceland totals 350-450 billion ISK annually. Monthly spending ranges from around 15-20 billion ISK in winter to 50+ billion ISK in peak summer months."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is Iceland's hotel occupancy rate?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "National hotel occupancy averages 60-70% annually, peaking at 85-90% in July-August and dropping to 45-55% in January-February. The Capital Region typically runs 5-10 percentage points above the national average."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "When is northern lights season in Iceland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Northern lights (aurora borealis) are visible from late August through mid-April, with peak viewing from September to March when nights are darkest and skies are often clear."
+            }
+          }
+        ]
+      })}} />
 
       {/* Footer */}
       <footer className="border-t border-neutral-200 py-6 bg-white/50">

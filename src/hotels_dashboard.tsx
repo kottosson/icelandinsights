@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Line, ReferenceLine, Cell, PieChart, Pie } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, Building2, BedDouble, Users, Calendar, Percent } from 'lucide-react';
 
@@ -117,12 +117,72 @@ const formatNumber = (num: number): string => {
   return num.toString();
 };
 
+// Animated counter component - counts up from 0 with easing
+const AnimatedNumber = ({ value, duration = 1200, formatFn = (n: number) => n.toLocaleString(), suffix = '' }: {
+  value: number | string;
+  duration?: number;
+  formatFn?: (n: number) => string;
+  suffix?: string;
+}) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  const [opacity, setOpacity] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  
+  const targetValue = useMemo(() => {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value.replace(/,/g, ''));
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  }, [value]);
+  
+  useEffect(() => {
+    if (targetValue === 0) return;
+    
+    setOpacity(1);
+    startTimeRef.current = null;
+    
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    
+    const animate = (timestamp: number) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const elapsed = timestamp - startTimeRef.current;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutCubic(progress);
+      
+      setDisplayValue(easedProgress * targetValue);
+      
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+    
+    const timeout = setTimeout(() => {
+      rafRef.current = requestAnimationFrame(animate);
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeout);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [targetValue, duration]);
+  
+  return (
+    <span style={{ opacity, transition: 'opacity 0.3s ease-out', display: 'inline-block' }}>
+      {formatFn(displayValue)}{suffix}
+    </span>
+  );
+};
+
 const HotelsDashboard = () => {
   const [nightsData, setNightsData] = useState<any[]>([]);
   const [capacityData, setCapacityData] = useState<any[]>([]);
   const [occupancyData, setOccupancyData] = useState<any[]>([]);
   const [regionalOccupancy, setRegionalOccupancy] = useState<any[]>([]);
   const [arrivalsData, setArrivalsData] = useState<Record<string, number>>({});
+  const [arrivalsByNationality, setArrivalsByNationality] = useState<Record<string, Record<string, number>>>({});
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -152,10 +212,25 @@ const HotelsDashboard = () => {
         // Build arrivals lookup
         const arrivalsJson = await arrivalsRes.json();
         const arrivalsLookup: Record<string, number> = {};
+        const nationalityArrivals: Record<string, Record<string, number>> = {};
+        
         Object.entries(arrivalsJson.monthlyData).forEach(([dateStr, values]: [string, any]) => {
           arrivalsLookup[dateStr] = values['Útlendingar alls'] || 0;
+          
+          // Build nationality arrivals: { "USA": { "2024-01": 5000, ... }, ... }
+          Object.entries(values).forEach(([nationality, count]: [string, any]) => {
+            if (typeof count === 'number' && count > 0 && 
+                nationality !== 'Útlendingar alls' && 
+                nationality !== 'Íslendingar') {
+              if (!nationalityArrivals[nationality]) {
+                nationalityArrivals[nationality] = {};
+              }
+              nationalityArrivals[nationality][dateStr] = count;
+            }
+          });
         });
         setArrivalsData(arrivalsLookup);
+        setArrivalsByNationality(nationalityArrivals);
         
         setLoading(false);
       } catch (error) {
@@ -355,6 +430,101 @@ const HotelsDashboard = () => {
     }).sort((a, b) => b.occupancy - a.occupancy);
   }, [regionalOccupancy, kpis]);
 
+  // Nationality stay length analysis - nights per visitor
+  const nationalityAnalysis = useMemo(() => {
+    if (!nightsData.length || !Object.keys(arrivalsByNationality).length || !kpis) return [];
+    
+    // Map hotel nights nationality names to arrivals nationality names
+    const nationalityMap: Record<string, string> = {
+      'USA': 'Bandaríkin',
+      'UK': 'Bretland',
+      'Germany': 'Þýskaland',
+      'France': 'Frakkland',
+      'Netherlands': 'Holland',
+      'Spain': 'Spánn',
+      'Italy': 'Ítalía',
+      'Canada': 'Kanada',
+      'China': 'Kína',
+      'Switzerland': 'Sviss',
+      'Denmark': 'Danmörk',
+      'Sweden': 'Svíþjóð',
+      'Norway': 'Noregur',
+      'Finland': 'Finnland',
+      'Australia': 'Ástralía',
+      'Japan': 'Japan',
+      'Belgium': 'Belgía',
+      'Austria': 'Austurríki',
+      'Ireland': 'Írland',
+      'Poland': 'Pólland'
+    };
+    
+    // Country flags
+    const flags: Record<string, string> = {
+      'USA': '🇺🇸', 'UK': '🇬🇧', 'Germany': '🇩🇪', 'France': '🇫🇷',
+      'Netherlands': '🇳🇱', 'Spain': '🇪🇸', 'Italy': '🇮🇹', 'Canada': '🇨🇦',
+      'China': '🇨🇳', 'Switzerland': '🇨🇭', 'Denmark': '🇩🇰', 'Sweden': '🇸🇪',
+      'Norway': '🇳🇴', 'Finland': '🇫🇮', 'Australia': '🇦🇺', 'Japan': '🇯🇵',
+      'Belgium': '🇧🇪', 'Austria': '🇦🇹', 'Ireland': '🇮🇪', 'Poland': '🇵🇱'
+    };
+    
+    const year = kpis.latestYear;
+    const priorYear = year - 1;
+    
+    // Calculate TTM (trailing 12 months) for more stable data
+    const results: any[] = [];
+    
+    Object.entries(nationalityMap).forEach(([hotelNat, arrivalsNat]) => {
+      // Get TTM hotel nights for this nationality
+      let ttmNights = 0;
+      let ttmNightsPrior = 0;
+      let ttmArrivals = 0;
+      let ttmArrivalsPrior = 0;
+      
+      // Calculate for last 12 months
+      for (let i = 0; i < 12; i++) {
+        let m = kpis.latestMonthNum - i;
+        let y = year;
+        if (m <= 0) { m += 12; y -= 1; }
+        
+        const dateKey = `${y}-${m}`;
+        const priorDateKey = `${y - 1}-${m}`;
+        
+        // Hotel nights
+        const nightsEntry = nightsData.find(d => d.year === y && d.month === m && d.nationality === hotelNat);
+        const nightsEntryPrior = nightsData.find(d => d.year === y - 1 && d.month === m && d.nationality === hotelNat);
+        
+        if (nightsEntry) ttmNights += nightsEntry.nights;
+        if (nightsEntryPrior) ttmNightsPrior += nightsEntryPrior.nights;
+        
+        // Arrivals
+        const arrivals = arrivalsByNationality[arrivalsNat]?.[dateKey] || 0;
+        const arrivalsPrior = arrivalsByNationality[arrivalsNat]?.[priorDateKey] || 0;
+        
+        ttmArrivals += arrivals;
+        ttmArrivalsPrior += arrivalsPrior;
+      }
+      
+      if (ttmArrivals > 1000 && ttmNights > 1000) { // Minimum threshold
+        const nightsPerVisitor = ttmNights / ttmArrivals;
+        const nightsPerVisitorPrior = ttmArrivalsPrior > 0 ? ttmNightsPrior / ttmArrivalsPrior : 0;
+        const change = nightsPerVisitorPrior > 0 ? ((nightsPerVisitor - nightsPerVisitorPrior) / nightsPerVisitorPrior) * 100 : 0;
+        
+        results.push({
+          nationality: hotelNat,
+          flag: flags[hotelNat] || '🏳️',
+          nightsPerVisitor,
+          nightsPerVisitorPrior,
+          change,
+          ttmNights,
+          ttmArrivals
+        });
+      }
+    });
+    
+    // Sort by number of arrivals (biggest markets first)
+    return results.sort((a, b) => b.ttmArrivals - a.ttmArrivals).slice(0, 6);
+  }, [nightsData, arrivalsByNationality, kpis]);
+
   // Capacity trend data
   const capacityChartData = useMemo(() => {
     if (!capacityData.length) return [];
@@ -540,7 +710,14 @@ const HotelsDashboard = () => {
               <div className="card p-5 animate-fade-in delay-1">
                 <div className="metric-label mb-1">Hotel Nights</div>
                 <div className="text-[11px] text-neutral-400 mb-2">Foreigners · TTM</div>
-                <div className="metric-value">{(kpis.ttmNights / 1000000).toFixed(1)}M</div>
+                <div className="metric-value">
+                  <AnimatedNumber 
+                    value={kpis.ttmNights / 1000000} 
+                    formatFn={(n) => n.toFixed(1)} 
+                    suffix="M"
+                    duration={1400}
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2">
                     <span className={`badge ${kpis.ttmNightsYoY >= 0.5 ? 'badge-success' : kpis.ttmNightsYoY <= -0.5 ? 'badge-danger' : 'badge-neutral'}`}>
@@ -558,7 +735,14 @@ const HotelsDashboard = () => {
               <div className="card p-5 animate-fade-in delay-1">
                 <div className="metric-label mb-1">Hotel Nights</div>
                 <div className="text-[11px] text-neutral-400 mb-2">Foreigners · {kpis.latestMonth}</div>
-                <div className="metric-value">{formatNumber(kpis.monthNights)}</div>
+                <div className="metric-value">
+                  <AnimatedNumber 
+                    value={kpis.monthNights / 1000} 
+                    formatFn={(n) => Math.round(n).toLocaleString()} 
+                    suffix="k"
+                    duration={1200}
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2">
                     <span className={`badge ${kpis.monthNightsYoY >= 0.5 ? 'badge-success' : kpis.monthNightsYoY <= -0.5 ? 'badge-danger' : 'badge-neutral'}`}>
@@ -576,7 +760,14 @@ const HotelsDashboard = () => {
               <div className="card p-5 animate-fade-in delay-2">
                 <div className="metric-label mb-1">Occupancy Rate</div>
                 <div className="text-[11px] text-neutral-400 mb-2">{kpis.latestMonth}</div>
-                <div className="metric-value">{kpis.occupancy.toFixed(1)}%</div>
+                <div className="metric-value">
+                  <AnimatedNumber 
+                    value={kpis.occupancy} 
+                    formatFn={(n) => n.toFixed(1)} 
+                    suffix="%"
+                    duration={1000}
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2">
                     <span className={`badge ${kpis.occupancyYoY >= 0.5 ? 'badge-success' : kpis.occupancyYoY <= -0.5 ? 'badge-danger' : 'badge-neutral'}`}>
@@ -594,7 +785,13 @@ const HotelsDashboard = () => {
               <div className="card p-5 animate-fade-in delay-2">
                 <div className="metric-label mb-1">Hotel Rooms</div>
                 <div className="text-[11px] text-neutral-400 mb-2">{kpis.hotels} hotels</div>
-                <div className="metric-value">{formatNumber(kpis.rooms)}</div>
+                <div className="metric-value">
+                  <AnimatedNumber 
+                    value={kpis.rooms} 
+                    formatFn={(n) => Math.round(n).toLocaleString()} 
+                    duration={1300}
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2">
                     <span className="badge badge-purple">
@@ -968,6 +1165,97 @@ const HotelsDashboard = () => {
                 ))}
               </div>
             </div>
+
+            {/* ========== NATIONALITY STAY LENGTH ANALYSIS ========== */}
+            {nationalityAnalysis.length > 0 && (
+              <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3 overflow-hidden" 
+                   style={{ background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)' }}>
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className="section-title">Average Stay by Market</h2>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-200/60 text-amber-800 text-[10px] font-semibold">TTM</span>
+                  </div>
+                  <p className="text-xs text-amber-700/70">
+                    Hotel nights per visitor · Top 6 source markets
+                  </p>
+                </div>
+                
+                {/* Visualization Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                  {nationalityAnalysis.map((nat, index) => {
+                    const maxNights = Math.max(...nationalityAnalysis.map(n => n.nightsPerVisitor));
+                    const barWidth = (nat.nightsPerVisitor / maxNights) * 100;
+                    const isTop = index === 0;
+                    
+                    return (
+                      <div 
+                        key={nat.nationality}
+                        className={`relative rounded-xl p-4 transition-all duration-300 hover:scale-[1.02] ${
+                          isTop 
+                            ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-200' 
+                            : 'bg-white/80 backdrop-blur-sm border border-amber-200/50 hover:shadow-md'
+                        }`}
+                      >
+                        {/* Rank Badge */}
+                        <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${
+                          isTop ? 'bg-white text-amber-600' : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {index + 1}
+                        </div>
+                        
+                        {/* Flag & Country */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-2xl">{nat.flag}</span>
+                          <span className={`font-semibold text-sm ${isTop ? 'text-white' : 'text-neutral-800'}`}>
+                            {nat.nationality}
+                          </span>
+                        </div>
+                        
+                        {/* Main Metric */}
+                        <div className={`text-3xl font-bold tabular-nums mb-1 ${isTop ? 'text-white' : 'text-neutral-900'}`}
+                             style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+                          {nat.nightsPerVisitor.toFixed(1)}
+                        </div>
+                        <div className={`text-[10px] uppercase tracking-wide mb-3 ${isTop ? 'text-amber-100' : 'text-neutral-500'}`}>
+                          nights / visitor
+                        </div>
+                        
+                        {/* Progress Bar */}
+                        <div className={`h-1.5 rounded-full overflow-hidden mb-2 ${isTop ? 'bg-white/30' : 'bg-amber-100'}`}>
+                          <div 
+                            className={`h-full rounded-full transition-all duration-700 ${isTop ? 'bg-white' : 'bg-gradient-to-r from-amber-400 to-orange-400'}`}
+                            style={{ width: `${barWidth}%` }}
+                          />
+                        </div>
+                        
+                        {/* YoY Change */}
+                        <div className={`flex items-center gap-1 text-[11px] font-medium ${
+                          nat.change >= 0 
+                            ? isTop ? 'text-emerald-200' : 'text-emerald-600' 
+                            : isTop ? 'text-red-200' : 'text-red-500'
+                        }`}>
+                          {nat.change >= 0 ? (
+                            <TrendingUp className="w-3 h-3" />
+                          ) : (
+                            <TrendingDown className="w-3 h-3" />
+                          )}
+                          {nat.change >= 0 ? '+' : ''}{nat.change.toFixed(1)}% vs prior year
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* Insight Footer */}
+                <div className="mt-6 pt-4 border-t border-amber-300/30 flex items-start gap-2">
+                  <span className="text-amber-600">💡</span>
+                  <p className="text-xs text-amber-800/80">
+                    <strong>Insight:</strong> {nationalityAnalysis[0]?.nationality} is the largest source market with an average stay of {nationalityAnalysis[0]?.nightsPerVisitor.toFixed(1)} nights. 
+                    Longer stays typically indicate leisure travelers exploring multiple regions.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* ========== DOMESTIC TOURISM ========== */}
             <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3">

@@ -53,6 +53,7 @@ const BlogPostPage: React.FC = () => {
   const [regionalOccData, setRegionalOccData] = useState<any[]>([]);
   const [spendingData, setSpendingData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Parse month/year from slug: "iceland-tourism-november-2025"
   const parsedSlug = useMemo(() => {
@@ -61,6 +62,7 @@ const BlogPostPage: React.FC = () => {
     if (!match) return null;
     const monthName = match[1].charAt(0).toUpperCase() + match[1].slice(1);
     const monthIndex = MONTHS.findIndex(m => m.toLowerCase() === match[1].toLowerCase());
+    if (monthIndex === -1) return null; // Invalid month name
     return { month: monthIndex + 1, year: parseInt(match[2]), monthName };
   }, [slug]);
 
@@ -70,16 +72,26 @@ const BlogPostPage: React.FC = () => {
         const [nRes, oRes, rRes, sRes] = await Promise.all([
           fetch('/hotel_nights_hotels_only.json'),
           fetch('/hotel_occupancy.json'),
-          fetch('/hotel_occupancy_regional.json'),
+          fetch('/hotel_occupancy_regional.json').catch(() => ({ ok: false, json: () => [] })),
           fetch('/spending_data.json')
         ]);
-        setNightsData(await nRes.json());
-        setOccupancyData(await oRes.json());
-        setRegionalOccData(await rRes.json());
-        const sJson = await sRes.json();
-        setSpendingData(sJson.monthlyData || {});
+        
+        if (!nRes.ok) throw new Error('Failed to load nights data');
+        if (!oRes.ok) throw new Error('Failed to load occupancy data');
+        if (!sRes.ok) throw new Error('Failed to load spending data');
+        
+        const nightsJson = await nRes.json();
+        const occJson = await oRes.json();
+        const regionalJson = rRes.ok ? await rRes.json() : [];
+        const spendJson = await sRes.json();
+        
+        setNightsData(nightsJson || []);
+        setOccupancyData(occJson || []);
+        setRegionalOccData(regionalJson || []);
+        setSpendingData(spendJson?.monthlyData || {});
       } catch (e) {
         console.error('Load error:', e);
+        setError(e instanceof Error ? e.message : 'Unknown error loading data');
       }
       setLoading(false);
     };
@@ -151,6 +163,79 @@ const BlogPostPage: React.FC = () => {
     };
   }, [parsedSlug, nightsData, occupancyData, regionalOccData, spendingData]);
 
+  // Update document title and meta tags for SEO
+  useEffect(() => {
+    if (!report) return;
+    
+    const r = report;
+    const title = `Iceland Tourism ${r.monthName} ${r.year}: Hotel Nights ${r.nightsYoY >= 0 ? 'Up' : 'Down'} ${Math.abs(r.nightsYoY).toFixed(1)}% | Iceland Insights`;
+    const description = `${r.monthName} ${r.year} Iceland tourism statistics: ${r.nights.toLocaleString()} foreign hotel nights (${r.nightsYoY >= 0 ? '+' : ''}${r.nightsYoY.toFixed(1)}% YoY), ${r.occupancy.toFixed(1)}% hotel occupancy, ${(r.spending / 1000).toFixed(1)}B ISK tourist card spending. Official data from Statistics Iceland.`;
+    const url = `https://icelandinsights.com/blog/iceland-tourism-${r.monthName.toLowerCase()}-${r.year}`;
+    const imageUrl = `https://icelandinsights.com/og-image-${r.monthName.toLowerCase()}-${r.year}.png`;
+    
+    // Document title
+    document.title = title;
+    
+    // Helper to set or create meta tag
+    const setMeta = (name: string, content: string, property = false) => {
+      const attr = property ? 'property' : 'name';
+      let tag = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement;
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute(attr, name);
+        document.head.appendChild(tag);
+      }
+      tag.content = content;
+    };
+    
+    // Helper to set link tag
+    const setLink = (rel: string, href: string) => {
+      let tag = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement;
+      if (!tag) {
+        tag = document.createElement('link');
+        tag.rel = rel;
+        document.head.appendChild(tag);
+      }
+      tag.href = href;
+    };
+    
+    // Meta description
+    setMeta('description', description);
+    
+    // Canonical URL
+    setLink('canonical', url);
+    
+    // Open Graph tags
+    setMeta('og:title', title, true);
+    setMeta('og:description', description, true);
+    setMeta('og:url', url, true);
+    setMeta('og:type', 'article', true);
+    setMeta('og:image', imageUrl, true);
+    setMeta('og:image:width', '1200', true);
+    setMeta('og:image:height', '630', true);
+    setMeta('og:site_name', 'Iceland Insights', true);
+    setMeta('og:locale', 'en_US', true);
+    
+    // Twitter Card tags
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', title);
+    setMeta('twitter:description', description);
+    setMeta('twitter:image', imageUrl);
+    setMeta('twitter:site', '@icelandinsights');
+    
+    // Additional SEO meta
+    setMeta('robots', 'index, follow, max-image-preview:large');
+    setMeta('author', 'Iceland Insights');
+    setMeta('keywords', `Iceland tourism ${r.monthName} ${r.year}, Iceland visitor statistics, Iceland hotel occupancy, Iceland tourist spending, foreign visitors Iceland, ${r.monthName} travel Iceland, Iceland travel data, tourism statistics Iceland`);
+    
+    // Article-specific meta
+    setMeta('article:published_time', `${r.year}-${String(r.month).padStart(2, '0')}-15T12:00:00Z`, true);
+    setMeta('article:modified_time', `${r.month === 12 ? r.year + 1 : r.year}-${String(r.month === 12 ? 1 : r.month + 1).padStart(2, '0')}-01T12:00:00Z`, true);
+    setMeta('article:section', 'Tourism Statistics', true);
+    setMeta('article:tag', 'Iceland Tourism', true);
+    
+  }, [report]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
@@ -159,11 +244,26 @@ const BlogPostPage: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="text-center">
+          <p className="text-red-500 mb-2">Error loading data</p>
+          <p className="text-neutral-400 text-sm mb-4">{error}</p>
+          <a href="/blog" className="text-amber-600 hover:underline">← Back to reports</a>
+        </div>
+      </div>
+    );
+  }
+
   if (!report) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <p className="text-neutral-500 mb-4">Report not found</p>
+          <p className="text-neutral-500 mb-2">Report not found</p>
+          <p className="text-neutral-400 text-sm mb-4">
+            {slug ? `Looking for: ${slug}` : 'No slug provided'}
+          </p>
           <a href="/blog" className="text-amber-600 hover:underline">← Back to reports</a>
         </div>
       </div>
@@ -203,9 +303,22 @@ const BlogPostPage: React.FC = () => {
       {/* Header */}
       <header className="bg-white border-b border-neutral-200">
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
-          <a href="/blog" className="inline-flex items-center gap-1 text-sm text-amber-600 hover:text-amber-700 mb-4">
-            <ChevronLeft className="w-4 h-4" /> All Reports
-          </a>
+          {/* Breadcrumb Navigation */}
+          <nav aria-label="Breadcrumb" className="mb-4">
+            <ol className="flex items-center gap-2 text-sm">
+              <li>
+                <a href="/" className="text-neutral-500 hover:text-amber-600 transition-colors">Home</a>
+              </li>
+              <li className="text-neutral-300">/</li>
+              <li>
+                <a href="/blog" className="text-neutral-500 hover:text-amber-600 transition-colors">Tourism Reports</a>
+              </li>
+              <li className="text-neutral-300">/</li>
+              <li>
+                <span className="text-neutral-900 font-medium">{r.monthName} {r.year}</span>
+              </li>
+            </ol>
+          </nav>
           
           <div className="flex items-center gap-3 mb-4">
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
@@ -393,6 +506,101 @@ const BlogPostPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Visible FAQ Section for SEO */}
+        <div className="mt-12 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
+          <h2 className="text-lg font-bold text-neutral-900 mb-6">Frequently Asked Questions</h2>
+          
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-semibold text-neutral-800 mb-2">
+                How many tourists visited Iceland in {r.monthName} {r.year}?
+              </h3>
+              <p className="text-neutral-600 text-sm leading-relaxed">
+                Foreign visitors recorded <strong>{r.nights.toLocaleString()} hotel nights</strong> in Iceland during {r.monthName} {r.year}. 
+                This represents a <strong>{r.nightsYoY >= 0 ? '+' : ''}{r.nightsYoY.toFixed(1)}% change</strong> compared to {r.monthName} {r.year - 1}, 
+                when {r.nightsPrior?.toLocaleString() || 'N/A'} nights were recorded.
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-neutral-800 mb-2">
+                What was Iceland's hotel occupancy rate in {r.monthName} {r.year}?
+              </h3>
+              <p className="text-neutral-600 text-sm leading-relaxed">
+                National hotel occupancy in Iceland was <strong>{r.occupancy.toFixed(1)}%</strong> in {r.monthName} {r.year}. 
+                This is {r.occupancyChange >= 0 ? 'up' : 'down'} <strong>{Math.abs(r.occupancyChange).toFixed(1)} percentage points</strong> from 
+                {' '}{r.occupancyPrior.toFixed(1)}% in {r.monthName} {r.year - 1}. {r.occupancy >= 80 ? 
+                  'This high occupancy indicates strong demand during peak season.' : 
+                  r.occupancy >= 60 ? 'This reflects healthy demand for the season.' : 
+                  'Lower occupancy is typical for this time of year.'}
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-neutral-800 mb-2">
+                How much did tourists spend in Iceland in {r.monthName} {r.year}?
+              </h3>
+              <p className="text-neutral-600 text-sm leading-relaxed">
+                Foreign card spending totaled <strong>{(r.spending / 1000).toFixed(1)} billion ISK</strong> in {r.monthName} {r.year}, 
+                a <strong>{r.spendingYoY >= 0 ? '+' : ''}{r.spendingYoY.toFixed(1)}% change</strong> year-over-year. 
+                This data from the Central Bank of Iceland tracks all foreign debit and credit card transactions in the country.
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-neutral-800 mb-2">
+                Which countries send the most tourists to Iceland?
+              </h3>
+              <p className="text-neutral-600 text-sm leading-relaxed">
+                In {r.monthName} {r.year}, the top source markets for Iceland tourism were: {' '}
+                {r.topMarkets.slice(0, 5).map((m: any, i: number) => (
+                  <span key={m.market}>
+                    <strong>{m.market}</strong> ({m.share.toFixed(1)}%){i < 4 ? ', ' : ''}
+                  </span>
+                ))}. 
+                The United States and United Kingdom consistently rank among Iceland's largest tourism markets.
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-neutral-800 mb-2">
+                What is the best time to visit Iceland?
+              </h3>
+              <p className="text-neutral-600 text-sm leading-relaxed">
+                Iceland offers unique experiences year-round. <strong>Summer (June-August)</strong> provides midnight sun, 
+                warmer weather, and access to highland roads. <strong>Winter (November-March)</strong> offers northern lights, 
+                ice caves, and snowy landscapes. {r.monthName} falls in the {getSeasonDescription(r.month)}, 
+                making it {r.month >= 6 && r.month <= 8 ? 'ideal for outdoor activities and road trips' : 
+                r.month >= 11 || r.month <= 2 ? 'perfect for aurora viewing and winter adventures' : 
+                'a good balance of activities and smaller crowds'}.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Related Reports */}
+        <div className="mt-8">
+          <h3 className="font-semibold text-neutral-900 mb-4">Related Monthly Reports</h3>
+          <div className="flex flex-wrap gap-2">
+            {[-2, -1, 1, 2].map(offset => {
+              let m = r.month + offset;
+              let y = r.year;
+              if (m <= 0) { m += 12; y -= 1; }
+              if (m > 12) { m -= 12; y += 1; }
+              const monthName = MONTHS[m - 1];
+              return (
+                <a 
+                  key={`${y}-${m}`}
+                  href={`/blog/iceland-tourism-${monthName.toLowerCase()}-${y}`}
+                  className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 rounded-full text-sm text-neutral-700 transition-colors"
+                >
+                  {monthName} {y}
+                </a>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Back link */}
         <div className="mt-8 pt-8 border-t border-neutral-200">
           <a href="/blog" className="inline-flex items-center gap-1 text-amber-600 hover:text-amber-700 font-medium">
@@ -400,6 +608,102 @@ const BlogPostPage: React.FC = () => {
           </a>
         </div>
       </main>
+
+      {/* JSON-LD Article Schema */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": `Iceland Tourism Statistics ${r.monthName} ${r.year}: Foreign Hotel Nights ${r.nightsYoY >= 0 ? 'Up' : 'Down'} ${Math.abs(r.nightsYoY).toFixed(1)}%`,
+        "description": `${r.monthName} ${r.year} Iceland tourism report: ${r.nights.toLocaleString()} foreign hotel nights (${r.nightsYoY >= 0 ? '+' : ''}${r.nightsYoY.toFixed(1)}% YoY), ${r.occupancy.toFixed(1)}% occupancy, ${(r.spending / 1000).toFixed(1)}B ISK card spending.`,
+        "datePublished": `${r.year}-${String(r.month).padStart(2, '0')}-15`,
+        "dateModified": `${r.month === 12 ? r.year + 1 : r.year}-${String(r.month === 12 ? 1 : r.month + 1).padStart(2, '0')}-15`,
+        "author": { "@type": "Organization", "name": "Iceland Insights" },
+        "publisher": { "@type": "Organization", "name": "Iceland Insights" },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": `https://icelandinsights.com/blog/iceland-tourism-${r.monthName.toLowerCase()}-${r.year}`
+        },
+        "about": [
+          { "@type": "Thing", "name": "Iceland Tourism" },
+          { "@type": "Thing", "name": "Hotel Statistics" },
+          { "@type": "Thing", "name": "Tourism Data" }
+        ],
+        "keywords": `Iceland tourism ${r.monthName} ${r.year}, Iceland visitor statistics, Iceland hotel occupancy, Iceland tourist spending, foreign visitors Iceland, ${r.monthName} travel Iceland`
+      })}} />
+      
+      {/* FAQ Schema for this specific month - matches visible FAQ */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": `How many tourists visited Iceland in ${r.monthName} ${r.year}?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": `Foreign visitors recorded ${r.nights.toLocaleString()} hotel nights in Iceland during ${r.monthName} ${r.year}, a ${r.nightsYoY >= 0 ? '+' : ''}${r.nightsYoY.toFixed(1)}% change compared to ${r.monthName} ${r.year - 1}.`
+            }
+          },
+          {
+            "@type": "Question",
+            "name": `What was Iceland's hotel occupancy in ${r.monthName} ${r.year}?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": `National hotel occupancy in Iceland was ${r.occupancy.toFixed(1)}% in ${r.monthName} ${r.year}, ${r.occupancyChange >= 0 ? 'up' : 'down'} ${Math.abs(r.occupancyChange).toFixed(1)} percentage points from ${r.occupancyPrior.toFixed(1)}% in ${r.monthName} ${r.year - 1}.`
+            }
+          },
+          {
+            "@type": "Question",
+            "name": `How much did tourists spend in Iceland in ${r.monthName} ${r.year}?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": `Foreign card spending totaled ${(r.spending / 1000).toFixed(1)} billion ISK in ${r.monthName} ${r.year}, a ${r.spendingYoY >= 0 ? '+' : ''}${r.spendingYoY.toFixed(1)}% change year-over-year.`
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which countries send the most tourists to Iceland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": `In ${r.monthName} ${r.year}, the top source markets for Iceland tourism were ${r.topMarkets.slice(0, 5).map((m: any) => `${m.market} (${m.share.toFixed(1)}%)`).join(', ')}. The United States and United Kingdom consistently rank among Iceland's largest tourism markets.`
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the best time to visit Iceland?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Iceland offers unique experiences year-round. Summer (June-August) provides midnight sun, warmer weather, and access to highland roads. Winter (November-March) offers northern lights, ice caves, and snowy landscapes. Spring and autumn offer a balance of activities and smaller crowds."
+            }
+          }
+        ]
+      })}} />
+
+      {/* Breadcrumb Schema */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://icelandinsights.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Tourism Reports",
+            "item": "https://icelandinsights.com/blog"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": `${r.monthName} ${r.year} Report`,
+            "item": `https://icelandinsights.com/blog/iceland-tourism-${r.monthName.toLowerCase()}-${r.year}`
+          }
+        ]
+      })}} />
 
       {/* Footer */}
       <footer className="border-t border-neutral-200 py-6 bg-white mt-12">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Line, ReferenceLine, Cell } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, CreditCard, Users, Calendar, ArrowRight } from 'lucide-react';
 
@@ -110,6 +110,65 @@ const formatPct = (value: number, showPlus = true): string => {
   const formatted = value.toFixed(1);
   if (showPlus && value > 0) return '+' + formatted;
   return formatted;
+};
+
+// Animated counter component - counts up from 0 with easing
+const AnimatedNumber = ({ value, duration = 1200, formatFn = (n: number) => n.toLocaleString(), suffix = '' }: {
+  value: number | string;
+  duration?: number;
+  formatFn?: (n: number) => string;
+  suffix?: string;
+}) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  const [opacity, setOpacity] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  
+  const targetValue = useMemo(() => {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value.replace(/,/g, ''));
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  }, [value]);
+  
+  useEffect(() => {
+    if (targetValue === 0) return;
+    
+    setOpacity(1);
+    startTimeRef.current = null;
+    
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    
+    const animate = (timestamp: number) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const elapsed = timestamp - startTimeRef.current;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutCubic(progress);
+      
+      setDisplayValue(easedProgress * targetValue);
+      
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+    
+    const timeout = setTimeout(() => {
+      rafRef.current = requestAnimationFrame(animate);
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeout);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [targetValue, duration]);
+  
+  return (
+    <span style={{ opacity, transition: 'opacity 0.3s ease-out', display: 'inline-block' }}>
+      {formatFn(displayValue)}{suffix}
+    </span>
+  );
 };
 
 const SpendingDashboard = () => {
@@ -488,7 +547,14 @@ const SpendingDashboard = () => {
               <div className="card p-5 animate-fade-in delay-1">
                 <div className="metric-label mb-1">Trailing 12 Months</div>
                 <div className="text-[11px] text-neutral-400 mb-2">ISK</div>
-                <div className="metric-value">{(kpis.ttmTotal / 1000).toFixed(1)}B</div>
+                <div className="metric-value">
+                  <AnimatedNumber 
+                    value={kpis.ttmTotal / 1000} 
+                    formatFn={(n) => n.toFixed(1)} 
+                    suffix="B"
+                    duration={1400}
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2">
                     <span className={`badge ${kpis.ttmRealChange >= 0.05 ? 'badge-success' : kpis.ttmRealChange <= -0.05 ? 'badge-danger' : 'badge-neutral'}`}>
@@ -509,7 +575,14 @@ const SpendingDashboard = () => {
               <div className="card p-5 animate-fade-in delay-1">
                 <div className="metric-label mb-1">{kpis.currentMonth}</div>
                 <div className="text-[11px] text-neutral-400 mb-2">ISK</div>
-                <div className="metric-value">{(kpis.currentValue / 1000).toFixed(1)}B</div>
+                <div className="metric-value">
+                  <AnimatedNumber 
+                    value={kpis.currentValue / 1000} 
+                    formatFn={(n) => n.toFixed(1)} 
+                    suffix="B"
+                    duration={1200}
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2">
                     <span className={`badge ${kpis.realYoyChange >= 0.05 ? 'badge-success' : kpis.realYoyChange <= -0.05 ? 'badge-danger' : 'badge-neutral'}`}>
@@ -530,7 +603,16 @@ const SpendingDashboard = () => {
               <div className="card p-5 animate-fade-in delay-2">
                 <div className="metric-label mb-1">Per Visitor</div>
                 <div className="text-[11px] text-neutral-400 mb-2">ISK</div>
-                <div className="metric-value">{kpis.currentSpv ? `${Math.round(kpis.currentSpv)}k` : '—'}</div>
+                <div className="metric-value">
+                  {kpis.currentSpv ? (
+                    <AnimatedNumber 
+                      value={Math.round(kpis.currentSpv)} 
+                      formatFn={(n) => Math.round(n).toLocaleString()} 
+                      suffix="k"
+                      duration={1000}
+                    />
+                  ) : '—'}
+                </div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2">
                     <span className={`badge ${kpis.spvRealChange >= 0.05 ? 'badge-success' : kpis.spvRealChange <= -0.05 ? 'badge-danger' : 'badge-neutral'}`}>
@@ -551,7 +633,16 @@ const SpendingDashboard = () => {
               <div className="card p-5 animate-fade-in delay-2">
                 <div className="metric-label mb-1">Visitors</div>
                 <div className="text-[11px] text-neutral-400 mb-2">{kpis.currentMonth}</div>
-                <div className="metric-value">{kpis.arrivals ? `${(kpis.arrivals / 1000).toFixed(0)}k` : '—'}</div>
+                <div className="metric-value">
+                  {kpis.arrivals ? (
+                    <AnimatedNumber 
+                      value={kpis.arrivals / 1000} 
+                      formatFn={(n) => Math.round(n).toLocaleString()} 
+                      suffix="k"
+                      duration={1100}
+                    />
+                  ) : '—'}
+                </div>
                 <div className="flex flex-col gap-1.5 mt-3">
                   {kpis.lastYearArrivals && (
                     <>
