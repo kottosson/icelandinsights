@@ -434,95 +434,91 @@ const HotelsDashboard = () => {
   const nationalityAnalysis = useMemo(() => {
     if (!nightsData.length || !Object.keys(arrivalsByNationality).length || !kpis) return [];
     
-    // Map hotel nights nationality names to arrivals nationality names
-    const nationalityMap: Record<string, string> = {
-      'USA': 'Bandaríkin',
-      'UK': 'Bretland',
-      'Germany': 'Þýskaland',
-      'France': 'Frakkland',
-      'Netherlands': 'Holland',
-      'Spain': 'Spánn',
-      'Italy': 'Ítalía',
-      'Canada': 'Kanada',
-      'China': 'Kína',
-      'Switzerland': 'Sviss',
-      'Denmark': 'Danmörk',
-      'Sweden': 'Svíþjóð',
-      'Norway': 'Noregur',
-      'Finland': 'Finnland',
-      'Australia': 'Ástralía',
-      'Japan': 'Japan',
-      'Belgium': 'Belgía',
-      'Austria': 'Austurríki',
-      'Ireland': 'Írland',
-      'Poland': 'Pólland'
-    };
-    
     // Country flags
     const flags: Record<string, string> = {
-      'USA': '🇺🇸', 'UK': '🇬🇧', 'Germany': '🇩🇪', 'France': '🇫🇷',
+      'United States': '🇺🇸', 'United Kingdom': '🇬🇧', 'Germany': '🇩🇪', 'France': '🇫🇷',
       'Netherlands': '🇳🇱', 'Spain': '🇪🇸', 'Italy': '🇮🇹', 'Canada': '🇨🇦',
       'China': '🇨🇳', 'Switzerland': '🇨🇭', 'Denmark': '🇩🇰', 'Sweden': '🇸🇪',
       'Norway': '🇳🇴', 'Finland': '🇫🇮', 'Australia': '🇦🇺', 'Japan': '🇯🇵',
-      'Belgium': '🇧🇪', 'Austria': '🇦🇹', 'Ireland': '🇮🇪', 'Poland': '🇵🇱'
+      'Belgium': '🇧🇪', 'Austria': '🇦🇹', 'Ireland': '🇮🇪', 'Poland': '🇵🇱',
+      'Portugal': '🇵🇹', 'Greece': '🇬🇷', 'Czech Republic': '🇨🇿', 'Russia': '🇷🇺',
+      'India': '🇮🇳', 'Brazil': '🇧🇷', 'Mexico': '🇲🇽', 'South Korea': '🇰🇷',
+      'Taiwan': '🇹🇼', 'Singapore': '🇸🇬'
     };
     
-    const year = kpis.latestYear;
-    const priorYear = year - 1;
+    // English names for Icelandic nationality names (using full names)
+    const englishNames: Record<string, string> = {
+      'Bandaríkin': 'United States', 'Bretland': 'United Kingdom', 'Þýskaland': 'Germany', 
+      'Frakkland': 'France', 'Holland': 'Netherlands', 'Spánn': 'Spain', 
+      'Ítalía': 'Italy', 'Kanada': 'Canada', 'Kína': 'China', 
+      'Sviss': 'Switzerland', 'Danmörk': 'Denmark', 'Svíþjóð': 'Sweden',
+      'Noregur': 'Norway', 'Finnland': 'Finland', 'Ástralía': 'Australia',
+      'Japan': 'Japan', 'Belgía': 'Belgium', 'Austurríki': 'Austria',
+      'Írland': 'Ireland', 'Pólland': 'Poland', 'Portúgal': 'Portugal',
+      'Grikkland': 'Greece', 'Tékkland': 'Czech Republic', 'Rússland': 'Russia',
+      'Indland': 'India', 'Brasilía': 'Brazil', 'Mexíkó': 'Mexico',
+      'Suður-Kórea': 'South Korea', 'Taívan': 'Taiwan', 'Singapúr': 'Singapore',
+      // Also handle if arrivals uses English names directly
+      'USA': 'United States', 'UK': 'United Kingdom', 'Germany': 'Germany', 'France': 'France',
+      'Netherlands': 'Netherlands', 'Spain': 'Spain', 'Italy': 'Italy',
+      'Canada': 'Canada', 'China': 'China', 'Switzerland': 'Switzerland',
+      'Denmark': 'Denmark', 'Sweden': 'Sweden', 'Norway': 'Norway',
+      'Finland': 'Finland', 'Australia': 'Australia', 'Belgium': 'Belgium',
+      'Austria': 'Austria', 'Ireland': 'Ireland', 'Poland': 'Poland'
+    };
     
-    // Calculate TTM (trailing 12 months) for more stable data
-    const results: any[] = [];
+    // Calculate TTM arrivals for each nationality from arrivals data
+    const arrivalsTotals: Record<string, number> = {};
     
-    Object.entries(nationalityMap).forEach(([hotelNat, arrivalsNat]) => {
-      // Get TTM hotel nights for this nationality
-      let ttmNights = 0;
-      let ttmNightsPrior = 0;
-      let ttmArrivals = 0;
-      let ttmArrivalsPrior = 0;
-      
-      // Calculate for last 12 months
+    Object.entries(arrivalsByNationality).forEach(([nationality, monthlyData]) => {
+      // Sum last 12 months
+      let total = 0;
       for (let i = 0; i < 12; i++) {
         let m = kpis.latestMonthNum - i;
-        let y = year;
+        let y = kpis.latestYear;
         if (m <= 0) { m += 12; y -= 1; }
         
-        const dateKey = `${y}-${m}`;
-        const priorDateKey = `${y - 1}-${m}`;
-        
-        // Hotel nights
-        const nightsEntry = nightsData.find(d => d.year === y && d.month === m && d.nationality === hotelNat);
-        const nightsEntryPrior = nightsData.find(d => d.year === y - 1 && d.month === m && d.nationality === hotelNat);
-        
-        if (nightsEntry) ttmNights += nightsEntry.nights;
-        if (nightsEntryPrior) ttmNightsPrior += nightsEntryPrior.nights;
-        
-        // Arrivals
-        const arrivals = arrivalsByNationality[arrivalsNat]?.[dateKey] || 0;
-        const arrivalsPrior = arrivalsByNationality[arrivalsNat]?.[priorDateKey] || 0;
-        
-        ttmArrivals += arrivals;
-        ttmArrivalsPrior += arrivalsPrior;
+        const key = `${y}-${String(m).padStart(2, '0')}`;
+        total += monthlyData[key] || 0;
       }
-      
-      if (ttmArrivals > 1000 && ttmNights > 1000) { // Minimum threshold
-        const nightsPerVisitor = ttmNights / ttmArrivals;
-        const nightsPerVisitorPrior = ttmArrivalsPrior > 0 ? ttmNightsPrior / ttmArrivalsPrior : 0;
-        const change = nightsPerVisitorPrior > 0 ? ((nightsPerVisitor - nightsPerVisitorPrior) / nightsPerVisitorPrior) * 100 : 0;
-        
-        results.push({
-          nationality: hotelNat,
-          flag: flags[hotelNat] || '🏳️',
-          nightsPerVisitor,
-          nightsPerVisitorPrior,
-          change,
-          ttmNights,
-          ttmArrivals
-        });
-      }
+      arrivalsTotals[nationality] = total;
     });
     
-    // Sort by number of arrivals (biggest markets first)
-    return results.sort((a, b) => b.ttmArrivals - a.ttmArrivals).slice(0, 6);
+    // Get top 12 by arrivals (take more to ensure we get 6 after filtering)
+    const topNationalities = Object.entries(arrivalsTotals)
+      .filter(([nat]) => nat !== 'Útlendingar alls' && nat !== 'Íslendingar')
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12);
+    
+    // For each top nationality, find matching hotel nights
+    const results = topNationalities.map(([arrivalsNat, ttmArrivals]) => {
+      const englishName = englishNames[arrivalsNat] || arrivalsNat;
+      
+      // Get TTM hotel nights for this nationality (matching by English name)
+      let ttmNights = 0;
+      for (let i = 0; i < 12; i++) {
+        let m = kpis.latestMonthNum - i;
+        let y = kpis.latestYear;
+        if (m <= 0) { m += 12; y -= 1; }
+        
+        const nightsEntry = nightsData.find(d => 
+          d.year === y && d.month === m && d.nationality === englishName
+        );
+        if (nightsEntry) ttmNights += nightsEntry.nights;
+      }
+      
+      const nightsPerVisitor = ttmArrivals > 0 ? ttmNights / ttmArrivals : 0;
+      
+      return {
+        nationality: englishName,
+        flag: flags[englishName] || flags[arrivalsNat] || '🏳️',
+        nightsPerVisitor,
+        ttmNights,
+        ttmArrivals
+      };
+    }).filter(r => r.nightsPerVisitor > 0 && r.nightsPerVisitor < 15); // Sanity check
+    
+    return results.slice(0, 6);
   }, [nightsData, arrivalsByNationality, kpis]);
 
   // Capacity trend data
@@ -915,13 +911,135 @@ const HotelsDashboard = () => {
               </div>
             </div>
 
+            {/* ========== REGIONAL OCCUPANCY (Full Width) ========== */}
+            <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3" style={{ background: 'linear-gradient(135deg, #FAF5FF 0%, #F5F3FF 100%)' }}>
+              <div className="mb-4 md:mb-6">
+                <div className="flex items-center gap-2">
+                  <h2 className="section-title">Regional Occupancy</h2>
+                  <span className="badge badge-purple text-[10px]">{kpis.latestMonth}</span>
+                </div>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Room utilization by region · Year-over-year change in percentage points
+                </p>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                {regionalChartData.map((region, i) => (
+                  <div key={region.region} className="flex items-center gap-3">
+                    <div className="w-24 text-sm text-neutral-700 font-medium">{region.region}</div>
+                    <div className="flex-1 h-7 bg-violet-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+                        style={{ 
+                          width: `${region.occupancy}%`,
+                          background: `linear-gradient(90deg, #8B5CF6, #7C3AED)`
+                        }}
+                      >
+                        <span className="text-[11px] font-bold text-white">{region.occupancy.toFixed(0)}%</span>
+                      </div>
+                    </div>
+                    <div className="w-14 text-right">
+                      <span className={`text-xs font-semibold ${region.change >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {region.change >= 0 ? '+' : ''}{region.change.toFixed(1)}pp
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-violet-200/50 text-xs text-violet-600">
+                💡 Capital region leads with highest occupancy rates
+              </div>
+            </div>
+
+            {/* ========== SOURCE MARKETS ROW ========== */}
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              
+              {/* Top Source Markets */}
+              <div className="card p-4 md:p-6 animate-fade-in delay-3">
+                <div className="mb-4 md:mb-6">
+                  <h2 className="section-title">Top Source Markets</h2>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Hotel nights by nationality · {kpis.latestMonth}
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  {nationalityData.slice(0, 6).map((country, i) => (
+                    <div key={country.name} className="flex items-center gap-3 p-2.5 rounded-lg bg-neutral-50">
+                      <div 
+                        className="w-2 h-8 rounded-full"
+                        style={{ background: country.fill }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-neutral-800 truncate">{country.name}</div>
+                        <div className="text-[10px] text-neutral-500">{formatNumber(country.value)} nights</div>
+                      </div>
+                      <div className="text-sm font-semibold text-neutral-700">{country.percentage}%</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Average Stay by Market */}
+              {nationalityAnalysis.length > 0 && (
+                <div className="card p-4 md:p-6 animate-fade-in delay-3 overflow-hidden" 
+                     style={{ background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)' }}>
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h2 className="section-title">Average Stay Length</h2>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-200/60 text-amber-800 text-[10px] font-semibold">TTM</span>
+                    </div>
+                    <p className="text-xs text-amber-700/70">
+                      Hotel nights per visitor · Top 6 source markets
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {nationalityAnalysis.map((nat, index) => {
+                      const maxNights = Math.max(...nationalityAnalysis.map(n => n.nightsPerVisitor));
+                      const barWidth = (nat.nightsPerVisitor / maxNights) * 100;
+                      const isTop = index === 0;
+                      
+                      return (
+                        <div 
+                          key={nat.nationality}
+                          className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${
+                            isTop 
+                              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' 
+                              : 'bg-white/60'
+                          }`}
+                        >
+                          <span className="text-lg">{nat.flag}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-medium truncate ${isTop ? 'text-white' : 'text-neutral-800'}`}>
+                              {nat.nationality}
+                            </div>
+                            <div className="h-1.5 bg-white/30 rounded-full mt-1 overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full ${isTop ? 'bg-white' : 'bg-amber-400'}`}
+                                style={{ width: `${barWidth}%` }}
+                              />
+                            </div>
+                          </div>
+                          <div className={`text-lg font-bold tabular-nums ${isTop ? 'text-white' : 'text-neutral-900'}`}>
+                            {nat.nightsPerVisitor.toFixed(1)}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* ========== NIGHTS PER VISITOR CHART ========== */}
             <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3" style={{ background: 'linear-gradient(135deg, #FDF4FF 0%, #FAF5FF 100%)' }}>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="section-title">Hotel Nights per Visitor</h2>
-                    <span className="badge badge-purple text-[10px]">Key Metric</span>
+                    <span className="badge badge-purple text-[10px]">Trend</span>
                   </div>
                   <p className="text-xs text-neutral-500 mt-1">
                     <span className="md:hidden">Last 6 months · </span>Average hotel nights per foreign arrival
@@ -1029,60 +1147,11 @@ const HotelsDashboard = () => {
                   <span className="text-[10px] text-neutral-500">YoY</span>
                 </div>
               </div>
-              
-              <div className="hidden md:flex mt-4 pt-4 border-t border-fuchsia-200/50 items-start gap-2">
-                <span className="text-fuchsia-600">💡</span>
-                <p className="text-xs text-fuchsia-700">
-                  This metric shows how long foreign visitors stay in hotels on average — a key indicator of tourism depth beyond visitor counts.
-                </p>
-              </div>
             </div>
 
-            {/* ========== TWO COLUMN LAYOUT ========== */}
+            {/* ========== INFRASTRUCTURE ROW ========== */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               
-              {/* Regional Occupancy */}
-              <div className="card p-4 md:p-6 animate-fade-in delay-3" style={{ background: 'linear-gradient(135deg, #FAF5FF 0%, #F5F3FF 100%)' }}>
-                <div className="mb-4 md:mb-6">
-                  <div className="flex items-center gap-2">
-                    <h2 className="section-title">Regional Occupancy</h2>
-                    <span className="badge badge-purple text-[10px]">{kpis.latestMonth}</span>
-                  </div>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Room utilization by region
-                  </p>
-                </div>
-                
-                <div className="space-y-3">
-                  {regionalChartData.map((region, i) => (
-                    <div key={region.region} className="flex items-center gap-3">
-                      <div className="w-20 text-xs text-neutral-600 truncate">{region.region}</div>
-                      <div className="flex-1 h-6 bg-violet-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{ 
-                            width: `${region.occupancy}%`,
-                            background: `linear-gradient(90deg, #8B5CF6, #7C3AED)`
-                          }}
-                        />
-                      </div>
-                      <div className="w-12 text-right">
-                        <span className="text-sm font-semibold text-neutral-800">{region.occupancy.toFixed(0)}%</span>
-                      </div>
-                      <div className="w-12 text-right">
-                        <span className={`text-[10px] font-medium ${region.change >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                          {region.change >= 0 ? '+' : ''}{region.change.toFixed(0)}pp
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-violet-200/50 text-xs text-violet-600">
-                  💡 Capital region leads with highest occupancy
-                </div>
-              </div>
-
               {/* Room Capacity Trend */}
               <div className="card p-4 md:p-6 animate-fade-in delay-3">
                 <div className="mb-4 md:mb-6">
@@ -1092,7 +1161,7 @@ const HotelsDashboard = () => {
                   </p>
                 </div>
                 
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width="100%" height={180}>
                   <BarChart 
                     data={capacityChartData}
                     margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
@@ -1126,203 +1195,85 @@ const HotelsDashboard = () => {
                       dataKey="rooms" 
                       fill="#8B5CF6" 
                       radius={[4, 4, 0, 0]}
-                      maxBarSize={35}
+                      maxBarSize={30}
                     />
                   </BarChart>
                 </ResponsiveContainer>
                 
-                <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center justify-between">
+                <div className="mt-3 pt-3 border-t border-neutral-100 flex items-center justify-between">
                   <span className="text-xs text-neutral-500">2015 → {currentYear}</span>
                   <span className="text-xs font-medium text-violet-600">
                     +{((capacityChartData[capacityChartData.length - 1]?.rooms / capacityChartData[0]?.rooms - 1) * 100).toFixed(0)}% growth
                   </span>
                 </div>
               </div>
-            </div>
 
-            {/* ========== TOP NATIONALITIES ========== */}
-            <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3">
-              <div className="mb-4 md:mb-6">
-                <h2 className="section-title">Top Source Markets</h2>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Hotel nights by nationality · {kpis.latestMonth}
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {nationalityData.slice(0, 8).map((country, i) => (
-                  <div key={country.name} className="flex items-center gap-3 p-3 rounded-lg bg-neutral-50">
-                    <div 
-                      className="w-2 h-8 rounded-full"
-                      style={{ background: country.fill }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-neutral-800 truncate">{country.name}</div>
-                      <div className="text-[10px] text-neutral-500">{formatNumber(country.value)} nights</div>
-                    </div>
-                    <div className="text-sm font-semibold text-neutral-700">{country.percentage}%</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ========== NATIONALITY STAY LENGTH ANALYSIS ========== */}
-            {nationalityAnalysis.length > 0 && (
-              <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3 overflow-hidden" 
-                   style={{ background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)' }}>
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h2 className="section-title">Average Stay by Market</h2>
-                    <span className="px-2 py-0.5 rounded-full bg-amber-200/60 text-amber-800 text-[10px] font-semibold">TTM</span>
-                  </div>
-                  <p className="text-xs text-amber-700/70">
-                    Hotel nights per visitor · Top 6 source markets
+              {/* Domestic Hotel Nights */}
+              <div className="card p-4 md:p-6 animate-fade-in delay-3">
+                <div className="mb-4 md:mb-6">
+                  <h2 className="section-title">Domestic Hotel Nights</h2>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Icelandic guests · Annual totals
                   </p>
                 </div>
                 
-                {/* Visualization Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                  {nationalityAnalysis.map((nat, index) => {
-                    const maxNights = Math.max(...nationalityAnalysis.map(n => n.nightsPerVisitor));
-                    const barWidth = (nat.nightsPerVisitor / maxNights) * 100;
-                    const isTop = index === 0;
-                    
-                    return (
-                      <div 
-                        key={nat.nationality}
-                        className={`relative rounded-xl p-4 transition-all duration-300 hover:scale-[1.02] ${
-                          isTop 
-                            ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-200' 
-                            : 'bg-white/80 backdrop-blur-sm border border-amber-200/50 hover:shadow-md'
-                        }`}
-                      >
-                        {/* Rank Badge */}
-                        <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${
-                          isTop ? 'bg-white text-amber-600' : 'bg-amber-100 text-amber-700'
-                        }`}>
-                          {index + 1}
-                        </div>
-                        
-                        {/* Flag & Country */}
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-2xl">{nat.flag}</span>
-                          <span className={`font-semibold text-sm ${isTop ? 'text-white' : 'text-neutral-800'}`}>
-                            {nat.nationality}
-                          </span>
-                        </div>
-                        
-                        {/* Main Metric */}
-                        <div className={`text-3xl font-bold tabular-nums mb-1 ${isTop ? 'text-white' : 'text-neutral-900'}`}
-                             style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.02em' }}>
-                          {nat.nightsPerVisitor.toFixed(1)}
-                        </div>
-                        <div className={`text-[10px] uppercase tracking-wide mb-3 ${isTop ? 'text-amber-100' : 'text-neutral-500'}`}>
-                          nights / visitor
-                        </div>
-                        
-                        {/* Progress Bar */}
-                        <div className={`h-1.5 rounded-full overflow-hidden mb-2 ${isTop ? 'bg-white/30' : 'bg-amber-100'}`}>
-                          <div 
-                            className={`h-full rounded-full transition-all duration-700 ${isTop ? 'bg-white' : 'bg-gradient-to-r from-amber-400 to-orange-400'}`}
-                            style={{ width: `${barWidth}%` }}
-                          />
-                        </div>
-                        
-                        {/* YoY Change */}
-                        <div className={`flex items-center gap-1 text-[11px] font-medium ${
-                          nat.change >= 0 
-                            ? isTop ? 'text-emerald-200' : 'text-emerald-600' 
-                            : isTop ? 'text-red-200' : 'text-red-500'
-                        }`}>
-                          {nat.change >= 0 ? (
-                            <TrendingUp className="w-3 h-3" />
-                          ) : (
-                            <TrendingDown className="w-3 h-3" />
-                          )}
-                          {nat.change >= 0 ? '+' : ''}{nat.change.toFixed(1)}% vs prior year
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                {/* Insight Footer */}
-                <div className="mt-6 pt-4 border-t border-amber-300/30 flex items-start gap-2">
-                  <span className="text-amber-600">💡</span>
-                  <p className="text-xs text-amber-800/80">
-                    <strong>Insight:</strong> {nationalityAnalysis[0]?.nationality} is the largest source market with an average stay of {nationalityAnalysis[0]?.nightsPerVisitor.toFixed(1)} nights. 
-                    Longer stays typically indicate leisure travelers exploring multiple regions.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* ========== DOMESTIC TOURISM ========== */}
-            <div className="card p-4 md:p-6 mb-6 animate-fade-in delay-3">
-              <div className="mb-4 md:mb-6">
-                <h2 className="section-title">Domestic Hotel Nights</h2>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Icelandic guests · Annual totals
-                </p>
-              </div>
-              
-              <ResponsiveContainer width="100%" height={isMobile ? 180 : 220}>
-                <BarChart 
-                  data={icelandicNightsByYear}
-                  margin={{ top: 10, right: 10, left: isMobile ? -10 : 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
-                  <XAxis 
-                    dataKey="year"
-                    tick={{ fontSize: isMobile ? 9 : 10, fill: '#6B7280' }}
-                    axisLine={false}
-                    tickLine={false}
-                    interval={isMobile ? 1 : 0}
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 10, fill: '#6B7280' }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(val) => `${(val/1000000).toFixed(1)}M`}
-                    width={isMobile ? 35 : 40}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#fff', 
-                      border: '1px solid #E5E7EB',
-                      borderRadius: '10px',
-                      fontSize: '12px'
-                    }}
-                    formatter={(value: any) => [`${(value/1000000).toFixed(2)}M nights`]}
-                    labelFormatter={(label) => `Year: 20${label.replace("'", "")}`}
-                  />
-                  <Bar 
-                    dataKey="nights" 
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={30}
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart 
+                    data={icelandicNightsByYear}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
                   >
-                    {icelandicNightsByYear.map((entry, index) => {
-                      let fill = '#8B5CF6';
-                      if (entry.isCovid) fill = '#C4B5FD';
-                      if (entry.isPartial) fill = '#DDD6FE';
-                      return <Cell key={`cell-${index}`} fill={fill} />;
-                    })}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              
-              <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-4 pt-4 border-t border-neutral-100">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded" style={{ background: '#8B5CF6' }}></div>
-                  <span className="text-[10px] text-neutral-500">Normal</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded" style={{ background: '#C4B5FD' }}></div>
-                  <span className="text-[10px] text-neutral-500">COVID</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded" style={{ background: '#DDD6FE' }}></div>
-                  <span className="text-[10px] text-neutral-500">YTD</span>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
+                    <XAxis 
+                      dataKey="year"
+                      tick={{ fontSize: 10, fill: '#6B7280' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10, fill: '#6B7280' }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(val) => `${(val/1000000).toFixed(1)}M`}
+                      width={35}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#fff', 
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '10px',
+                        fontSize: '12px'
+                      }}
+                      formatter={(value: any) => [`${(value/1000000).toFixed(2)}M nights`]}
+                      labelFormatter={(label) => `Year: 20${label.replace("'", "")}`}
+                    />
+                    <Bar 
+                      dataKey="nights" 
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={30}
+                    >
+                      {icelandicNightsByYear.map((entry, index) => {
+                        let fill = '#8B5CF6';
+                        if (entry.isCovid) fill = '#C4B5FD';
+                        if (entry.isPartial) fill = '#DDD6FE';
+                        return <Cell key={`cell-${index}`} fill={fill} />;
+                      })}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                
+                <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-neutral-100">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded" style={{ background: '#8B5CF6' }}></div>
+                    <span className="text-[10px] text-neutral-500">Normal</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded" style={{ background: '#C4B5FD' }}></div>
+                    <span className="text-[10px] text-neutral-500">COVID</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded" style={{ background: '#DDD6FE' }}></div>
+                    <span className="text-[10px] text-neutral-500">YTD</span>
+                  </div>
                 </div>
               </div>
             </div>
