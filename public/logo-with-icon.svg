@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 56" width="260" height="56">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#9333EA"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Minimal data icon - 3 bars -->
+  <rect x="0" y="28" width="4" height="20" rx="2" fill="#7C3AED"/>
+  <rect x="8" y="18" width="4" height="30" rx="2" fill="#9333EA"/>
+  <rect x="16" y="8" width="4" height="40" rx="2" fill="#A855F7"/>
+  
+  <!-- "Iceland" text -->
+  <text 
+    x="32" 
+    y="40" 
+    font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+    font-size="36" 
+    font-weight="600" 
+    letter-spacing="-0.025em"
+    fill="#0F172A"
+  >Iceland</text>
+  
+  <!-- "Data" text -->
+  <text 
+    x="158" 
+    y="40" 
+    font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+    font-size="36" 
+    font-weight="600" 
+    letter-spacing="-0.025em"
+    fill="url(#brandGradient)"
+  >Data</text>
+</svg>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, ComposedChart } from 'recharts';
-import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, TrendingUp, TrendingDown, Minus, Share2, ArrowUpDown, ChevronUp, ChevronDown, Code, FileDown, Link2, Twitter, Linkedin, Calendar, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 
 // Rich animations for premium feel
 const styles = `
@@ -281,6 +281,7 @@ export default function DataDashboard() {
 
   // Detect mobile device safely (iPhone, iPad, Android)
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Pre-indexed data for O(1) lookups (avoid repeated filtering)
   const [dataIndex, setDataIndex] = useState(null);
@@ -1047,7 +1048,7 @@ export default function DataDashboard() {
   };
 
   const shareKPI = async (kpiName, kpiData) => {
-    const shareText = `🇮🇸 ${kpiName}\n${kpiData}\n\nvia IcelandInsights`;
+    const shareText = `🇮🇸 ${kpiName}\n${kpiData}\n\nvia IcelandData`;
     const url = window.location.href;
     
     // Open Twitter with pre-filled tweet
@@ -1300,72 +1301,102 @@ export default function DataDashboard() {
         .border-sage-200 { border-color: #e5e5e5; }
         .border-terracotta-200 { border-color: #F4D5C8; }
         .bg-slate-50 { background-color: #F8F9FA; }
+        
+        .mobile-menu-btn { display: none; }
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .mobile-menu-btn { display: flex !important; }
+          .desktop-right { display: none !important; }
+        }
       `}</style>
       
       {/* ========== ELITE NAV BAR ========== */}
       <nav className="sticky top-0 z-50 nav-blur" style={{
-        background: 'rgba(255, 255, 255, 0.72)',
+        background: 'rgba(255, 255, 255, 0.85)',
         borderBottom: '1px solid rgba(0, 0, 0, 0.06)'
       }}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-14 md:h-16">
             {/* Logo/Brand */}
-            <a href="/" className="flex items-center gap-2.5 group" style={{ minWidth: '160px' }}>
+            <a href="/arrivals" className="flex items-center gap-2 flex-shrink-0">
               <div style={{
-                width: '32px',
-                height: '32px',
-                minWidth: '32px',
-                borderRadius: '8px',
+                width: '28px',
+                height: '28px',
+                borderRadius: '7px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)'
+                gap: '2px',
+                background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)'
               }}>
-                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 3v18h18" />
-                  <path d="M18 9l-5 5-4-4-3 3" />
-                </svg>
+                <div style={{ width: '3px', height: '8px', background: 'white', borderRadius: '1px', marginTop: '6px' }} />
+                <div style={{ width: '3px', height: '12px', background: 'white', borderRadius: '1px', marginTop: '2px' }} />
+                <div style={{ width: '3px', height: '16px', background: 'white', borderRadius: '1px' }} />
               </div>
               <span style={{
                 fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
                 fontWeight: '600',
                 fontSize: '15px',
-                color: '#111827',
-                letterSpacing: '-0.3px',
-                whiteSpace: 'nowrap'
-              }}>Iceland Insights</span>
+                color: '#0F172A',
+                letterSpacing: '-0.3px'
+              }}>
+                Iceland<span style={{ color: '#7C3AED' }}>Data</span>
+              </span>
             </a>
             
-            {/* Nav Links */}
-            <div className="flex items-center gap-1">
-              <a href="/arrivals" className="nav-link active">
-                Arrivals
-              </a>
-              <a href="/hotels" className="nav-link">
-                Hotels
-              </a>
-              <a href="/spending" className="nav-link">
-                Card Spending
-              </a>
-              <a href="/blog" className="nav-link">
-                Reports
-              </a>
+            {/* Desktop Nav Links */}
+            <div className="desktop-nav flex items-center gap-1">
+              <a href="/arrivals" className="nav-link active">Arrivals</a>
+              <a href="/hotels" className="nav-link">Hotels</a>
+              <a href="/spending" className="nav-link">Spending</a>
+              <a href="/blog" className="nav-link">Reports</a>
+              <a href="/about" className="nav-link">About</a>
             </div>
             
-            {/* Right side - fixed width to match left */}
-            <div className="hidden md:flex items-center gap-2" style={{ minWidth: '160px', justifyContent: 'flex-end' }}>
+            {/* Desktop Right Side */}
+            <div className="desktop-right flex items-center" style={{ minWidth: '100px', justifyContent: 'flex-end' }}>
               <a 
                 href="https://statice.is" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
-                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif' }}
+                className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
               >
-                Data: Statistics Iceland
+                Source: Hagstofa
               </a>
             </div>
+            
+            {/* Mobile Menu Button */}
+            <button 
+              className="mobile-menu-btn items-center justify-center p-2 -mr-2 text-neutral-600"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X size={22} />
+              ) : (
+                <Menu size={22} />
+              )}
+            </button>
           </div>
         </div>
+        
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-neutral-100 bg-white">
+            <div className="px-4 py-3 space-y-1">
+              <a href="/arrivals" className="nav-link block active" style={{ padding: '12px 16px', fontSize: '15px' }}>Arrivals</a>
+              <a href="/hotels" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Hotels</a>
+              <a href="/spending" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Spending</a>
+              <a href="/blog" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Reports</a>
+              <a href="/about" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>About</a>
+              <div className="pt-3 mt-3 border-t border-neutral-100">
+                <a href="https://statice.is" target="_blank" rel="noopener noreferrer" className="text-xs text-neutral-400">
+                  Data source: Statistics Iceland
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
       
       {/* NORMAL DASHBOARD */}

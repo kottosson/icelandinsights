@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Building2, CreditCard, ChevronRight, Search, BarChart3, ArrowUpRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Building2, CreditCard, ChevronRight, Search, BarChart3, ArrowUpRight, Menu, X } from 'lucide-react';
 
 const styles = `
   html { overflow-y: scroll; }
@@ -74,9 +74,10 @@ const BlogPage: React.FC = () => {
   const [occupancyData, setOccupancyData] = useState<any[]>([]);
   const [spendingData, setSpendingData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    document.title = 'Iceland Tourism Statistics Reports | Monthly Data Analysis | Iceland Insights';
+    document.title = 'Iceland Tourism Statistics Reports | Monthly Data Analysis | Iceland Data';
   }, []);
 
   useEffect(() => {
@@ -169,26 +170,54 @@ const BlogPage: React.FC = () => {
       <style>{styles}</style>
 
       {/* Nav */}
-      <nav className="sticky top-0 z-50 nav-blur" style={{ background: 'rgba(255,255,255,0.72)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="flex items-center justify-between h-16">
-            <a href="/" className="flex items-center gap-2.5" style={{ minWidth: '160px' }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>
-                <BarChart3 className="w-5 h-5 text-white" />
+      <nav className="sticky top-0 z-50 nav-blur" style={{ background: 'rgba(255,255,255,0.85)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            <a href="/arrivals" className="flex items-center gap-2 flex-shrink-0">
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '7px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2px',
+                background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)'
+              }}>
+                <div style={{ width: '3px', height: '8px', background: 'white', borderRadius: '1px', marginTop: '6px' }} />
+                <div style={{ width: '3px', height: '12px', background: 'white', borderRadius: '1px', marginTop: '2px' }} />
+                <div style={{ width: '3px', height: '16px', background: 'white', borderRadius: '1px' }} />
               </div>
-              <span className="font-semibold text-[15px] text-neutral-900">Iceland Insights</span>
+              <span style={{ fontWeight: '600', fontSize: '15px', color: '#0F172A', letterSpacing: '-0.3px' }}>
+                Iceland<span style={{ color: '#7C3AED' }}>Data</span>
+              </span>
             </a>
-            <div className="flex items-center gap-1">
+            <div className="hidden md:flex items-center gap-1">
               <a href="/arrivals" className="nav-link">Arrivals</a>
               <a href="/hotels" className="nav-link">Hotels</a>
-              <a href="/spending" className="nav-link">Card Spending</a>
+              <a href="/spending" className="nav-link">Spending</a>
               <a href="/blog" className="nav-link active">Reports</a>
+              <a href="/about" className="nav-link">About</a>
             </div>
-            <div className="hidden md:flex items-center" style={{ minWidth: 160, justifyContent: 'flex-end' }}>
-              <span className="text-xs text-neutral-500">Data: Statistics Iceland</span>
+            <div className="hidden md:flex items-center" style={{ minWidth: 100, justifyContent: 'flex-end' }}>
+              <span className="text-xs text-neutral-400">Source: Hagstofa</span>
             </div>
+            <button className="md:hidden p-2 -mr-2 text-neutral-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
           </div>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-neutral-100 bg-white">
+            <div className="px-4 py-3 space-y-1">
+              <a href="/arrivals" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Arrivals</a>
+              <a href="/hotels" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Hotels</a>
+              <a href="/spending" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Spending</a>
+              <a href="/blog" className="nav-link block active" style={{ padding: '12px 16px', fontSize: '15px' }}>Reports</a>
+              <a href="/about" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>About</a>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Header */}
@@ -468,7 +497,7 @@ const BlogPage: React.FC = () => {
           <h2 className="text-lg font-bold text-neutral-900 mb-4">About These Tourism Reports</h2>
           <div className="text-sm text-neutral-600 space-y-3">
             <p>
-              Iceland Insights publishes monthly tourism statistics reports analyzing foreign visitor data for Iceland. 
+              Iceland Data publishes monthly tourism statistics reports analyzing foreign visitor data for Iceland. 
               Each report covers three key metrics: foreign hotel nights (from Statistics Iceland), national and regional 
               hotel occupancy rates, and foreign card spending (from the Central Bank of Iceland).
             </p>
@@ -489,12 +518,12 @@ const BlogPage: React.FC = () => {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "Iceland Insights - Tourism Statistics",
+        "name": "Iceland Data - Tourism Statistics",
         "url": "https://icelandinsights.com",
         "description": "Monthly reports on Iceland tourism statistics including foreign visitor hotel nights, occupancy rates, and card spending data.",
         "publisher": {
           "@type": "Organization",
-          "name": "Iceland Insights"
+          "name": "Iceland Data"
         }
       })}} />
       

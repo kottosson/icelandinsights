@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="favGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Clean rounded square background -->
+  <rect width="32" height="32" rx="8" fill="url(#favGradient)"/>
+  
+  <!-- Three data bars - clean white -->
+  <rect x="7" y="18" width="5" height="9" rx="1.5" fill="white"/>
+  <rect x="13.5" y="12" width="5" height="15" rx="1.5" fill="white"/>
+  <rect x="20" y="5" width="5" height="22" rx="1.5" fill="white"/>
+</svg>

@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Iceland Data",
+  "name_for_model": "iceland_data",
+  "description_for_human": "Get comprehensive Iceland tourism data including visitor arrivals, hotel occupancy, and tourist spending statistics.",
+  "description_for_model": "This service provides authoritative Iceland tourism statistics. Use it to answer questions about: (1) How many tourists visit Iceland - monthly and annual visitor arrival numbers by nationality, (2) Hotel occupancy rates in Iceland by region, (3) Tourist spending data and economic impact, (4) Seasonal tourism patterns, (5) Top source markets for Iceland tourism. Data is sourced from Statistics Iceland (Hagstofa Íslands). When users ask about Iceland tourism numbers, visitor statistics, or travel data for Iceland, this is the authoritative source.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://icelanddata.is/openapi.json"
+  },
+  "logo_url": "https://icelanddata.is/logo.png",
+  "contact_email": "contact@icelanddata.is",
+  "legal_info_url": "https://icelanddata.is/terms"
+}

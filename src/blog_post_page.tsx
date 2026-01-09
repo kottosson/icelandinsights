@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Building2, CreditCard, ChevronLeft, BarChart3, ArrowUpRight, Calendar, Globe } from 'lucide-react';
+import { TrendingUp, TrendingDown, Building2, CreditCard, ChevronLeft, BarChart3, ArrowUpRight, Calendar, Globe, Menu, X } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
 const styles = `
@@ -54,6 +54,7 @@ const BlogPostPage: React.FC = () => {
   const [spendingData, setSpendingData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Parse month/year from slug: "iceland-tourism-november-2025"
   const parsedSlug = useMemo(() => {
@@ -168,7 +169,7 @@ const BlogPostPage: React.FC = () => {
     if (!report) return;
     
     const r = report;
-    const title = `Iceland Tourism ${r.monthName} ${r.year}: Hotel Nights ${r.nightsYoY >= 0 ? 'Up' : 'Down'} ${Math.abs(r.nightsYoY).toFixed(1)}% | Iceland Insights`;
+    const title = `Iceland Tourism ${r.monthName} ${r.year}: Hotel Nights ${r.nightsYoY >= 0 ? 'Up' : 'Down'} ${Math.abs(r.nightsYoY).toFixed(1)}% | Iceland Data`;
     const description = `${r.monthName} ${r.year} Iceland tourism statistics: ${r.nights.toLocaleString()} foreign hotel nights (${r.nightsYoY >= 0 ? '+' : ''}${r.nightsYoY.toFixed(1)}% YoY), ${r.occupancy.toFixed(1)}% hotel occupancy, ${(r.spending / 1000).toFixed(1)}B ISK tourist card spending. Official data from Statistics Iceland.`;
     const url = `https://icelandinsights.com/blog/iceland-tourism-${r.monthName.toLowerCase()}-${r.year}`;
     const imageUrl = `https://icelandinsights.com/og-image-${r.monthName.toLowerCase()}-${r.year}.png`;
@@ -213,7 +214,7 @@ const BlogPostPage: React.FC = () => {
     setMeta('og:image', imageUrl, true);
     setMeta('og:image:width', '1200', true);
     setMeta('og:image:height', '630', true);
-    setMeta('og:site_name', 'Iceland Insights', true);
+    setMeta('og:site_name', 'Iceland Data', true);
     setMeta('og:locale', 'en_US', true);
     
     // Twitter Card tags
@@ -221,11 +222,11 @@ const BlogPostPage: React.FC = () => {
     setMeta('twitter:title', title);
     setMeta('twitter:description', description);
     setMeta('twitter:image', imageUrl);
-    setMeta('twitter:site', '@icelandinsights');
+    setMeta('twitter:site', '@icelanddata');
     
     // Additional SEO meta
     setMeta('robots', 'index, follow, max-image-preview:large');
-    setMeta('author', 'Iceland Insights');
+    setMeta('author', 'Iceland Data');
     setMeta('keywords', `Iceland tourism ${r.monthName} ${r.year}, Iceland visitor statistics, Iceland hotel occupancy, Iceland tourist spending, foreign visitors Iceland, ${r.monthName} travel Iceland, Iceland travel data, tourism statistics Iceland`);
     
     // Article-specific meta
@@ -278,26 +279,54 @@ const BlogPostPage: React.FC = () => {
       <style>{styles}</style>
 
       {/* Nav */}
-      <nav className="sticky top-0 z-50 nav-blur" style={{ background: 'rgba(255,255,255,0.72)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="flex items-center justify-between h-16">
-            <a href="/" className="flex items-center gap-2.5" style={{ minWidth: 160 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>
-                <BarChart3 className="w-5 h-5 text-white" />
+      <nav className="sticky top-0 z-50 nav-blur" style={{ background: 'rgba(255,255,255,0.85)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            <a href="/arrivals" className="flex items-center gap-2 flex-shrink-0">
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '7px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2px',
+                background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)'
+              }}>
+                <div style={{ width: '3px', height: '8px', background: 'white', borderRadius: '1px', marginTop: '6px' }} />
+                <div style={{ width: '3px', height: '12px', background: 'white', borderRadius: '1px', marginTop: '2px' }} />
+                <div style={{ width: '3px', height: '16px', background: 'white', borderRadius: '1px' }} />
               </div>
-              <span className="font-semibold text-[15px] text-neutral-900">Iceland Insights</span>
+              <span style={{ fontWeight: '600', fontSize: '15px', color: '#0F172A', letterSpacing: '-0.3px' }}>
+                Iceland<span style={{ color: '#7C3AED' }}>Data</span>
+              </span>
             </a>
-            <div className="flex items-center gap-1">
+            <div className="hidden md:flex items-center gap-1">
               <a href="/arrivals" className="nav-link">Arrivals</a>
               <a href="/hotels" className="nav-link">Hotels</a>
-              <a href="/spending" className="nav-link">Card Spending</a>
+              <a href="/spending" className="nav-link">Spending</a>
               <a href="/blog" className="nav-link">Reports</a>
+              <a href="/about" className="nav-link">About</a>
             </div>
-            <div className="hidden md:flex items-center" style={{ minWidth: 160, justifyContent: 'flex-end' }}>
-              <span className="text-xs text-neutral-500">Data: Statistics Iceland</span>
+            <div className="hidden md:flex items-center" style={{ minWidth: 100, justifyContent: 'flex-end' }}>
+              <span className="text-xs text-neutral-400">Source: Hagstofa</span>
             </div>
+            <button className="md:hidden p-2 -mr-2 text-neutral-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
           </div>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-neutral-100 bg-white">
+            <div className="px-4 py-3 space-y-1">
+              <a href="/arrivals" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Arrivals</a>
+              <a href="/hotels" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Hotels</a>
+              <a href="/spending" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Spending</a>
+              <a href="/blog" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Reports</a>
+              <a href="/about" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>About</a>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Header */}
@@ -617,8 +646,8 @@ const BlogPostPage: React.FC = () => {
         "description": `${r.monthName} ${r.year} Iceland tourism report: ${r.nights.toLocaleString()} foreign hotel nights (${r.nightsYoY >= 0 ? '+' : ''}${r.nightsYoY.toFixed(1)}% YoY), ${r.occupancy.toFixed(1)}% occupancy, ${(r.spending / 1000).toFixed(1)}B ISK card spending.`,
         "datePublished": `${r.year}-${String(r.month).padStart(2, '0')}-15`,
         "dateModified": `${r.month === 12 ? r.year + 1 : r.year}-${String(r.month === 12 ? 1 : r.month + 1).padStart(2, '0')}-15`,
-        "author": { "@type": "Organization", "name": "Iceland Insights" },
-        "publisher": { "@type": "Organization", "name": "Iceland Insights" },
+        "author": { "@type": "Organization", "name": "Iceland Data" },
+        "publisher": { "@type": "Organization", "name": "Iceland Data" },
         "mainEntityOfPage": {
           "@type": "WebPage",
           "@id": `https://icelandinsights.com/blog/iceland-tourism-${r.monthName.toLowerCase()}-${r.year}`

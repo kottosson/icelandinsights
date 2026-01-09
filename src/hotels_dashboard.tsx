@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Line, ReferenceLine, Cell, PieChart, Pie } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Building2, BedDouble, Users, Calendar, Percent } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Building2, BedDouble, Users, Calendar, Percent, Menu, X } from 'lucide-react';
 
 const styles = `
   html { overflow-y: scroll; }
@@ -185,6 +185,7 @@ const HotelsDashboard = () => {
   const [arrivalsByNationality, setArrivalsByNationality] = useState<Record<string, Record<string, number>>>({});
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -614,56 +615,76 @@ const HotelsDashboard = () => {
 
       {/* ========== NAV BAR ========== */}
       <nav className="sticky top-0 z-50 nav-blur" style={{
-        background: 'rgba(255, 255, 255, 0.72)',
+        background: 'rgba(255, 255, 255, 0.85)',
         borderBottom: '1px solid rgba(0, 0, 0, 0.06)'
       }}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="flex items-center justify-between h-16">
-            <a href="/" className="flex items-center gap-2.5 group" style={{ minWidth: '160px' }}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            <a href="/arrivals" className="flex items-center gap-2 flex-shrink-0">
               <div style={{
-                width: '32px',
-                height: '32px',
-                minWidth: '32px',
-                borderRadius: '8px',
+                width: '28px',
+                height: '28px',
+                borderRadius: '7px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)'
+                gap: '2px',
+                background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)'
               }}>
-                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 3v18h18" />
-                  <path d="M18 9l-5 5-4-4-3 3" />
-                </svg>
+                <div style={{ width: '3px', height: '8px', background: 'white', borderRadius: '1px', marginTop: '6px' }} />
+                <div style={{ width: '3px', height: '12px', background: 'white', borderRadius: '1px', marginTop: '2px' }} />
+                <div style={{ width: '3px', height: '16px', background: 'white', borderRadius: '1px' }} />
               </div>
               <span style={{
                 fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
                 fontWeight: '600',
                 fontSize: '15px',
-                color: '#111827',
-                letterSpacing: '-0.3px',
-                whiteSpace: 'nowrap'
-              }}>Iceland Insights</span>
+                color: '#0F172A',
+                letterSpacing: '-0.3px'
+              }}>
+                Iceland<span style={{ color: '#7C3AED' }}>Data</span>
+              </span>
             </a>
             
-            <div className="flex items-center gap-1">
+            <div className="hidden md:flex items-center gap-1">
               <a href="/arrivals" className="nav-link">Arrivals</a>
               <a href="/hotels" className="nav-link active">Hotels</a>
-              <a href="/spending" className="nav-link">Card Spending</a>
+              <a href="/spending" className="nav-link">Spending</a>
               <a href="/blog" className="nav-link">Reports</a>
+              <a href="/about" className="nav-link">About</a>
             </div>
             
-            <div className="hidden md:flex items-center gap-2" style={{ minWidth: '160px', justifyContent: 'flex-end' }}>
+            <div className="hidden md:flex items-center" style={{ minWidth: '100px', justifyContent: 'flex-end' }}>
               <a 
                 href="https://statice.is" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
+                className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
               >
-                Data: Statistics Iceland
+                Source: Hagstofa
               </a>
             </div>
+            
+            <button 
+              className="md:hidden p-2 -mr-2 text-neutral-600"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
           </div>
         </div>
+        
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-neutral-100 bg-white">
+            <div className="px-4 py-3 space-y-1">
+              <a href="/arrivals" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Arrivals</a>
+              <a href="/hotels" className="nav-link block active" style={{ padding: '12px 16px', fontSize: '15px' }}>Hotels</a>
+              <a href="/spending" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Spending</a>
+              <a href="/blog" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>Reports</a>
+              <a href="/about" className="nav-link block" style={{ padding: '12px 16px', fontSize: '15px' }}>About</a>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Page Header */}

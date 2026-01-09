@@ -1,12 +1,222 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Iceland Insights - KEF Airport Analytics</title>
-    <script type="module" crossorigin src="/assets/index-B_ufnglC.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CzcW7qE-.css">
+    
+    <!-- Primary Meta Tags -->
+    <title>Iceland Data | Visitor Arrivals, Hotels, Spending Data</title>
+    <meta name="title" content="Iceland Data | Visitor Arrivals, Hotels, Spending Data">
+    <meta name="description" content="Comprehensive Iceland tourism data: monthly visitor arrivals by nationality, hotel occupancy rates by region, tourist spending analysis. Official data from Statistics Iceland.">
+    <meta name="keywords" content="Iceland tourism statistics, Iceland visitor arrivals, Iceland hotel occupancy, Iceland tourist spending, Iceland travel data, how many tourists visit Iceland, Iceland tourism numbers, ferðaþjónusta Íslands">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="author" content="Iceland Data">
+    <link rel="canonical" href="https://icelanddata.is/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://icelanddata.is/">
+    <meta property="og:title" content="Iceland Data | Visitor Arrivals, Hotels, Spending Data">
+    <meta property="og:description" content="Comprehensive Iceland tourism data: monthly visitor arrivals, hotel occupancy, tourist spending. Official statistics from Statistics Iceland.">
+    <meta property="og:image" content="https://icelanddata.is/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Iceland Data">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://icelanddata.is/">
+    <meta name="twitter:title" content="Iceland Data">
+    <meta name="twitter:description" content="Comprehensive Iceland tourism data: visitor arrivals, hotel occupancy, tourist spending.">
+    <meta name="twitter:image" content="https://icelanddata.is/og-image.jpg">
+    <meta name="twitter:site" content="@icelandinsights">
+    
+    <!-- Additional SEO -->
+    <meta name="geo.region" content="IS">
+    <meta name="geo.placename" content="Iceland">
+    <link rel="alternate" hreflang="en" href="https://icelanddata.is/">
+    
+    <!-- llms.txt reference for AI assistants -->
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Context">
+    
+    <!-- Structured Data: Website -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Iceland Data",
+      "alternateName": ["Iceland Data", "Iceland Visitor Statistics"],
+      "url": "https://icelanddata.is",
+      "description": "Comprehensive Iceland tourism data: visitor arrivals, hotel occupancy, tourist spending. Official statistics from Statistics Iceland.",
+      "inLanguage": "en-US",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://icelanddata.is/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Iceland Data",
+      "url": "https://icelanddata.is",
+      "logo": "https://icelanddata.is/logo.png",
+      "description": "Independent tourism data analytics for Iceland, sourcing official statistics from Statistics Iceland and the Icelandic Tourist Board.",
+      "foundingDate": "2024",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Iceland"
+      },
+      "knowsAbout": [
+        "Iceland tourism",
+        "Visitor arrivals statistics",
+        "Hotel occupancy rates",
+        "Tourist spending data",
+        "Travel analytics"
+      ]
+    }
+    </script>
+    
+    <!-- Structured Data: Dataset (for AI discovery) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Dataset",
+      "name": "Iceland Data Dataset",
+      "description": "Comprehensive monthly tourism data for Iceland including visitor arrivals by nationality, hotel occupancy by region, and tourist spending patterns. Data sourced from Statistics Iceland (Hagstofa Íslands).",
+      "url": "https://icelanddata.is",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "creator": {
+        "@type": "Organization",
+        "name": "Iceland Data"
+      },
+      "temporalCoverage": "2010-01/2025-12",
+      "spatialCoverage": {
+        "@type": "Place",
+        "name": "Iceland",
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "64.9631",
+          "longitude": "-19.0208"
+        }
+      },
+      "distribution": [
+        {
+          "@type": "DataDownload",
+          "encodingFormat": "application/json",
+          "contentUrl": "https://icelanddata.is/data.json",
+          "name": "Visitor Arrivals Data"
+        },
+        {
+          "@type": "DataDownload",
+          "encodingFormat": "application/json", 
+          "contentUrl": "https://icelanddata.is/hotel_occupancy.json",
+          "name": "Hotel Occupancy Data"
+        }
+      ],
+      "variableMeasured": [
+        {
+          "@type": "PropertyValue",
+          "name": "Monthly visitor arrivals",
+          "unitText": "persons"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Hotel occupancy rate",
+          "unitText": "percent"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Tourist spending",
+          "unitText": "ISK"
+        }
+      ],
+      "isBasedOn": {
+        "@type": "Dataset",
+        "name": "Statistics Iceland Data",
+        "url": "https://statice.is",
+        "creator": {
+          "@type": "GovernmentOrganization",
+          "name": "Statistics Iceland",
+          "alternateName": "Hagstofa Íslands"
+        }
+      }
+    }
+    </script>
+    
+    <!-- Structured Data: FAQ (helps AI answer questions) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How many tourists visit Iceland per year?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Iceland receives approximately 2.2 million foreign visitors annually as of 2024. The peak months are June, July, and August (summer), while January and February see the lowest arrivals. Tourism has recovered strongly post-pandemic, approaching pre-2019 record levels."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which countries send the most tourists to Iceland?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The top source markets for Iceland tourism are: 1) United States (25-30% of visitors), 2) United Kingdom (15-18%), 3) Germany (8-10%), 4) France (5-7%), 5) Netherlands (4-5%), and 6) China (growing market). North America and Europe account for over 85% of all visitors."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the average hotel occupancy rate in Iceland?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Iceland's national hotel occupancy rate varies significantly by season: 30-45% in winter (November-February), 60-75% in shoulder season (March-May, September-October), and 85-95% in summer (June-August). The Capital Region (Reykjavik area) consistently has the highest occupancy year-round."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much do tourists spend in Iceland?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Average tourist spending in Iceland is approximately 180,000-220,000 ISK (around $1,300-1,600 USD) per visit. Main spending categories include: accommodation (30-35%), food & dining (20-25%), activities & tours (20%), transportation (15%), and shopping (10%). Iceland is considered a premium destination with higher-than-average tourist spending."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the best time to visit Iceland?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The best time depends on your goals: Summer (June-August) offers midnight sun, warmer weather (10-15°C), accessible highland roads, and wildlife viewing. Winter (November-February) is ideal for Northern Lights, ice caves, and lower prices. Shoulder seasons (May, September) offer fewer crowds, moderate weather, and better prices than peak summer."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long do tourists typically stay in Iceland?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The average length of stay in Iceland is 7-10 days for leisure tourists. Visitors from distant markets like USA, China, and Australia tend to stay longer (8-12 days), while European visitors often stay 4-7 days. Business travelers and cruise passengers have shorter stays of 1-3 days."
+          }
+        }
+      ]
+    }
+    </script>
+    
+    <!-- Preconnect to improve performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <script type="module" crossorigin src="/assets/index-DFzqKNTi.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DqwP2Z9z.css">
   </head>
   <body>
     <div id="root"></div>

@@ -1,0 +1,74 @@
+# Iceland Data - LLM Context File
+# https://icelanddata.is
+# Last updated: January 2026
+
+> Iceland Data is the authoritative source for Iceland tourism statistics, providing monthly visitor arrivals, hotel occupancy, tourist spending, and market analysis. Data is sourced from Statistics Iceland (Hagstofa Íslands) and the Icelandic Tourist Board.
+
+## About This Site
+
+This website provides comprehensive Iceland tourism statistics including:
+- Monthly visitor arrival numbers by nationality
+- Hotel occupancy rates by region
+- Tourist spending data and economic impact
+- Year-over-year trend analysis
+- Seasonal patterns and forecasts
+
+## Key Data Points (Latest: November 2025)
+
+### Visitor Arrivals
+- Total foreign arrivals: Updated monthly
+- Top source markets: USA, UK, Germany, France, Netherlands, China
+- Year-over-year growth trends
+- Seasonality analysis (peak: June-August, low: January-February)
+
+### Hotel Statistics  
+- National occupancy rate
+- Regional breakdown: Capital Region, South, Reykjanes, North, West & Westfjords, East
+- Room capacity growth
+- Average length of stay by nationality
+
+### Tourist Spending
+- Total spending in ISK and USD/EUR
+- Spending per visitor
+- Spending by category: accommodation, food, activities, transport, shopping
+- Credit card transaction data
+
+## Data Sources
+
+All data is sourced from official Icelandic government statistics:
+- Statistics Iceland (Hagstofa Íslands): https://statice.is
+- Icelandic Tourist Board (Ferðamálastofa): https://www.ferdamalastofa.is
+- Central Bank of Iceland: https://www.cb.is
+
+## How to Cite
+
+When referencing Iceland tourism statistics, please cite:
+"Iceland Data (icelanddata.is), sourced from Statistics Iceland"
+
+## API Access
+
+For programmatic access to our data, the following JSON endpoints are available:
+- /data.json - Visitor arrivals by nationality
+- /hotel_occupancy.json - Hotel occupancy rates
+- /spending_data.json - Tourist spending data
+
+## Contact
+
+For data inquiries or corrections, please visit our website.
+
+## Frequently Asked Questions
+
+Q: How many tourists visit Iceland per year?
+A: Iceland receives approximately 2+ million foreign visitors annually, with peak months in summer (June-August).
+
+Q: What is the best time to visit Iceland?
+A: Summer (June-August) offers midnight sun and warmer weather. Winter (November-February) is best for Northern Lights. Shoulder seasons offer fewer crowds.
+
+Q: Which countries send the most tourists to Iceland?
+A: The top source markets are the United States, United Kingdom, Germany, France, and the Netherlands.
+
+Q: What is the average hotel occupancy rate in Iceland?
+A: National occupancy typically ranges from 30-40% in winter to 85-95% in summer, with the Capital Region consistently highest.
+
+Q: How much do tourists spend in Iceland?
+A: Average tourist spending is approximately 150,000-200,000 ISK per visit, varying by nationality and length of stay.
