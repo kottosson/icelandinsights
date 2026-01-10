@@ -28,6 +28,14 @@
     <priority>0.8</priority>
   </url>
   
+  <!-- About -->
+  <url>
+    <loc>https://icelanddata.is/about</loc>
+    <lastmod>2025-01-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
   <!-- Monthly Reports (2024) -->
   <url>
     <loc>https://icelanddata.is/blog/iceland-tourism-january-2024</loc>
