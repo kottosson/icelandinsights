@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, Building2, CreditCard, Database, ExternalLink, Mail, FileText, Menu, X } from 'lucide-react';
+import { BarChart3, Building2, CreditCard, Database, ExternalLink, Mail, Menu, X } from 'lucide-react';
 
 const styles = `
   html { overflow-y: scroll; }
@@ -20,6 +20,29 @@ const styles = `
   }
   .nav-link:hover { color: #111827; background: rgba(0, 0, 0, 0.04); }
   .nav-link.active { color: #7C3AED; background: rgba(124, 58, 237, 0.08); }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+    opacity: 0;
+  }
+  
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
 `;
 
 export default function AboutPage() {
@@ -59,8 +82,8 @@ export default function AboutPage() {
               <a href="/blog" className="nav-link">Reports</a>
               <a href="/about" className="nav-link active">About</a>
             </div>
-            <div className="hidden md:flex items-center" style={{ minWidth: 100, justifyContent: 'flex-end' }}>
-              <span className="text-xs text-neutral-400">Source: Hagstofa</span>
+            <div className="hidden md:flex items-center" style={{ minWidth: 240, justifyContent: 'flex-end' }}>
+              <span className="text-xs text-transparent">Source: Central Bank & Statistics Iceland</span>
             </div>
             <button className="md:hidden p-2 -mr-2 text-neutral-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -81,9 +104,9 @@ export default function AboutPage() {
       </nav>
 
       {/* Page Header */}
-      <div className="pt-10 pb-6 px-4 md:px-6">
+      <div className="pt-10 pb-6 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center">
+          <div className="text-center animate-fade-in-up">
             <h1 style={{ 
               fontSize: '32px',
               fontWeight: '700',
@@ -103,33 +126,28 @@ export default function AboutPage() {
               marginLeft: 'auto',
               marginRight: 'auto'
             }}>
-              Making Iceland's tourism statistics accessible, visual, and useful for researchers, journalists, and industry professionals.
+              Making Iceland's tourism statistics accessible, visual, and useful.
             </p>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="px-4 md:px-6 pb-12">
-        <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pb-8">
           
-          {/* Mission Card */}
-          <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-neutral-200/60 mb-6">
-            <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', marginBottom: '16px' }}>Our Mission</h2>
-            <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: '1.7', marginBottom: '12px' }}>
-              Iceland Data transforms raw tourism statistics from Statistics Iceland (Hagstofa Íslands) into 
-              interactive dashboards and monthly reports. We believe data should be accessible to everyone, 
-              not just those who can navigate complex statistical databases.
+          {/* About Card */}
+          <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-neutral-200/60 mb-6 animate-fade-in-up stagger-1">
+            <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', marginBottom: '16px' }}>About</h2>
+            <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: '1.7', marginBottom: '16px' }}>
+              Iceland Data transforms raw tourism statistics from Statistics Iceland (Hagstofa Íslands) and the Central Bank of Iceland (Seðlabanki Íslands) into interactive dashboards and monthly reports.
             </p>
-            <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: '1.7' }}>
-              Whether you're a journalist writing about tourism trends, a hotel owner planning capacity, 
-              or a researcher studying visitor patterns, our goal is to give you the insights you need 
-              in seconds, not hours.
+            <p style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: '1.6' }}>
+              Disclaimer: Iceland Data is an independent informational resource and is not affiliated with any government agency. While all data is sourced from official public sources, no guarantee is made regarding its accuracy, completeness, or reliability. Any calculations, analyses, or interpretations presented are for informational purposes only and should not be used as the basis for business, investment, or policy decisions. Users assume full responsibility for how they use this information.
             </p>
           </div>
 
           {/* What We Track */}
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <div className="grid md:grid-cols-3 gap-4 mb-6 animate-fade-in-up stagger-2">
             <a href="/arrivals" className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-200/60 hover:shadow-md hover:border-violet-200 transition-all">
               <div className="w-11 h-11 rounded-xl bg-violet-100 flex items-center justify-center mb-4">
                 <BarChart3 className="w-5 h-5 text-violet-600" />
@@ -162,7 +180,7 @@ export default function AboutPage() {
           </div>
 
           {/* Two Column Layout */}
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
+          <div className="grid md:grid-cols-2 gap-4 mb-6 animate-fade-in-up stagger-3">
             {/* Data Sources */}
             <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-neutral-200/60">
               <div className="flex items-center gap-2.5 mb-4">
@@ -189,6 +207,21 @@ export default function AboutPage() {
                 </a>
                 
                 <a 
+                  href="https://www.cb.is" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-all"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <ExternalLink className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>Central Bank of Iceland</div>
+                    <div style={{ fontSize: '12px', color: '#6B7280' }}>Seðlabanki Íslands</div>
+                  </div>
+                </a>
+                
+                <a 
                   href="https://www.ferdamalastofa.is" 
                   target="_blank" 
                   rel="noopener noreferrer"
@@ -205,46 +238,32 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* How to Cite */}
+            {/* Contact */}
             <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-neutral-200/60">
               <div className="flex items-center gap-2.5 mb-4">
-                <FileText className="w-5 h-5 text-amber-600" />
-                <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>How to Cite</h2>
+                <Mail className="w-5 h-5 text-violet-600" />
+                <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>Contact</h2>
               </div>
               <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '16px' }}>
-                When using data from Iceland Data in research, journalism, or reports, please cite:
+                Questions or feedback?
               </p>
-              <div className="bg-neutral-50 rounded-xl p-4" style={{ fontFamily: 'SF Mono, Monaco, monospace', fontSize: '13px', color: '#374151' }}>
-                Iceland Data (icelanddata.is), sourced from Statistics Iceland
-              </div>
-              
-              <div className="mt-6 pt-6 border-t border-neutral-100">
-                <div className="flex items-center gap-2.5 mb-3">
-                  <Mail className="w-5 h-5 text-violet-600" />
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>Contact</h3>
-                </div>
-                <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '12px' }}>
-                  Questions or feedback?
-                </p>
-                <a 
-                  href="mailto:contact@icelanddata.is"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-white rounded-lg text-sm font-medium transition-all hover:shadow-md"
-                  style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #9333EA 100%)' }}
-                >
-                  <Mail className="w-4 h-4" />
-                  contact@icelanddata.is
-                </a>
-              </div>
+              <a 
+                href="mailto:contact@icelanddata.is"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-white rounded-lg text-sm font-medium transition-all hover:shadow-md"
+                style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #9333EA 100%)' }}
+              >
+                <Mail className="w-4 h-4" />
+                contact@icelanddata.is
+              </a>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="text-center pt-8 border-t border-neutral-200">
+          <div className="text-center pt-8 border-t border-neutral-200 animate-fade-in-up stagger-4">
             <p style={{ fontSize: '13px', color: '#9CA3AF' }}>
               © {new Date().getFullYear()} Iceland Data · Built with care in Iceland 🇮🇸
             </p>
           </div>
-        </div>
       </div>
     </div>
   );

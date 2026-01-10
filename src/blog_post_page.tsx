@@ -308,8 +308,8 @@ const BlogPostPage: React.FC = () => {
               <a href="/blog" className="nav-link">Reports</a>
               <a href="/about" className="nav-link">About</a>
             </div>
-            <div className="hidden md:flex items-center" style={{ minWidth: 100, justifyContent: 'flex-end' }}>
-              <span className="text-xs text-neutral-400">Source: Hagstofa</span>
+            <div className="hidden md:flex items-center" style={{ minWidth: 240, justifyContent: 'flex-end' }}>
+              <span className="text-xs text-transparent">Source: Central Bank & Statistics Iceland</span>
             </div>
             <button className="md:hidden p-2 -mr-2 text-neutral-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -583,8 +583,8 @@ const BlogPostPage: React.FC = () => {
               <p className="text-neutral-600 text-sm leading-relaxed">
                 In {r.monthName} {r.year}, the top source markets for Iceland tourism were: {' '}
                 {r.topMarkets.slice(0, 5).map((m: any, i: number) => (
-                  <span key={m.market}>
-                    <strong>{m.market}</strong> ({m.share.toFixed(1)}%){i < 4 ? ', ' : ''}
+                  <span key={m.country}>
+                    <strong>{m.country}</strong> ({m.share.toFixed(1)}%){i < 4 ? ', ' : ''}
                   </span>
                 ))}. 
                 The United States and United Kingdom consistently rank among Iceland's largest tourism markets.
@@ -694,7 +694,7 @@ const BlogPostPage: React.FC = () => {
             "name": "Which countries send the most tourists to Iceland?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": `In ${r.monthName} ${r.year}, the top source markets for Iceland tourism were ${r.topMarkets.slice(0, 5).map((m: any) => `${m.market} (${m.share.toFixed(1)}%)`).join(', ')}. The United States and United Kingdom consistently rank among Iceland's largest tourism markets.`
+              "text": `In ${r.monthName} ${r.year}, the top source markets for Iceland tourism were ${r.topMarkets.slice(0, 5).map((m: any) => `${m.country} (${m.share.toFixed(1)}%)`).join(', ')}. The United States and United Kingdom consistently rank among Iceland's largest tourism markets.`
             }
           },
           {

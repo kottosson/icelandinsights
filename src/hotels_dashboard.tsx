@@ -654,14 +654,14 @@ const HotelsDashboard = () => {
               <a href="/about" className="nav-link">About</a>
             </div>
             
-            <div className="hidden md:flex items-center" style={{ minWidth: '100px', justifyContent: 'flex-end' }}>
+            <div className="hidden md:flex items-center" style={{ minWidth: '240px', justifyContent: 'flex-end' }}>
               <a 
                 href="https://statice.is" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
               >
-                Source: Hagstofa
+                Source: Statistics Iceland
               </a>
             </div>
             

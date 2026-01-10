@@ -199,8 +199,8 @@ const BlogPage: React.FC = () => {
               <a href="/blog" className="nav-link active">Reports</a>
               <a href="/about" className="nav-link">About</a>
             </div>
-            <div className="hidden md:flex items-center" style={{ minWidth: 100, justifyContent: 'flex-end' }}>
-              <span className="text-xs text-neutral-400">Source: Hagstofa</span>
+            <div className="hidden md:flex items-center" style={{ minWidth: 240, justifyContent: 'flex-end' }}>
+              <span className="text-xs text-transparent">Source: Central Bank & Statistics Iceland</span>
             </div>
             <button className="md:hidden p-2 -mr-2 text-neutral-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
